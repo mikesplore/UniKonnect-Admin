@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "545774727181",
+    "firebase_url": "https://myclass-36fee-default-rtdb.firebaseio.com",
+    "project_id": "myclass-36fee",
+    "storage_bucket": "myclass-36fee.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:545774727181:android:8c8b42e77e5b52240aa544",
+        "android_client_info": {
+          "package_name": "com.mike.myclass"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzOs1Q2hdnKUW81KJrIbKy58ZElPgkP9A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
