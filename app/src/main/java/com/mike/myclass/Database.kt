@@ -14,7 +14,7 @@ object Details{
     var name:  MutableState<String> = mutableStateOf("Mike")
 }
 
-data class User(
+open class User(
     val id: String = UUID.randomUUID().toString(),
     val name: String = "",
     val email: String = "",
