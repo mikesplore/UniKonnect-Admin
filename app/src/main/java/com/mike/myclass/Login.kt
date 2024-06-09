@@ -108,7 +108,36 @@ fun LoginScreen(navController: NavController, context: Context) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                   //Google and github authenticaion
+                    GoogleAuth(
+                        firebaseAuth = firebaseAuth,
+                        onSignInSuccess = {
+                            val user = firebaseAuth.currentUser
+                            Details.email.value = user?.email.toString()
+                            Details.name.value = user?.displayName.toString()
+
+                            Toast.makeText(context, "Sign-in successful: $email", Toast.LENGTH_SHORT).show()
+                            navController.navigate("moredetails")
+                        },
+                        onSignInFailure = {
+                            Toast.makeText(context, "Sign-in failed: $it", Toast.LENGTH_SHORT).show()
+                            isGoogleLoading = false
+                        },
+                        navController
+                    )
+                    GitAuth(
+                        firebaseAuth = firebaseAuth,
+                        onSignInSuccess = {
+                            Toast.makeText(context, "Sign-in successful", Toast.LENGTH_SHORT).show()
+                            val user = firebaseAuth.currentUser
+                            Details.email.value = user?.email.toString()
+                            navController.navigate("moredetails")
+                        },
+                        onSignInFailure = {
+                            Toast.makeText(context, "Sign-in failed: $it", Toast.LENGTH_SHORT).show()
+                            isGithubLoading = false
+                        },
+                        navController
+                    )
                 }
                 Column(
                     modifier = Modifier.fillMaxWidth(),
