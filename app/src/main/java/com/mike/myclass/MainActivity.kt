@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
     fun NavigationMap(){
         val navController = rememberNavController()
         val context = LocalContext.current
-        NavHost(navController = navController, startDestination = "dashboard"){
+        NavHost(navController = navController, startDestination = "login"){
             composable("login"){
                 LoginScreen(navController, context)
             }
@@ -44,6 +44,10 @@ class MainActivity : ComponentActivity() {
             composable("dashboard"){
                 Dashboard(navController, context)
             }
+            composable("moredetails"){
+                MoreDetails(context, navController)
+            }
+
         }
     }
 }
