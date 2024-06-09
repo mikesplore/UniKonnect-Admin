@@ -1,15 +1,15 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
     namespace = "com.mike.myclass"
     compileSdk = 34
-
     defaultConfig {
         applicationId = "com.mike.myclass"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -29,6 +29,16 @@ android {
             )
         }
     }
+//this signingConfig is depreciated. how can i update it to gradle 9.0
+    signingConfigs {
+        create("release") {
+            keyAlias = "release"
+            keyPassword = "mikemike"
+            storeFile = file("C:\\Users\\Mike\\Documents\\myClassKey.jks")
+            storePassword = "mikemike"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -50,7 +60,10 @@ android {
 }
 
 dependencies {
-
+    implementation("androidx.compose.material:material:1.6.7")
+    implementation ("com.google.code.gson:gson:2.10.1")
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.material.icons.extended.android)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -59,6 +72,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
