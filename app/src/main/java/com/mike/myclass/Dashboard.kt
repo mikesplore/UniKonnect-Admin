@@ -34,7 +34,6 @@ import androidx.compose.material.icons.filled.AssignmentInd
 import androidx.compose.material.icons.filled.Attachment
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Colorize
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
@@ -52,7 +51,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,7 +82,7 @@ import com.mike.myclass.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Dashboard(navController: NavController, context: Context){
+fun Dashboard(navController: NavController, context: Context) {
     fun getGreetingMessage(): String {
         val currentTime = LocalTime.now()
         return when (currentTime.hour) {
@@ -94,7 +92,8 @@ fun Dashboard(navController: NavController, context: Context){
             else -> "Good Night"
         }
     }
-    var expanded  by remember { mutableStateOf(false)}
+
+    var expanded by remember { mutableStateOf(false) }
     var announcements by remember { mutableStateOf<List<Announcement>?>(null) }
     var users by remember { mutableStateOf<List<User>?>(null) }
     var loading by remember { mutableStateOf(true) }
@@ -138,37 +137,38 @@ fun Dashboard(navController: NavController, context: Context){
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("${getGreetingMessage()}, ${Details.name.value}", style = CC.titleTextStyle, fontSize = 20.sp) },
-                actions = {
-                    Icon(
-                        imageVector = Icons.Filled.Menu,
-                        contentDescription = "Menu",
-                        tint = GlobalColors.textColor,
-                        modifier = Modifier.clickable { expanded = !expanded }
-                    )
-                    DropdownMenu(
-                        expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.background(GlobalColors.primaryColor)) {
-                        DropdownMenuItem(
+            TopAppBar(title = {
+                Text(
+                    "${getGreetingMessage()}, ${Details.name.value}",
+                    style = CC.titleTextStyle,
+                    fontSize = 20.sp
+                )
+            }, actions = {
+                Icon(imageVector = Icons.Filled.Menu,
+                    contentDescription = "Menu",
+                    tint = GlobalColors.textColor,
+                    modifier = Modifier.clickable { expanded = !expanded })
+                DropdownMenu(expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.background(GlobalColors.primaryColor)
+                ) {
+                    DropdownMenuItem(
 
-                            text = {
-                                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription ="")
-                                Text("Announcements", style = CC.descriptionTextStyle) },
-                            onClick = {
-                                navController.navigate("announcements")
+                        text = {
+                            Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "")
+                            Text("Announcements", style = CC.descriptionTextStyle)
+                        }, onClick = {
+                            navController.navigate("announcements")
 
-                                expanded = false
-                            })
-                    }
+                            expanded = false
+                        })
+                }
 
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor,
-                    titleContentColor = GlobalColors.textColor,
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = GlobalColors.primaryColor,
+                titleContentColor = GlobalColors.textColor,
 
-                    )
+                )
             )
         },
         containerColor = GlobalColors.primaryColor,
@@ -213,9 +213,7 @@ fun Dashboard(navController: NavController, context: Context){
                 Box(
                     modifier = Modifier
                         .shadow(
-                            ambientColor = Color.Red,
-                            elevation = 0.dp,
-                            spotColor = Color.Blue
+                            ambientColor = Color.Red, elevation = 0.dp, spotColor = Color.Blue
                         )
                         .fillMaxWidth(0.9f)
                         .align(Alignment.Center)
@@ -323,23 +321,27 @@ fun Dashboard(navController: NavController, context: Context){
                             .fillMaxWidth()
                             .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.Center
-                    ){
-                        if(!loading){
+                    ) {
+                        if (!loading) {
                             announcements?.take(3)?.forEach { announcement ->
                                 FirstAnnouncement(announcement = announcement)
                             }
-                        }else{
-                            Column(modifier = Modifier
-                                .width(350.dp)
-                                .height(150.dp)
-                                .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp))
-                                .border(
-                                    width = 1.dp,
-                                    color = GlobalColors.tertiaryColor,
-                                    shape = RoundedCornerShape(15.dp)
-                                ),
+                        } else {
+                            Column(
+                                modifier = Modifier
+                                    .width(350.dp)
+                                    .height(150.dp)
+                                    .background(
+                                        GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = GlobalColors.tertiaryColor,
+                                        shape = RoundedCornerShape(15.dp)
+                                    ),
                                 verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally) {
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
                                 CircularProgressIndicator(
                                     color = GlobalColors.primaryColor
                                 )
@@ -364,34 +366,36 @@ fun Dashboard(navController: NavController, context: Context){
                             .horizontalScroll(rememberScrollState())
 
                     ) {
-                        if(!loading){
+                        if (!loading) {
                             users?.forEach { user ->
                                 Profile(
-                                    user = user,
-                                    route = "profile",
-                                    navController = navController
+                                    user = user, route = "profile", navController = navController
                                 )
                             }
-                        }else{
-                            for(i in 1..3){
-                            Column(modifier = Modifier
-                                .absolutePadding(10.dp)
-                                .width(150.dp)
-                                .fillMaxHeight()
-                                .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp))
-                                .border(
-                                    width = 1.dp,
-                                    color = GlobalColors.tertiaryColor,
-                                    shape = RoundedCornerShape(15.dp)
-                                ),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally) {
-                                CircularProgressIndicator(
-                                    color = GlobalColors.primaryColor
-                                )
-                                Text("Fetching data...", style = CC.descriptionTextStyle)
+                        } else {
+                            for (i in 1..3) {
+                                Column(
+                                    modifier = Modifier
+                                        .absolutePadding(10.dp)
+                                        .width(150.dp)
+                                        .fillMaxHeight()
+                                        .background(
+                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = GlobalColors.tertiaryColor,
+                                            shape = RoundedCornerShape(15.dp)
+                                        ),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = GlobalColors.primaryColor
+                                    )
+                                    Text("Fetching data...", style = CC.descriptionTextStyle)
+                                }
                             }
-                        }
                         }
 
                     }
@@ -402,19 +406,19 @@ fun Dashboard(navController: NavController, context: Context){
 }
 
 @Composable
-fun ActionImages(icon: ImageVector, title: String, route: String, navController: NavController){
+fun ActionImages(icon: ImageVector, title: String, route: String, navController: NavController) {
     Column(modifier = Modifier
         .clickable { navController.navigate(route) }
         .fillMaxHeight()
         .width(100.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally){
+        horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
                 .background(GlobalColors.secondaryColor, CircleShape)
                 .size(50.dp),
             contentAlignment = Alignment.Center
-        ){
+        ) {
             Icon(imageVector = icon, contentDescription = title, tint = GlobalColors.textColor)
         }
 
@@ -524,13 +528,12 @@ fun Profile(user: User, route: String, navController: NavController) {
             // "View Profile" Button with rounded corners and padding
             Button(
                 onClick = { navController.navigate(route) },
-                modifier = Modifier
-                    .fillMaxWidth(0.8f),
+                modifier = Modifier.fillMaxWidth(0.8f),
 
                 colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.secondaryColor),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text("View ", style = CC.descriptionTextStyle,) // Customize button text style
+                Text("View ", style = CC.descriptionTextStyle) // Customize button text style
             }
         }
     }
@@ -598,7 +601,7 @@ fun FirstAnnouncement(announcement: Announcement) {
 
 @Preview
 @Composable
-fun DashboardPreview(){
+fun DashboardPreview() {
     Dashboard(navController = rememberNavController(), LocalContext.current)
 
 
