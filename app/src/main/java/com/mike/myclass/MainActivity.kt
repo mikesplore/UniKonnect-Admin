@@ -10,7 +10,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.mike.myclass.ui.theme.MyClassTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,30 +22,29 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyClassTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            NavigationMap()
+        }
+    }
+
+    @Composable
+    fun NavigationMap(){
+        val navController = rememberNavController()
+        val context = LocalContext.current
+        NavHost(navController = navController, startDestination = "dashboard"){
+            composable("login"){
+                LoginScreen(navController, context)
+            }
+
+            composable("announcements"){
+                AnnouncementsScreen(navController, context)
+            }
+            composable("passwordreset"){
+                PasswordReset(navController, context)
+            }
+            composable("dashboard"){
+                Dashboard(navController, context)
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MyClassTheme {
-        Greeting("Android")
-    }
-}
