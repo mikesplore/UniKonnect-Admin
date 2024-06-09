@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
     fun NavigationMap(){
         val navController = rememberNavController()
         val context = LocalContext.current
-        NavHost(navController = navController, startDestination = "login"){
+        NavHost(navController = navController, startDestination = "manageusers"){
             composable("login"){
                 LoginScreen(navController, context)
             }
@@ -46,6 +46,12 @@ class MainActivity : ComponentActivity() {
             }
             composable("moredetails"){
                 MoreDetails(context, navController)
+            }
+            composable("profile"){
+                ProfileScreen(navController)
+            }
+            composable("manageusers"){
+                ManageUsers(navController)
             }
 
         }
