@@ -89,7 +89,7 @@ fun Dashboard(navController: NavController, context: Context) {
             in 5..11 -> "Good Morning"
             in 12..17 -> "Good Afternoon"
             in 18..21 -> "Good Evening"
-            else -> "Good Night"
+            else -> "Night"
         }
     }
 
@@ -140,7 +140,7 @@ fun Dashboard(navController: NavController, context: Context) {
             TopAppBar(title = {
                 Text(
                     "${getGreetingMessage()}, ${Details.name.value}",
-                    style = CC.titleTextStyle,
+                    style = CC.descriptionTextStyle,
                     fontSize = 20.sp
                 )
             }, actions = {
