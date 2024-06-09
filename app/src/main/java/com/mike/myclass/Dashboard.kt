@@ -75,10 +75,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.mike.myclass.ui.theme.RobotoMono
 import kotlinx.coroutines.delay
 import java.time.LocalTime
 import com.mike.myclass.CommonComponents as CC
+import coil.compose.rememberAsyncImagePainter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +95,7 @@ fun Dashboard(navController: NavController, context: Context) {
         }
     }
 
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(true) }
     var announcements by remember { mutableStateOf<List<Announcement>?>(null) }
     var users by remember { mutableStateOf<List<User>?>(null) }
     var loading by remember { mutableStateOf(true) }
@@ -152,16 +154,20 @@ fun Dashboard(navController: NavController, context: Context) {
                     onDismissRequest = { expanded = false },
                     modifier = Modifier.background(GlobalColors.primaryColor)
                 ) {
-                    DropdownMenuItem(
 
+                    DropdownMenuItem(
                         text = {
-                            Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "")
-                            Text("Announcements", style = CC.descriptionTextStyle)
+                            Row {
+                                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "", tint = GlobalColors.textColor )
+                                Text(" Logout", style = CC.descriptionTextStyle)}
                         }, onClick = {
-                            navController.navigate("announcements")
+                            FirebaseAuth.getInstance().signOut()
+                            navController.navigate("login")
 
                             expanded = false
-                        })
+                        }
+                    )
+
                 }
 
             }, colors = TopAppBarDefaults.topAppBarColors(
