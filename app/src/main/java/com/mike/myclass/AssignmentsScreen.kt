@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import com.mike.myclass.CommonComponents as CC
 object Debugg{
-    var visible: MutableState<Boolean> = mutableStateOf(false)
+    var visible: MutableState<Boolean> = mutableStateOf(true)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,7 +45,7 @@ fun AssignmentScreen(context: Context) {
     var loading by remember { mutableStateOf(true) }
     val subjects = remember { mutableStateListOf<Subjects>() }
     var assignmentDialog by remember { mutableStateOf(false) }
-    //var showadDialog by remember { mutableStateOf(false) }
+    var showaddSubject by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
@@ -72,7 +72,7 @@ fun AssignmentScreen(context: Context) {
                 ) {
                     DropdownMenuItem(text = { Text("Add Unit", style = CC.descriptionTextStyle) },
                         onClick = {
-                            showadDialog = true
+                            showaddSubject = true
                             expanded = false
                         })
                     DropdownMenuItem(text = { Text("Edit Unit", style = CC.descriptionTextStyle) },
@@ -181,8 +181,8 @@ fun AssignmentScreen(context: Context) {
                 }
             }
 
-            if (showadDialog) {
-                BasicAlertDialog(onDismissRequest = { showadDialog = false }) {
+            if (showaddSubject) {
+                BasicAlertDialog(onDismissRequest = { showaddSubject = false }) {
                     Column(
                         modifier = Modifier
                             .width(250.dp)
@@ -213,7 +213,7 @@ fun AssignmentScreen(context: Context) {
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             Button(
-                                onClick = { showadDialog = false },
+                                onClick = { showaddSubject = false },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = GlobalColors.secondaryColor,
@@ -235,7 +235,7 @@ fun AssignmentScreen(context: Context) {
                                         Toast.makeText(
                                             context, "Subject Added", Toast.LENGTH_SHORT
                                         ).show()
-                                        showadDialog = false
+                                        showaddSubject = false
                                     })
                                 },
                                 shape = RoundedCornerShape(8.dp),

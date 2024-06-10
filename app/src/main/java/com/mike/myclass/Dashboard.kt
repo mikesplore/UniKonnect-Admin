@@ -1,6 +1,7 @@
 package com.mike.myclass
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ScrollState
@@ -25,17 +26,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabPosition
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -74,6 +80,85 @@ fun Dashboard(navController: NavController, context: Context) {
             else -> "Good Night"
         }
     }
+
+    if (Debugg.visible.value) {
+        BasicAlertDialog(onDismissRequest = { Debugg.visible.value = false }) {
+            Column(
+                modifier = Modifier
+                    .width(250.dp)
+                    .background(
+                        color = GlobalColors.primaryColor, shape = RoundedCornerShape(16.dp)
+                    )
+                    .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Add Subject",
+                    style = CC.titleTextStyle,
+                    color = GlobalColors.textColor
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(value = "subjectName",
+                    onValueChange = { },
+                    label = { Text("Subject Name", color = GlobalColors.tertiaryColor) },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = GlobalColors.secondaryColor,
+                        unfocusedBorderColor = GlobalColors.tertiaryColor,
+                        focusedTextColor = GlobalColors.textColor,
+                        unfocusedTextColor = GlobalColors.textColor
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = { Debugg.visible.value = false },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = GlobalColors.secondaryColor,
+                            contentColor = GlobalColors.primaryColor
+                        ),
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    ) {
+                        Text(
+                            "Cancel",
+                            style = CC.descriptionTextStyle,
+                            color = GlobalColors.primaryColor
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            MyDatabase.writeSubject(subject = Subjects(
+                                name = "subjectName"
+                            ), onComplete = {
+                                Toast.makeText(
+                                    context, "Subject Added", Toast.LENGTH_SHORT
+                                ).show()
+                                Debugg.visible.value = false
+                            })
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = GlobalColors.secondaryColor,
+                            contentColor = GlobalColors.primaryColor
+                        ),
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    ) {
+                        Text(
+                            "Add",
+                            style = CC.descriptionTextStyle,
+                            color = GlobalColors.primaryColor
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
 
     var expanded by remember { mutableStateOf(false) }
     val horizontalScrollState = rememberScrollState()
