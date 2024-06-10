@@ -14,12 +14,26 @@ object Details{
     var name:  MutableState<String> = mutableStateOf("Mike")
 }
 
-open class User(
+data class User(
     val id: String = UUID.randomUUID().toString(),
     val name: String = "",
     val email: String = "",
 
     )
+data class Subjects(
+    val id: String = UUID.randomUUID().toString(),
+    val name: String = "",
+
+)
+
+data class Assignment(
+    val id: String = UUID.randomUUID().toString(),
+    val name: String = "",
+    val description: String = "",
+    val dueDate: String = "",
+    val subject: String = ""
+)
+
 data class Announcement(
     val id: String = UUID.randomUUID().toString(),
     val date: String = "",
@@ -51,6 +65,46 @@ object MyDatabase {
             }
         })
     }
+
+    fun writeSubject(subject: Subjects, onComplete: (Boolean) -> Unit) {
+        database.child("Subjects").child(subject.id).setValue(subject).addOnCompleteListener { task ->
+            onComplete(task.isSuccessful)
+        }
+    }
+
+    fun getSubjects(onSubjectsFetched: (List<Subjects>?) -> Unit) {
+        database.child("Subjects").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val subjects = snapshot.children.mapNotNull { it.getValue(Subjects::class.java) }
+                onSubjectsFetched(subjects)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onSubjectsFetched(null)
+            }
+        })
+    }
+
+    fun getAssignments(subjectId: String, onAssignmentsFetched: (List<Assignment>?) -> Unit) {
+        database.child("Assignments").orderByChild("subjectId").equalTo(subjectId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val assignments = snapshot.children.mapNotNull { it.getValue(Assignment::class.java) }
+                    onAssignmentsFetched(assignments)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    onAssignmentsFetched(null)
+                }
+            })
+    }
+
+    fun deleteAssignment(assignmentId: String, onComplete: (Boolean) -> Unit) {
+        database.child("Assignments").child(assignmentId).removeValue().addOnCompleteListener { task ->
+            onComplete(task.isSuccessful)
+        }
+    }
+
 
     fun writeAnnouncement(announcement: Announcement) {
         database.child("Announcements").child(announcement.id).setValue(announcement)

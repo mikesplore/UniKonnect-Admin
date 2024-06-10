@@ -3,7 +3,9 @@ package com.mike.myclass
 import android.content.Context
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,10 +15,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
@@ -26,17 +31,25 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabPosition
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,6 +58,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalTime
 import com.mike.myclass.CommonComponents as CC
 
@@ -68,9 +82,19 @@ fun Dashboard(navController: NavController, context: Context) {
     fun FirstBox() {
         Box(
             modifier = Modifier
+                .border(
+                    width = 1.dp,
+                    color = GlobalColors.textColor,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .shadow(
+                    elevation = 5.dp,
+                    shape = RoundedCornerShape(10.dp),
+                    clip = true
+                )
                 .fillMaxHeight()
                 .width(350.dp)
-                .background(GlobalColors.secondaryColor),
+                .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text("This is the first Box", style = CC.descriptionTextStyle)
@@ -83,7 +107,7 @@ fun Dashboard(navController: NavController, context: Context) {
             modifier = Modifier
                 .fillMaxHeight()
                 .width(350.dp)
-                .background(GlobalColors.tertiaryColor),
+                .background(GlobalColors.tertiaryColor, RoundedCornerShape(10.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text("Second one", style = CC.descriptionTextStyle)
@@ -96,7 +120,7 @@ fun Dashboard(navController: NavController, context: Context) {
             modifier = Modifier
                 .fillMaxHeight()
                 .width(350.dp)
-                .background(GlobalColors.primaryColor),
+                .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text("Third one", style = CC.descriptionTextStyle)
@@ -179,16 +203,106 @@ fun Dashboard(navController: NavController, context: Context) {
                 Spacer(modifier = Modifier.width(10.dp))
                 ThirdBox()
             }
+            //the tabs column starts here
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                verticalArrangement = Arrangement.Center,
             ) {
-                // Additional content here
+                var selectedTabIndex by remember { mutableIntStateOf(0) }
+                val configuration = LocalConfiguration.current
+                val screenWidth = configuration.screenWidthDp.dp
+                val tabRowHorizontalScrollState by remember { mutableStateOf(ScrollState(0)) }
+                val tabTitles = listOf(
+                    "Announcements",
+                    "Attendance",
+                    "Timetable",
+                    "Assignments",
+                    "Manage Students",
+                    "Documentation",
+                )
+                val indicator = @Composable { tabPositions: List<TabPosition> ->
+                    Box(
+                        modifier = Modifier
+                            .tabIndicatorOffset(tabPositions[selectedTabIndex])
+                            .height(4.dp)
+                            .width(screenWidth / tabTitles.size) // Divide by the number of tabs
+                            .background(GlobalColors.textColor, CircleShape)
+                    )
+                }
+                val coroutineScope = rememberCoroutineScope()
+
+                ScrollableTabRow(
+                    selectedTabIndex = selectedTabIndex,
+                    modifier = Modifier.background(GlobalColors.secondaryColor),
+                    contentColor = GlobalColors.primaryColor,
+                    indicator = indicator,
+                    edgePadding = 0.dp,
+
+                    ) {
+                    tabTitles.forEachIndexed { index, title ->
+                        Tab(selected = selectedTabIndex == index, onClick = {
+                            selectedTabIndex = index
+                            coroutineScope.launch {
+                                tabRowHorizontalScrollState.animateScrollTo(
+                                    (screenWidth.value / tabTitles.size * index).toInt()
+                                )
+                            }
+                        }, text = {
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        if (selectedTabIndex == index) GlobalColors.primaryColor else GlobalColors.secondaryColor,
+                                        RoundedCornerShape(8.dp)
+                                    )
+                                    .padding(8.dp), contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = title,
+                                    style = CC.descriptionTextStyle,
+                                    color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
+                                )
+                            }
+                        }, modifier = Modifier.background(CC.backbrush)
+                        )
+                    }
+                }
+
+                when (selectedTabIndex) {
+                    0 -> AttendanceItem()
+                    1 -> TimetableItem()
+                    2 -> AssignmentsItem()
+                    3 -> DocumentationItem()
+                    4 -> ManageUsersItem()
+                    else -> {}
+                }
+
+
             }
+            //the tabs column ends here
         }
     }
+}
+@Composable
+fun AttendanceItem(){
+    Text("Attendance")
+}
+@Composable
+fun TimetableItem(){
+    Text("Timetable")
+}
+@Composable
+fun AssignmentsItem(){
+    Text("Assignments")
+}
+@Composable
+fun DocumentationItem(){
+    Text("Documentation")
+}
+@Composable
+fun ManageUsersItem(){
+    Text("Manage Users")
+
 }
 
 @Preview
@@ -196,3 +310,4 @@ fun Dashboard(navController: NavController, context: Context) {
 fun DashboardPreview() {
     Dashboard(navController = rememberNavController(), LocalContext.current)
 }
+
