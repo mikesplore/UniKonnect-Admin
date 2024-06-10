@@ -31,7 +31,7 @@ data class Assignment(
     val name: String = "",
     val description: String = "",
     val dueDate: String = "",
-    val subject: String = ""
+    val subjectId: String = ""
 )
 
 data class Announcement(
@@ -84,6 +84,11 @@ object MyDatabase {
             }
         })
     }
+    fun writeAssignment(assignment: Assignment, onComplete: (Boolean) -> Unit) {
+        database.child("Assignments").child(assignment.id).setValue(assignment).addOnCompleteListener { task ->
+            onComplete(task.isSuccessful)
+        }
+    }
 
     fun getAssignments(subjectId: String, onAssignmentsFetched: (List<Assignment>?) -> Unit) {
         database.child("Assignments").orderByChild("subjectId").equalTo(subjectId)
@@ -126,8 +131,6 @@ object MyDatabase {
     }
     fun deleteAnnouncement(announcementId: String) {
         database.child("Announcements").child(announcementId.toString()).removeValue()
-
-
     }
 
 
