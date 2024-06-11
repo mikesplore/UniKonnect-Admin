@@ -311,22 +311,24 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                         OutlinedTextField(value = title,
                             onValueChange = { title = it },
                             label = { Text("Assignment Name", color = GlobalColors.tertiaryColor) },
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                focusedBorderColor = GlobalColors.secondaryColor,
-                                unfocusedBorderColor = GlobalColors.tertiaryColor,
+                            colors = TextFieldDefaults.colors(
+                                unfocusedIndicatorColor = GlobalColors.tertiaryColor,
                                 focusedTextColor = GlobalColors.textColor,
-                                unfocusedTextColor = GlobalColors.textColor
+                                unfocusedTextColor = GlobalColors.textColor,
+                                focusedContainerColor = GlobalColors.primaryColor,
+                                unfocusedContainerColor = GlobalColors.primaryColor
                             )
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         OutlinedTextField(value = description,
                             onValueChange = { description = it },
                             label = { Text("Description", color = GlobalColors.tertiaryColor) },
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                focusedBorderColor = GlobalColors.secondaryColor,
-                                unfocusedBorderColor = GlobalColors.tertiaryColor,
+                            colors = TextFieldDefaults.colors(
+                                unfocusedIndicatorColor = GlobalColors.tertiaryColor,
                                 focusedTextColor = GlobalColors.textColor,
-                                unfocusedTextColor = GlobalColors.textColor
+                                unfocusedTextColor = GlobalColors.textColor,
+                                focusedContainerColor = GlobalColors.primaryColor,
+                                unfocusedContainerColor = GlobalColors.primaryColor
                             )
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -361,6 +363,11 @@ fun AssignmentScreen(navController: NavController, context: Context) {
 
                                         ).show()
                                         assignmentDialog = false
+                                        showNotification(
+                                            context,
+                                            title = "New Assignment",
+                                            message = "${Details.name.value} added an assignment.  "
+                                        )
                                     })
                                 },
                                 shape = RoundedCornerShape(8.dp),

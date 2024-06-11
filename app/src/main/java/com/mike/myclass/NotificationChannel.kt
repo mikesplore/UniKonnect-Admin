@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
 const val CHANNEL_ID = "classportal_channel_id"
+private var notificationIdCounter = 0
 
 fun createNotificationChannel(context: Context) {
     val name = "Your Channel Name"
@@ -61,7 +62,7 @@ fun showNotification(context: Context, title: String, message: String) {
             // for ActivityCompat#requestPermissions for more details.
             return
         }
-        notify(0, builder.build())
+        notify(notificationIdCounter++, builder.build())
     }
 }
 
