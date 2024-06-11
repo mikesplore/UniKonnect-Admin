@@ -151,7 +151,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                         .tabIndicatorOffset(tabPositions[selectedTabIndex])
                         .height(4.dp)
                         .width(screenWidth / (subjects.size.coerceAtLeast(1))) // Avoid division by zero
-                        .background(Color.Black, CircleShape)
+                        .background(GlobalColors.secondaryColor, CircleShape)
                 )
             }
 
@@ -164,7 +164,8 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CircularProgressIndicator(
-                        color = GlobalColors.textColor,
+                        color = GlobalColors.secondaryColor,
+                        trackColor = GlobalColors.textColor
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text("Loading Units", style = CC.descriptionTextStyle)
@@ -179,6 +180,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     contentColor = Color.Black,
                     indicator = indicator,
                     edgePadding = 0.dp,
+                    containerColor = GlobalColors.primaryColor
                 ) {
                     subjects.forEachIndexed { index, subject ->
 
@@ -408,7 +410,8 @@ fun AssignmentsList(subjectId: String, context: Context) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             CircularProgressIndicator(
-                color = GlobalColors.textColor
+                color = GlobalColors.secondaryColor,
+                trackColor = GlobalColors.textColor
             )
             Text("Loading Assignments...Please wait", style = CC.descriptionTextStyle)
         }
