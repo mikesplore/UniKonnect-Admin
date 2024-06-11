@@ -5,6 +5,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import java.sql.Time
 import java.util.UUID
 
 
@@ -14,6 +15,15 @@ data class User(
     val email: String = "",
 
     )
+data class Timetable(
+    val id: String = UUID.randomUUID().toString(),
+    val startTime: String = "",
+    val endTime: String = "",
+    val unitName: String = "",
+    val venue: String = "",
+    val lecturer: String = "",
+    val dayId: String = ""
+)
 
 data class Subjects(
     val id: String = UUID.randomUUID().toString(),
@@ -29,12 +39,18 @@ data class Assignment(
     val subjectId: String = ""
 )
 
+data class Day(
+    val id: String = UUID.randomUUID().toString(),
+    val name: String = ""
+)
+
 data class Announcement(
     val id: String = UUID.randomUUID().toString(),
     val date: String = "",
     val title: String = "",
     val description: String = "",
     val author: String = ""
+
 
 )
 
@@ -60,6 +76,43 @@ object MyDatabase {
         })
     }
 
+    fun writeTimetable(timetable: Timetable, onComplete: (Boolean) -> Unit) {
+        database.child("Timetable").child(timetable.id).setValue(timetable)
+            .addOnCompleteListener { task ->
+                onComplete(task.isSuccessful)
+            }
+    }
+
+    // Retrieve Announcement data from the database
+    fun getTimetable(dayId: String, onAssignmentsFetched: (List<Timetable>?) -> Unit) {
+        database.child("Timetable").orderByChild("dayId").equalTo(dayId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val timetable =
+                        snapshot.children.mapNotNull { it.getValue(Timetable::class.java) }
+                    onAssignmentsFetched(timetable)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    onAssignmentsFetched(null)
+                }
+            })
+    }
+
+    fun editTimetable(timetable: Timetable, onComplete: (Boolean) -> Unit) {
+        database.child("Timetable").child(timetable.id).setValue(timetable)
+            .addOnCompleteListener { task ->
+                onComplete(task.isSuccessful)
+            }
+    }
+
+    fun deleteTimetable(timetableId: String, onComplete: (Boolean) -> Unit) {
+        database.child("Timetable").child(timetableId).removeValue()
+            .addOnCompleteListener { task ->
+                onComplete(task.isSuccessful)
+            }
+    }
+
     fun editSubject(subject: Subjects, onComplete: (Boolean) -> Unit) {
         val subjectRef = database.child("Subjects").child(subject.id)
         subjectRef.setValue(subject).addOnCompleteListener { task ->
@@ -73,21 +126,32 @@ object MyDatabase {
                 onComplete(task.isSuccessful)
             }
     }
-    fun deleteSubject(subjectId: String, onComplete: (Boolean) -> Unit) {
-        database.child("Subjects").child(subjectId).removeValue()
-            .addOnCompleteListener { task ->
-                onComplete(task.isSuccessful)
-            }
-    }
-
-
-
 
     fun getSubjects(onSubjectsFetched: (List<Subjects>?) -> Unit) {
         database.child("Subjects").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val subjects = snapshot.children.mapNotNull { it.getValue(Subjects::class.java) }
                 onSubjectsFetched(subjects)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onSubjectsFetched(null)
+            }
+        })
+    }
+
+    fun writeDays(day: Day, onComplete: (Boolean) -> Unit) {
+        database.child("Days").child(day.id).setValue(day)
+            .addOnCompleteListener { task ->
+                onComplete(task.isSuccessful)
+            }
+    }
+
+    fun getDays(onSubjectsFetched: (List<Day>?) -> Unit) {
+        database.child("Days").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val days = snapshot.children.mapNotNull { it.getValue(Day::class.java) }
+                onSubjectsFetched(days)
             }
 
             override fun onCancelled(error: DatabaseError) {
