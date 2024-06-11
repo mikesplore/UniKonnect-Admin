@@ -2,32 +2,15 @@ package com.mike.myclass
 
 import android.content.Context
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +19,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.gson.Gson
-import java.io.File
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import com.mike.myclass.CommonComponents as CC
+
 
 data class ColorScheme(
     val primaryColor: String,
@@ -56,34 +40,40 @@ fun parseColor(hex: String): Color {
 }
 
 object GlobalColors {
-    private const val COLORS_FILE_NAME = "color_scheme.json"
+    private const val COLORS_PATH = "color_scheme"
 
     private val defaultScheme = ColorScheme("164863", "427D9D", "9BBEC8", "DDF2FD")
 
     var currentScheme by mutableStateOf(defaultScheme)
 
-    fun loadColorScheme(context: Context): ColorScheme {
-        val file = File(context.filesDir, COLORS_FILE_NAME)
-        return if (file.exists()) {
-            val json = file.readText()
-            Gson().fromJson(json, ColorScheme::class.java)
-        } else {
-            defaultScheme
+    fun loadColorScheme(context: Context, onComplete: (ColorScheme) -> Unit) {
+        val database = Firebase.database
+        val colorSchemeRef = database.getReference(COLORS_PATH)
+
+        colorSchemeRef.get().addOnSuccessListener {
+            val colorScheme = it.getValue(ColorScheme::class.java)
+            if (colorScheme != null) {
+                currentScheme = colorScheme
+                onComplete(colorScheme)
+            } else {
+                currentScheme = defaultScheme
+                onComplete(defaultScheme)
+            }
+        }.addOnFailureListener {
+            currentScheme = defaultScheme
+            onComplete(defaultScheme)
         }
     }
 
-    fun saveColorScheme(context: Context, scheme: ColorScheme) {
-        val file = File(context.filesDir, COLORS_FILE_NAME)
-        if (file.exists()) {
-            file.delete()  // Delete the old color scheme file
-        }
-        val json = Gson().toJson(scheme)
-        file.writeText(json)
+    fun saveColorScheme(scheme: ColorScheme) {
+        val database = Firebase.database
+        val colorSchemeRef = database.getReference(COLORS_PATH)
+        colorSchemeRef.setValue(scheme)
         currentScheme = scheme
     }
 
-    fun resetToDefaultColors(context: Context) {
-        saveColorScheme(context, defaultScheme)
+    fun resetToDefaultColors() {
+        saveColorScheme(defaultScheme)
     }
 
     val primaryColor: Color
@@ -101,7 +91,7 @@ object GlobalColors {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ColorSettings(context: Context, onsave: () -> Unit, onrevert: () -> Unit, navController: NavController) {
+fun ColorSettings(navController: NavController, context: Context) {
     var primaryColor by remember { mutableStateOf(GlobalColors.currentScheme.primaryColor) }
     var secondaryColor by remember { mutableStateOf(GlobalColors.currentScheme.secondaryColor) }
     var tertiaryColor by remember { mutableStateOf(GlobalColors.currentScheme.tertiaryColor) }
@@ -109,10 +99,12 @@ fun ColorSettings(context: Context, onsave: () -> Unit, onrevert: () -> Unit, na
 
     // Listen to changes in global color scheme and update local states
     LaunchedEffect(GlobalColors.currentScheme) {
-        primaryColor = GlobalColors.currentScheme.primaryColor
-        secondaryColor = GlobalColors.currentScheme.secondaryColor
-        tertiaryColor = GlobalColors.currentScheme.tertiaryColor
-        textColor = GlobalColors.currentScheme.textColor
+        GlobalColors.loadColorScheme(context) { scheme ->
+            primaryColor = scheme.primaryColor
+            secondaryColor = scheme.secondaryColor
+            tertiaryColor = scheme.tertiaryColor
+            textColor = scheme.textColor
+        }
     }
 
     var refreshTrigger by remember { mutableStateOf(false) } // Trigger to force recomposition
@@ -123,9 +115,9 @@ fun ColorSettings(context: Context, onsave: () -> Unit, onrevert: () -> Unit, na
                 title = { Text(text = "COLORS", style = CC.titleTextStyle) },
                 actions = {
                     IconButton(
-                        onClick = {navController.navigate("dashboard")}
+                        onClick = { navController.navigate("dashboard") }
                     ) {
-                        Icon(Icons.Filled.ArrowBackIosNew,"Back", tint = GlobalColors.tertiaryColor)
+                        Icon(Icons.Filled.ArrowBackIosNew, "Back", tint = GlobalColors.tertiaryColor)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -136,47 +128,35 @@ fun ColorSettings(context: Context, onsave: () -> Unit, onrevert: () -> Unit, na
             )
         },
         containerColor = GlobalColors.primaryColor,
-
-        ) { innerPadding ->
+    ) { innerPadding ->
         Column(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text("Colors", style = CC.titleTextStyle, color = GlobalColors.textColor)
             OutlinedColorTextField(
-                label = "Primary color",
+                component = "Primary Color",
                 colorValue = primaryColor,
-                onValueChange = { newValue ->
-                    primaryColor = newValue
-                }
+                onValueChange = { primaryColor = it }
             )
-
             OutlinedColorTextField(
-                label = "Secondary color",
+                component = "Secondary Color",
                 colorValue = secondaryColor,
-                onValueChange = { newValue ->
-                    secondaryColor = newValue
-                }
+                onValueChange = { secondaryColor = it }
             )
-
             OutlinedColorTextField(
-                label = "Tertiary color",
-                colorValue = tertiaryColor,
-                onValueChange = { newValue ->
-                    tertiaryColor = newValue
-                }
+                component = "Tertiary Color",
+                colorValue = primaryColor,
+                onValueChange = { primaryColor = it }
             )
+            Spacer(modifier = Modifier.height(15.dp))
+            Text("Brush", style = CC.titleTextStyle)
 
-            OutlinedColorTextField(
-                label = "Text color",
-                colorValue = textColor,
-                onValueChange = { newValue ->
-                    textColor = newValue
-                }
-            )
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -188,9 +168,8 @@ fun ColorSettings(context: Context, onsave: () -> Unit, onrevert: () -> Unit, na
                         tertiaryColor = tertiaryColor,
                         textColor = textColor
                     )
-                    GlobalColors.saveColorScheme(context, newScheme)
+                    GlobalColors.saveColorScheme(newScheme)
                     refreshTrigger = !refreshTrigger // Toggle the trigger to force recomposition
-                    onsave()
                 },
                 colors = ButtonDefaults.buttonColors(GlobalColors.secondaryColor),
                 shape = RoundedCornerShape(10.dp),
@@ -203,9 +182,8 @@ fun ColorSettings(context: Context, onsave: () -> Unit, onrevert: () -> Unit, na
 
             Button(
                 onClick = {
-                    GlobalColors.resetToDefaultColors(context)
+                    GlobalColors.resetToDefaultColors()
                     refreshTrigger = !refreshTrigger // Toggle the trigger to force recomposition
-                    onrevert()
                 },
                 colors = ButtonDefaults.buttonColors(GlobalColors.secondaryColor),
                 shape = RoundedCornerShape(10.dp),
@@ -219,7 +197,7 @@ fun ColorSettings(context: Context, onsave: () -> Unit, onrevert: () -> Unit, na
 
 @Composable
 fun OutlinedColorTextField(
-    label: String,
+    component: String,
     colorValue: String,
     onValueChange: (String) -> Unit
 ) {
@@ -227,11 +205,21 @@ fun OutlinedColorTextField(
 
     Column(
         modifier = Modifier
+            .border(
+                width = 1.dp,
+                color = GlobalColors.textColor,
+                shape = RoundedCornerShape(8.dp)
+            )
             .padding(vertical = 8.dp)
             .background(GlobalColors.primaryColor, shape = RoundedCornerShape(8.dp))
-            .padding(16.dp)
     ) {
-        Text(label, style = CC.descriptionTextStyle)
+
+        Row(modifier = Modifier
+            .padding(10.dp)
+            .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween){
+            Text(component, style = CC.descriptionTextStyle)
         CC.SingleLinedTextField(
             value = colorValue,
             onValueChange = { newValue ->
@@ -241,9 +229,11 @@ fun OutlinedColorTextField(
             singleLine = true,
             label = "",
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(0.5f)
                 .background(if (isValidColor) Color.Transparent else Color.Red.copy(alpha = 0.3f))
         )
+
+        }
     }
 }
 
@@ -264,7 +254,9 @@ fun ColorSettingsPreview() {
 
     // Load the color scheme when the composable is launched
     LaunchedEffect(Unit) {
-        GlobalColors.currentScheme = GlobalColors.loadColorScheme(context)
+        GlobalColors.loadColorScheme(context) { scheme ->
+            GlobalColors.currentScheme = scheme
+        }
     }
-    ColorSettings(context = context, {}, {}, rememberNavController())
+    ColorSettings(rememberNavController(), context)
 }
