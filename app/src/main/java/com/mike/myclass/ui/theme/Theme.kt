@@ -42,6 +42,20 @@ val RobotoMono = FontFamily(
 
 )
 
+val Lora = FontFamily(
+    Font(R.font.lora, FontWeight.Normal)
+)
+
+val Amatic = FontFamily(
+    Font(R.font.amatic, FontWeight.Normal)
+)
+
+val Crimson = FontFamily(
+    Font(R.font.crimson, FontWeight.Normal)
+)
+
+
+
 @Composable
 fun MyClassTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
