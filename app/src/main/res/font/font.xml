@@ -4,4 +4,18 @@
         android:fontStyle="normal"
         android:fontWeight="400"
         android:font="@font/segoepr" />
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        android:font="@font/amatic" />
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        android:font="@font/crimson" />
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        android:font="@font/lora" />
+
+
 </font-family>
