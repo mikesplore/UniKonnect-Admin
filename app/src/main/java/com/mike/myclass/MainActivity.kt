@@ -43,7 +43,7 @@ import com.mike.myclass.CommonComponents as CC
 
 object Details {
     var email: MutableState<String> = mutableStateOf("")
-    var name: MutableState<String> = mutableStateOf("Mike")
+    var name: MutableState<String> = mutableStateOf("")
     var showdialog: MutableState<Boolean> = mutableStateOf(true)
 }
 
@@ -148,7 +148,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "assignments") {
+        NavHost(navController = navController, startDestination = "colors") {
             composable("login") {
                 LoginScreen(navController, context)
             }
@@ -173,6 +173,13 @@ class MainActivity : ComponentActivity() {
             composable("assignments") {
                 AssignmentScreen(navController,context)
             }
+            composable("timetable") {
+                TimetableScreen(navController,context)
+            }
+            composable("colors") {
+                ColorSettings(navController,context)
+            }
+
         }
     }
 
