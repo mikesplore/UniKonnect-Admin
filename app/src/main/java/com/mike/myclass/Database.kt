@@ -1,7 +1,5 @@
 package com.mike.myclass
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -9,10 +7,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import java.util.UUID
 
-object Details{
-    var email: MutableState<String> = mutableStateOf("")
-    var name:  MutableState<String> = mutableStateOf("Mike")
-}
 
 data class User(
     val id: String = UUID.randomUUID().toString(),
@@ -20,11 +14,12 @@ data class User(
     val email: String = "",
 
     )
+
 data class Subjects(
     val id: String = UUID.randomUUID().toString(),
     val name: String = "",
 
-)
+    )
 
 data class Assignment(
     val id: String = UUID.randomUUID().toString(),
@@ -41,7 +36,7 @@ data class Announcement(
     val description: String = "",
     val author: String = ""
 
-    )
+)
 
 object MyDatabase {
     private val database: DatabaseReference = FirebaseDatabase.getInstance().reference
@@ -55,8 +50,7 @@ object MyDatabase {
     fun getUsers(onUsersFetched: (List<User>?) -> Unit) {
         database.child("Users").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val users =
-                    snapshot.children.mapNotNull { it.getValue(User::class.java) }
+                val users = snapshot.children.mapNotNull { it.getValue(User::class.java) }
                 onUsersFetched(users)
             }
 
@@ -66,11 +60,28 @@ object MyDatabase {
         })
     }
 
-    fun writeSubject(subject: Subjects, onComplete: (Boolean) -> Unit) {
-        database.child("Subjects").child(subject.id).setValue(subject).addOnCompleteListener { task ->
+    fun editSubject(subject: Subjects, onComplete: (Boolean) -> Unit) {
+        val subjectRef = database.child("Subjects").child(subject.id)
+        subjectRef.setValue(subject).addOnCompleteListener { task ->
             onComplete(task.isSuccessful)
         }
     }
+
+    fun writeSubject(subject: Subjects, onComplete: (Boolean) -> Unit) {
+        database.child("Subjects").child(subject.id).setValue(subject)
+            .addOnCompleteListener { task ->
+                onComplete(task.isSuccessful)
+            }
+    }
+    fun deleteSubject(subjectId: String, onComplete: (Boolean) -> Unit) {
+        database.child("Subjects").child(subjectId).removeValue()
+            .addOnCompleteListener { task ->
+                onComplete(task.isSuccessful)
+            }
+    }
+
+
+
 
     fun getSubjects(onSubjectsFetched: (List<Subjects>?) -> Unit) {
         database.child("Subjects").addListenerForSingleValueEvent(object : ValueEventListener {
@@ -84,17 +95,20 @@ object MyDatabase {
             }
         })
     }
+
     fun writeAssignment(assignment: Assignment, onComplete: (Boolean) -> Unit) {
-        database.child("Assignments").child(assignment.id).setValue(assignment).addOnCompleteListener { task ->
-            onComplete(task.isSuccessful)
-        }
+        database.child("Assignments").child(assignment.id).setValue(assignment)
+            .addOnCompleteListener { task ->
+                onComplete(task.isSuccessful)
+            }
     }
 
     fun getAssignments(subjectId: String, onAssignmentsFetched: (List<Assignment>?) -> Unit) {
         database.child("Assignments").orderByChild("subjectId").equalTo(subjectId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val assignments = snapshot.children.mapNotNull { it.getValue(Assignment::class.java) }
+                    val assignments =
+                        snapshot.children.mapNotNull { it.getValue(Assignment::class.java) }
                     onAssignmentsFetched(assignments)
                 }
 
@@ -105,9 +119,17 @@ object MyDatabase {
     }
 
     fun deleteAssignment(assignmentId: String, onComplete: (Boolean) -> Unit) {
-        database.child("Assignments").child(assignmentId).removeValue().addOnCompleteListener { task ->
-            onComplete(task.isSuccessful)
-        }
+        database.child("Assignments").child(assignmentId).removeValue()
+            .addOnCompleteListener { task ->
+                onComplete(task.isSuccessful)
+            }
+    }
+
+    fun editAssignment(assignment: Assignment, onComplete: (Boolean) -> Unit) {
+        database.child("Assignments").child(assignment.id).setValue(assignment)
+            .addOnCompleteListener { task ->
+                onComplete(task.isSuccessful)
+            }
     }
 
 
@@ -129,10 +151,10 @@ object MyDatabase {
             }
         })
     }
+
     fun deleteAnnouncement(announcementId: String) {
         database.child("Announcements").child(announcementId.toString()).removeValue()
     }
-
 
 
 }

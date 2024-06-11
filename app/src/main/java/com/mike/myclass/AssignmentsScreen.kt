@@ -2,16 +2,26 @@ package com.mike.myclass
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
@@ -26,16 +36,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import com.mike.myclass.CommonComponents as CC
-object Debugg{
-    var visible: MutableState<Boolean> = mutableStateOf(true)
-}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AssignmentScreen(context: Context) {
-    var editUnit by remember { mutableStateOf(false) }
+fun AssignmentScreen(navController: NavController, context: Context) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var subjectName by remember { mutableStateOf("") }
@@ -47,10 +56,15 @@ fun AssignmentScreen(context: Context) {
     var assignmentDialog by remember { mutableStateOf(false) }
     var showaddSubject by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
+
+
+
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Assignments", style = CC.titleTextStyle) }, navigationIcon = {
-                Icon(Icons.Default.ArrowBackIosNew, "Back", tint = GlobalColors.textColor)
+                IconButton(onClick = {navController.navigate("dashboard")}) {
+                    Icon(Icons.Default.ArrowBackIosNew, "Back", tint = GlobalColors.textColor)
+                }
             }, actions = {
                 IconButton(onClick = {
                     loading = true
@@ -59,30 +73,47 @@ fun AssignmentScreen(context: Context) {
                         subjects.addAll(fetchedSubjects ?: emptyList())
                         loading = false
                     }
-                    Toast.makeText(context, "Refreshing...", Toast.LENGTH_SHORT).show()
                 }) {
                     Icon(Icons.Default.Refresh, "Refresh", tint = GlobalColors.textColor)
                 }
                 IconButton(onClick = { expanded = !expanded }) {
                     Icon(Icons.Default.MoreVert, "Add", tint = GlobalColors.textColor)
                 }
-                DropdownMenu(onDismissRequest = { expanded = false },
+                DropdownMenu(
+                    onDismissRequest = { expanded = false },
                     expanded = expanded,
-                    modifier = Modifier.background(GlobalColors.primaryColor)
+                    modifier = Modifier
+                        .border(
+                            width = 1.dp,
+                            color = GlobalColors.textColor,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .background(GlobalColors.primaryColor)
                 ) {
-                    DropdownMenuItem(text = { Text("Add Unit", style = CC.descriptionTextStyle) },
+                    DropdownMenuItem(text = {
+                        Row(modifier = Modifier
+                            .height(30.dp)
+                            .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                            Icon(Icons.Default.AddCircleOutline,"Add unit",
+                                tint = GlobalColors.textColor)
+                            Spacer(modifier = Modifier.width(5.dp))
+                        Text("Add Unit", style = CC.descriptionTextStyle)
+
+                        }},
                         onClick = {
                             showaddSubject = true
                             expanded = false
                         })
-                    DropdownMenuItem(text = { Text("Edit Unit", style = CC.descriptionTextStyle) },
-                        onClick = {
-                            //edit unit functionality
-                        })
                     DropdownMenuItem(text = {
-                        Text(
-                            "Add Assignment", style = CC.descriptionTextStyle
-                        )
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Default.AddCircleOutline,"Add subject",
+                                tint = GlobalColors.textColor)
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text("Add Subject", style = CC.descriptionTextStyle)
+
+                        }
                     }, onClick = {
                         assignmentDialog = true
                         expanded = false
@@ -132,7 +163,9 @@ fun AssignmentScreen(context: Context) {
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        color = GlobalColors.textColor,
+                    )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text("Loading Units", style = CC.descriptionTextStyle)
 
@@ -176,7 +209,7 @@ fun AssignmentScreen(context: Context) {
 
                 when (selectedTabIndex) {
                     in subjects.indices -> {
-                        AssignmentsList(subjectId = subjects[selectedTabIndex].id)
+                        AssignmentsList(subjectId = subjects[selectedTabIndex].id, context)
                     }
                 }
             }
@@ -200,11 +233,12 @@ fun AssignmentScreen(context: Context) {
                         OutlinedTextField(value = subjectName,
                             onValueChange = { subjectName = it },
                             label = { Text("Subject Name", color = GlobalColors.tertiaryColor) },
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                focusedBorderColor = GlobalColors.secondaryColor,
-                                unfocusedBorderColor = GlobalColors.tertiaryColor,
+                            colors = TextFieldDefaults.colors(
+                                unfocusedIndicatorColor = GlobalColors.tertiaryColor,
                                 focusedTextColor = GlobalColors.textColor,
-                                unfocusedTextColor = GlobalColors.textColor
+                                unfocusedTextColor = GlobalColors.textColor,
+                                focusedContainerColor = GlobalColors.primaryColor,
+                                unfocusedContainerColor = GlobalColors.primaryColor
                             )
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -255,80 +289,8 @@ fun AssignmentScreen(context: Context) {
                     }
                 }
             }
-            if(editUnit){
-                BasicAlertDialog(onDismissRequest = { editUnit = false }) {
-                    Column(
-                        modifier = Modifier
-                            .width(250.dp)
-                            .background(
-                                color = GlobalColors.primaryColor, shape = RoundedCornerShape(16.dp)
-                            )
-                            .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Edit Unit",
-                            style = CC.titleTextStyle,
-                            color = GlobalColors.textColor
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        OutlinedTextField(value = subjectName,
-                            onValueChange = { subjectName = it },
-                            label = { Text("Unit Name", color = GlobalColors.tertiaryColor) },
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                focusedBorderColor = GlobalColors.secondaryColor,
-                                unfocusedBorderColor = GlobalColors.tertiaryColor,
-                                focusedTextColor = GlobalColors.textColor,
-                                unfocusedTextColor = GlobalColors.textColor
-                            )
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            Button(
-                                onClick = { editUnit = false },
-                                shape = RoundedCornerShape(8.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.secondaryColor,
-                                    contentColor = GlobalColors.primaryColor
-                                ),
-                                modifier = Modifier.padding(horizontal = 8.dp)
-                            ) {
-                                Text(
-                                    "Cancel",
-                                    style = CC.descriptionTextStyle,
-                                    color = GlobalColors.primaryColor
-                                )
-                            }
-                            Button(
-                                onClick = {
-                                    MyDatabase.writeSubject(subject = Subjects(
-                                        name = subjectName
-                                    ), onComplete = {
-                                        Toast.makeText(
-                                            context, "Success! Unit Edited", Toast.LENGTH_SHORT
-                                        ).show()
-                                        editUnit = false
-                                    })
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.secondaryColor,
-                                    contentColor = GlobalColors.primaryColor
-                                ),
-                                modifier = Modifier.padding(horizontal = 8.dp)
-                            ) {
-                                Text(
-                                    "Edit",
-                                    style = CC.descriptionTextStyle,
-                                    color = GlobalColors.primaryColor
-                                )
-                            }
-                        }
-                    }
-                }
-            }
+
+
 
             if (assignmentDialog) {
                 BasicAlertDialog(onDismissRequest = { assignmentDialog = false }) {
@@ -396,6 +358,7 @@ fun AssignmentScreen(context: Context) {
                                     ), onComplete = {
                                         Toast.makeText(
                                             context, "Assignment Added", Toast.LENGTH_SHORT
+
                                         ).show()
                                         assignmentDialog = false
                                     })
@@ -421,8 +384,9 @@ fun AssignmentScreen(context: Context) {
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun AssignmentsList(subjectId: String) {
+fun AssignmentsList(subjectId: String, context: Context) {
     var assignments by remember { mutableStateOf<List<Assignment>?>(null) }
     LaunchedEffect(subjectId) {
         MyDatabase.getAssignments(subjectId) { fetchedAssignments ->
@@ -432,20 +396,21 @@ fun AssignmentsList(subjectId: String) {
 
     if (assignments == null) {
         Column(
-            modifier = Modifier.fillMaxSize(1f),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+                color = GlobalColors.textColor
+            )
             Text("Loading Assignments...Please wait", style = CC.descriptionTextStyle)
-
         }
     } else {
         LazyColumn {
             if (assignments!!.isEmpty()) {
                 item {
                     Column(
-                        modifier = Modifier.fillMaxSize(1f),
+                        modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -454,14 +419,58 @@ fun AssignmentsList(subjectId: String) {
                 }
             }
             items(assignments!!) { assignment ->
-                AssignmentCard(assignment)
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
+                        animationSpec = tween(500)
+                    ),
+                    exit = fadeOut(animationSpec = tween(500)) + slideOutVertically(
+                        animationSpec = tween(500)
+                    )
+                ) {
+                    AssignmentCard(assignment = assignment, onEdit = {
+                        MyDatabase.editAssignment(it) { isSuccess ->
+                            if (isSuccess) {
+                                Toast.makeText(
+                                    context, "Assignment Edited", Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    context, "Failed to edit assignment", Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }, onDelete = {
+                        MyDatabase.deleteAssignment(it) { isSuccess ->
+                            if (isSuccess) {
+                                assignments = assignments?.filter { it.id != assignment.id }
+                                Toast.makeText(
+                                    context, "Assignment Deleted", Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    context, "Failed to delete assignment", Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    })
+                }
             }
         }
     }
 }
 
+
 @Composable
-fun AssignmentCard(assignment: Assignment) {
+fun AssignmentCard(
+    assignment: Assignment, onEdit: (Assignment) -> Unit = {}, onDelete: (String) -> Unit = {}
+) {
+    var isEditing by remember { mutableStateOf(false) }
+    var editedName by remember { mutableStateOf(assignment.name) }
+    var editedDescription by remember { mutableStateOf(assignment.description) }
+    var isSaving by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -469,37 +478,94 @@ fun AssignmentCard(assignment: Assignment) {
             containerColor = GlobalColors.secondaryColor, contentColor = GlobalColors.textColor
         ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(8.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier
+            .border(
+                width = 1.dp,
+                color = GlobalColors.textColor,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = assignment.name,
-                    style = CC.titleTextStyle.copy(fontSize = 18.sp),
-                    color = GlobalColors.textColor
-                )
+                if (isEditing) {
+                    OutlinedTextField(value = editedName,
+                        onValueChange = { editedName = it },
+                        label = { Text("Assignment Name", color = GlobalColors.tertiaryColor) },
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = GlobalColors.primaryColor,
+                            unfocusedIndicatorColor = GlobalColors.tertiaryColor,
+                            focusedTextColor = GlobalColors.textColor,
+                            unfocusedTextColor = GlobalColors.textColor,
+                            focusedContainerColor = GlobalColors.primaryColor,
+                            unfocusedContainerColor = GlobalColors.primaryColor
+                        )
+                    )
+                } else {
+                    Text(
+                        text = assignment.name,
+                        style = CC.titleTextStyle.copy(fontSize = 18.sp),
+                        color = GlobalColors.textColor
+                    )
+                }
                 Row {
                     IconButton(
-                        onClick = { /* Edit assignment logic */ }, modifier = Modifier.size(32.dp)
+                        onClick = {
+                            if (isEditing) {
+                                // Save the edited assignment
+                                isSaving = true
+                                val updatedAssignment = assignment.copy(
+                                    name = editedName,
+                                    description = editedDescription
+                                )
+                                MyDatabase.editAssignment(updatedAssignment) { isSuccess ->
+                                    isSaving = false
+                                    if (isSuccess) {
+                                        onEdit(updatedAssignment)
+                                        isEditing = false
+                                    } else {
+                                        errorMessage = "Failed to save changes. Please try again."
+                                    }
+                                }
+                            } else {
+                                isEditing = true
+                            }
+                        }, modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            Icons.Default.Edit,
-                            contentDescription = "Edit Assignment",
-                            tint = GlobalColors.primaryColor
+                            if (isEditing) Icons.Default.Check else Icons.Default.Edit,
+                            contentDescription = if (isEditing) "Save Assignment" else "Edit Assignment",
+                            tint = GlobalColors.textColor
                         )
                     }
-                    IconButton(
-                        onClick = { /* Delete assignment logic */ }, modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = "Delete Assignment",
-                            tint = GlobalColors.primaryColor
-                        )
+                    if (isEditing) {
+                        IconButton(
+                            onClick = {
+                                // Cancel the edit
+                                editedName = assignment.name
+                                editedDescription = assignment.description
+                                isEditing = false
+                                errorMessage = null
+                            }, modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Cancel Edit",
+                                tint = GlobalColors.primaryColor
+                            )
+                        }
+                    } else {
+                        IconButton(
+                            onClick = { onDelete(assignment.id) }, modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = "Delete Assignment",
+                                tint = GlobalColors.textColor
+                            )
+                        }
                     }
                 }
             }
@@ -510,17 +576,49 @@ fun AssignmentCard(assignment: Assignment) {
                 color = GlobalColors.tertiaryColor
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = assignment.description,
-                style = CC.descriptionTextStyle,
-                color = GlobalColors.textColor
-            )
+            if (isEditing) {
+                OutlinedTextField(value = editedDescription,
+                    onValueChange = { editedDescription = it },
+                    label = { Text("Description", color = GlobalColors.tertiaryColor) },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = GlobalColors.primaryColor,
+                        unfocusedIndicatorColor = GlobalColors.tertiaryColor,
+                        focusedTextColor = GlobalColors.textColor,
+                        unfocusedTextColor = GlobalColors.textColor,
+                        focusedContainerColor = GlobalColors.primaryColor,
+                        unfocusedContainerColor = GlobalColors.primaryColor
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                Text(
+                    text = assignment.description,
+                    style = CC.descriptionTextStyle,
+                    color = GlobalColors.textColor
+                )
+            }
+            if (isSaving) {
+                CircularProgressIndicator(
+                    color = GlobalColors.textColor,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
+            errorMessage?.let { message ->
+                Text(
+                    text = message,
+                    color = Color.Red,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 8.dp)
+                )
+            }
         }
     }
 }
 
+
 @Preview
 @Composable
 fun AssignmentScreenPreview() {
-    AssignmentScreen(LocalContext.current)
+    AssignmentScreen(rememberNavController(), LocalContext.current)
 }
