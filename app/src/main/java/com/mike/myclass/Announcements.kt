@@ -257,8 +257,8 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        color = GlobalColors.tertiaryColor
+                        color = GlobalColors.secondaryColor,
+                        trackColor = GlobalColors.textColor
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Loading Announcements...", style = CC.descriptionTextStyle)
