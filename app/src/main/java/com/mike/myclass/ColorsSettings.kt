@@ -3,26 +3,48 @@ package com.mike.myclass
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+import com.google.gson.Gson
+import java.io.File
 import com.mike.myclass.CommonComponents as CC
-
 
 data class ColorScheme(
     val primaryColor: String,
@@ -40,40 +62,34 @@ fun parseColor(hex: String): Color {
 }
 
 object GlobalColors {
-    private const val COLORS_PATH = "color_scheme"
+    private const val COLORS_FILE_NAME = "color_scheme.json"
 
-    private val defaultScheme = ColorScheme("164863", "427D9D", "9BBEC8", "DDF2FD")
+    private val defaultScheme = ColorScheme("050C9C", "3572EF", "3ABEF9", "A7E6FF")
 
     var currentScheme by mutableStateOf(defaultScheme)
 
-    fun loadColorScheme(context: Context, onComplete: (ColorScheme) -> Unit) {
-        val database = Firebase.database
-        val colorSchemeRef = database.getReference(COLORS_PATH)
-
-        colorSchemeRef.get().addOnSuccessListener {
-            val colorScheme = it.getValue(ColorScheme::class.java)
-            if (colorScheme != null) {
-                currentScheme = colorScheme
-                onComplete(colorScheme)
-            } else {
-                currentScheme = defaultScheme
-                onComplete(defaultScheme)
-            }
-        }.addOnFailureListener {
-            currentScheme = defaultScheme
-            onComplete(defaultScheme)
+    fun loadColorScheme(context: Context): ColorScheme {
+        val file = File(context.filesDir, COLORS_FILE_NAME)
+        return if (file.exists()) {
+            val json = file.readText()
+            Gson().fromJson(json, ColorScheme::class.java)
+        } else {
+            defaultScheme
         }
     }
 
-    fun saveColorScheme(scheme: ColorScheme) {
-        val database = Firebase.database
-        val colorSchemeRef = database.getReference(COLORS_PATH)
-        colorSchemeRef.setValue(scheme)
+    fun saveColorScheme(context: Context, scheme: ColorScheme) {
+        val file = File(context.filesDir, COLORS_FILE_NAME)
+        if (file.exists()) {
+            file.delete()  // Delete the old color scheme file
+        }
+        val json = Gson().toJson(scheme)
+        file.writeText(json)
         currentScheme = scheme
     }
 
-    fun resetToDefaultColors() {
-        saveColorScheme(defaultScheme)
+    fun resetToDefaultColors(context: Context) {
+        saveColorScheme(context, defaultScheme)
     }
 
     val primaryColor: Color
@@ -99,12 +115,10 @@ fun ColorSettings(navController: NavController, context: Context) {
 
     // Listen to changes in global color scheme and update local states
     LaunchedEffect(GlobalColors.currentScheme) {
-        GlobalColors.loadColorScheme(context) { scheme ->
-            primaryColor = scheme.primaryColor
-            secondaryColor = scheme.secondaryColor
-            tertiaryColor = scheme.tertiaryColor
-            textColor = scheme.textColor
-        }
+        primaryColor = GlobalColors.currentScheme.primaryColor
+        secondaryColor = GlobalColors.currentScheme.secondaryColor
+        tertiaryColor = GlobalColors.currentScheme.tertiaryColor
+        textColor = GlobalColors.currentScheme.textColor
     }
 
     var refreshTrigger by remember { mutableStateOf(false) } // Trigger to force recomposition
@@ -137,26 +151,29 @@ fun ColorSettings(navController: NavController, context: Context) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.SpaceEvenly,
         ) {
-            Text("Colors", style = CC.titleTextStyle, color = GlobalColors.textColor)
-            OutlinedColorTextField(
-                component = "Primary Color",
+            ColorInputField(
+                label = "Primary Color",
                 colorValue = primaryColor,
-                onValueChange = { primaryColor = it }
+                onValueChange = { newValue -> primaryColor = newValue }
             )
-            OutlinedColorTextField(
-                component = "Secondary Color",
+
+            ColorInputField(
+                label = "Secondary Color",
                 colorValue = secondaryColor,
-                onValueChange = { secondaryColor = it }
+                onValueChange = { newValue -> secondaryColor = newValue }
             )
-            OutlinedColorTextField(
-                component = "Tertiary Color",
-                colorValue = primaryColor,
-                onValueChange = { primaryColor = it }
+
+            ColorInputField(
+                label = "Tertiary Color",
+                colorValue = tertiaryColor,
+                onValueChange = { newValue -> tertiaryColor = newValue }
             )
-            Spacer(modifier = Modifier.height(15.dp))
-            Text("Brush", style = CC.titleTextStyle)
 
-
+            ColorInputField(
+                label = "Text Color",
+                colorValue = textColor,
+                onValueChange = { newValue -> textColor = newValue }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -168,7 +185,7 @@ fun ColorSettings(navController: NavController, context: Context) {
                         tertiaryColor = tertiaryColor,
                         textColor = textColor
                     )
-                    GlobalColors.saveColorScheme(newScheme)
+                    GlobalColors.saveColorScheme(context,newScheme)
                     refreshTrigger = !refreshTrigger // Toggle the trigger to force recomposition
                 },
                 colors = ButtonDefaults.buttonColors(GlobalColors.secondaryColor),
@@ -182,7 +199,7 @@ fun ColorSettings(navController: NavController, context: Context) {
 
             Button(
                 onClick = {
-                    GlobalColors.resetToDefaultColors()
+                    GlobalColors.resetToDefaultColors(context)
                     refreshTrigger = !refreshTrigger // Toggle the trigger to force recomposition
                 },
                 colors = ButtonDefaults.buttonColors(GlobalColors.secondaryColor),
@@ -195,9 +212,10 @@ fun ColorSettings(navController: NavController, context: Context) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OutlinedColorTextField(
-    component: String,
+fun ColorInputField(
+    label: String,
     colorValue: String,
     onValueChange: (String) -> Unit
 ) {
@@ -205,34 +223,48 @@ fun OutlinedColorTextField(
 
     Column(
         modifier = Modifier
-            .border(
-                width = 1.dp,
-                color = GlobalColors.textColor,
-                shape = RoundedCornerShape(8.dp)
-            )
+            .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .background(GlobalColors.primaryColor, shape = RoundedCornerShape(8.dp))
     ) {
-
-        Row(modifier = Modifier
-            .padding(10.dp)
-            .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween){
-            Text(component, style = CC.descriptionTextStyle)
-        CC.SingleLinedTextField(
+        Text(
+            text = label,
+            style = CC.descriptionTextStyle,
+            color = GlobalColors.textColor
+        )
+        OutlinedTextField(
             value = colorValue,
             onValueChange = { newValue ->
                 isValidColor = isValidHexColor(newValue)
                 onValueChange(newValue)
             },
-            singleLine = true,
-            label = "",
             modifier = Modifier
-                .fillMaxWidth(0.5f)
-                .background(if (isValidColor) Color.Transparent else Color.Red.copy(alpha = 0.3f))
+                .fillMaxWidth()
+                .border(
+                    width = 1.dp,
+                    color = if (isValidColor) GlobalColors.textColor else Color.Red,
+                    shape = RoundedCornerShape(8.dp)
+                )
+                .padding(8.dp)
+                .background(GlobalColors.primaryColor, shape = RoundedCornerShape(8.dp)),
+            textStyle = CC.descriptionTextStyle,
+            isError = !isValidColor,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = GlobalColors.textColor,
+                unfocusedBorderColor = GlobalColors.tertiaryColor,
+                cursorColor = GlobalColors.textColor,
+                focusedTextColor = GlobalColors.textColor,
+                unfocusedTextColor = GlobalColors.textColor,
+                errorBorderColor = Color.Red
+            ),
+            singleLine = true
         )
-
+        if (!isValidColor) {
+            Text(
+                text = "Invalid color code",
+                color = Color.Red,
+                style = CC.descriptionTextStyle,
+                fontSize = 12.sp
+            )
         }
     }
 }
@@ -247,6 +279,39 @@ fun isValidHexColor(colorString: String): Boolean {
     }
 }
 
+
+@Composable
+fun OutlinedColorTextField(
+    label: String,
+    colorValue: String,
+    onValueChange: (String) -> Unit
+) {
+    var isValidColor by remember { mutableStateOf(true) } // State to track validity
+
+    Column(
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .background(GlobalColors.primaryColor, shape = RoundedCornerShape(8.dp))
+    ) {
+        Text(label, style = CC.descriptionTextStyle)
+        CC.SingleLinedTextField(
+            value = colorValue,
+            onValueChange = { newValue ->
+                isValidColor = isValidHexColor(newValue)
+                onValueChange(newValue)
+            },
+            singleLine = true,
+            label = "",
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(if (isValidColor) Color.Transparent else Color.Red.copy(alpha = 0.3f))
+        )
+    }
+}
+
+// Helper function to check if a string is a valid hex color code
+
+
 @Preview
 @Composable
 fun ColorSettingsPreview() {
@@ -254,9 +319,7 @@ fun ColorSettingsPreview() {
 
     // Load the color scheme when the composable is launched
     LaunchedEffect(Unit) {
-        GlobalColors.loadColorScheme(context) { scheme ->
-            GlobalColors.currentScheme = scheme
-        }
+        GlobalColors.currentScheme = GlobalColors.loadColorScheme(context)
     }
-    ColorSettings(rememberNavController(), context)
+    ColorSettings(rememberNavController(), LocalContext.current)
 }
