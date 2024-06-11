@@ -31,7 +31,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mike.myclass.ui.theme.RobotoMono
+import com.mike.myclass.ui.theme.Amatic
 
 object CommonComponents {
     @Composable
@@ -49,8 +49,8 @@ object CommonComponents {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = TextStyle(fontFamily = RobotoMono),
-            label = { Text(text = label, fontFamily = RobotoMono) },
+            textStyle = TextStyle(fontFamily = Amatic),
+            label = { Text(text = label, fontFamily = Amatic) },
             singleLine = true,
             enabled = enabled,
             isError = isError,
@@ -89,8 +89,8 @@ object CommonComponents {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = TextStyle(fontFamily = RobotoMono),
-            label = { Text(text = label, fontFamily = RobotoMono, fontSize = 14.sp) },
+            textStyle = TextStyle(fontFamily = Amatic),
+            label = { Text(text = label, fontFamily = Amatic, fontSize = 14.sp) },
             singleLine = singleLine,
             enabled = enabled,
             isError = isError,
@@ -128,14 +128,14 @@ object CommonComponents {
     }
 
     val titleTextStyle = TextStyle(
-        fontFamily = RobotoMono,
+        fontFamily = Amatic,
         color = GlobalColors.textColor,
         fontWeight = FontWeight.Bold,
         fontSize = 25.sp
     )
 
     val descriptionTextStyle = TextStyle(
-        fontFamily = RobotoMono, color = GlobalColors.textColor, fontSize = 15.sp
+        fontFamily = Amatic, color = GlobalColors.textColor, fontSize = 15.sp
     )
     val backbrush = Brush.verticalGradient(
         colors = listOf(
