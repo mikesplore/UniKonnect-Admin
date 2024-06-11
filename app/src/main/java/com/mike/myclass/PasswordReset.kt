@@ -42,7 +42,7 @@ fun PasswordReset(navController: NavController,context: Context) {
     Scaffold(
         topBar = {
             
-            TopAppBar(title = { Text("Password Reset", fontSize = 20.sp) },
+            TopAppBar(title = { Text("Password Reset", style = CC.titleTextStyle, fontSize = 20.sp) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = GlobalColors.primaryColor,
                     titleContentColor = GlobalColors.textColor,)
@@ -59,7 +59,7 @@ fun PasswordReset(navController: NavController,context: Context) {
         ) {
             CC.SingleLinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { it -> email = it },
                 label = "Email",
                 singleLine = true
             )
@@ -83,7 +83,7 @@ fun PasswordReset(navController: NavController,context: Context) {
                     }
             }
             ) {
-                Text("Send Reset Email")
+                Text("Send Reset Email", style = CC.descriptionTextStyle)
             }
             Spacer(modifier = Modifier.height(16.dp))
             Text(message)
