@@ -2,6 +2,9 @@ package com.mike.myclass
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,7 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Replay
-
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,12 +49,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.gson.Gson
+import com.mike.myclass.ui.theme.Amatic
+import com.mike.myclass.ui.theme.Crimson
+import com.mike.myclass.ui.theme.Lora
+import com.mike.myclass.ui.theme.RobotoMono
+import com.mike.myclass.ui.theme.Zeyada
 import java.io.File
 import com.mike.myclass.CommonComponents as CC
 
@@ -130,85 +144,97 @@ fun ColorSettings(navController: NavController, context: Context) {
     }
 
     var refreshTrigger by remember { mutableStateOf(false) } // Trigger to force recomposition
+    var visible by remember { mutableStateOf(true) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "COLORS", style = CC.titleTextStyle) },
-                navigationIcon = {
-                    IconButton(onClick = {navController.navigate("dashboard")}) {
-                        Icon(Icons.Default.ArrowBackIosNew,"Back")
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            GlobalColors.resetToDefaultColors(context)
-                            refreshTrigger = !refreshTrigger
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInHorizontally(initialOffsetX = { it }), // Slide in from right
+        exit = slideOutHorizontally(targetOffsetX = { -it }) // Slide out to left
+    ) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(text = "COLORS", style = CC.titleTextStyle) },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.navigate("dashboard") }) {
+                            Icon(Icons.Default.ArrowBackIosNew, "Back")
                         }
-                    ) {
-                        Icon(Icons.Filled.Replay, "Revert", tint = GlobalColors.tertiaryColor)
-                    }
-                    IconButton(
-                        onClick = {
-                            val newScheme = ColorScheme(
-                                primaryColor = primaryColor,
-                                secondaryColor = secondaryColor,
-                                tertiaryColor = tertiaryColor,
-                                textColor = textColor
-                            )
-                            GlobalColors.saveColorScheme(context,newScheme)
-                            refreshTrigger = !refreshTrigger
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = {
+                                GlobalColors.resetToDefaultColors(context)
+                                refreshTrigger = !refreshTrigger
+                            }
+                        ) {
+                            Icon(Icons.Filled.Replay, "Revert", tint = GlobalColors.tertiaryColor)
                         }
-                    ) {
-                        Icon(Icons.Filled.Check, "Save", tint = GlobalColors.tertiaryColor)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor,
-                    titleContentColor = GlobalColors.textColor,
-                    navigationIconContentColor = GlobalColors.textColor,
+                        IconButton(
+                            onClick = {
+                                val newScheme = ColorScheme(
+                                    primaryColor = primaryColor,
+                                    secondaryColor = secondaryColor,
+                                    tertiaryColor = tertiaryColor,
+                                    textColor = textColor
+                                )
+                                GlobalColors.saveColorScheme(context, newScheme)
+                                refreshTrigger = !refreshTrigger
+                            }
+                        ) {
+                            Icon(Icons.Filled.Check, "Save", tint = GlobalColors.tertiaryColor)
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = GlobalColors.primaryColor,
+                        titleContentColor = GlobalColors.textColor,
+                        navigationIconContentColor = GlobalColors.textColor,
+                    )
                 )
-            )
-        },
-        containerColor = GlobalColors.primaryColor,
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceEvenly,
-        ) {
-            ColorInputField(
-                label = "Primary Color",
-                colorValue = primaryColor,
-                onValueChange = { newValue -> primaryColor = newValue }
-            )
+            },
+            containerColor = GlobalColors.primaryColor,
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                ColorInputField(
+                    label = "Primary Color",
+                    colorValue = primaryColor,
+                    onValueChange = { newValue -> primaryColor = newValue }
+                )
 
-            ColorInputField(
-                label = "Secondary Color",
-                colorValue = secondaryColor,
-                onValueChange = { newValue -> secondaryColor = newValue }
-            )
+                ColorInputField(
+                    label = "Secondary Color",
+                    colorValue = secondaryColor,
+                    onValueChange = { newValue -> secondaryColor = newValue }
+                )
 
-            ColorInputField(
-                label = "Tertiary Color",
-                colorValue = tertiaryColor,
-                onValueChange = { newValue -> tertiaryColor = newValue }
-            )
+                ColorInputField(
+                    label = "Tertiary Color",
+                    colorValue = tertiaryColor,
+                    onValueChange = { newValue -> tertiaryColor = newValue }
+                )
 
-            ColorInputField(
-                label = "Text Color",
-                colorValue = textColor,
-                onValueChange = { newValue -> textColor = newValue }
-            )
+                ColorInputField(
+                    label = "Text Color",
+                    colorValue = textColor,
+                    onValueChange = { newValue -> textColor = newValue }
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
-            ColorPicker(context)
+                Spacer(modifier = Modifier.height(16.dp))
+                ColorPicker(context)
+                Spacer(modifier = Modifier.height(20.dp))
+                CustomTextStyle(context,FontViewModel())
 
 
+            }
         }
     }
 }
@@ -281,7 +307,6 @@ fun isValidHexColor(colorString: String): Boolean {
 }
 
 
-
 @Composable
 fun ColorPicker(context: Context) {
     var selectedColor by remember { mutableStateOf("") }
@@ -293,7 +318,7 @@ fun ColorPicker(context: Context) {
             "#000000"
         ),
         "White" to listOf(
-            "#FFFFFF", "#F5F5F5", "#DCDCDC", "#C0C0C0", "#A9A9A9", "#808080", "#696969","#E0E0E0",
+            "#FFFFFF", "#F5F5F5", "#DCDCDC", "#C0C0C0", "#A9A9A9", "#808080", "#696969", "#E0E0E0",
             "#F8F8FF", "#FFFAFA", "#F0F0F0", "#E8E8E8"
         ),
         "Red" to listOf(
@@ -367,7 +392,13 @@ fun ColorPicker(context: Context) {
                                 )
                                 .clickable {
                                     selectedColor = colorCode
-                                    clipboardManager.setText(AnnotatedString(colorCode.removePrefix("#")))
+                                    clipboardManager.setText(
+                                        AnnotatedString(
+                                            colorCode.removePrefix(
+                                                "#"
+                                            )
+                                        )
+                                    )
                                 }
                                 .border(1.dp, Color.Gray, shape = CircleShape)
                         )
@@ -378,16 +409,136 @@ fun ColorPicker(context: Context) {
     }
 }
 
+class FontViewModel : ViewModel() {
+    var selectedFontFamily = mutableStateOf<FontFamily?>(FontFamily.Default)
+
+    fun setFontFamily(fontFamily: FontFamily) {
+        selectedFontFamily.value = fontFamily
+    }
+}
+
+@Composable
+fun CustomTextStyle(context: Context, viewModel: FontViewModel) {
+    val fontFamilies = mapOf(
+        "Segoer" to RobotoMono,
+        "Amatic" to Amatic,
+        "Lora" to Lora,
+        "Crimson" to Crimson,
+        "Zeyada" to Zeyada,
+        "System" to FontFamily.Default
+    )
+
+    Column(
+        modifier = Modifier
+            .background(GlobalColors.primaryColor)
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = Color.Gray,
+                shape = RoundedCornerShape(10.dp)
+            )
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(top = 10.dp)
+                .fillMaxWidth()
+                .height(20.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text("Font Styles", style = CC.descriptionTextStyle)
+        }
+
+        fontFamilies.forEach { (fontName, fontFamily) ->
+            Row(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .border(
+                        width = 1.dp,
+                        color = Color.Gray,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .clickable { viewModel.setFontFamily(fontFamily) },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "$fontName - Michael Odhiambo",
+                    fontFamily = fontFamily,
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(start = 10.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Row(
+            modifier = Modifier
+                .padding(10.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                "Selected Font Preview:",
+                style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .padding(10.dp)
+                .border(
+                    width = 1.dp,
+                    color = Color.Gray,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .fillMaxWidth()
+                .height(40.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "This is a preview of the selected font.",
+                fontFamily = viewModel.selectedFontFamily.value ?: FontFamily.Default,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(start = 10.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Button(
+            onClick = {
+                // Save logic: Display a toast with the selected font family name
+                val fontName = fontFamilies.entries.find { it.value == viewModel.selectedFontFamily.value }?.key ?: "System"
+                Toast.makeText(context, "Selected font: $fontName", Toast.LENGTH_SHORT).show()
+            },
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(bottom = 16.dp)
+        ) {
+            Text("Save")
+        }
+    }
+}
+
+
+
+
+
+
 
 
 @Preview
 @Composable
 fun ColorSettingsPreview() {
     val context = LocalContext.current
+    CustomTextStyle(context, FontViewModel())
 
-    // Load the color scheme when the composable is launched
-    LaunchedEffect(Unit) {
-        GlobalColors.currentScheme = GlobalColors.loadColorScheme(context)
-    }
-    ColorSettings(rememberNavController(), LocalContext.current)
+
+     // Load the color scheme when the composable is launched
+     LaunchedEffect(Unit) {
+         GlobalColors.currentScheme = GlobalColors.loadColorScheme(context)
+     }
+     ColorSettings(rememberNavController(), LocalContext.current)
 }

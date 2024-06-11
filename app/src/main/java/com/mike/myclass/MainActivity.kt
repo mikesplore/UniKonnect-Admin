@@ -11,6 +11,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -50,12 +51,14 @@ object Details {
 class MainActivity : ComponentActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
+    private val fontViewModel: FontViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
         setContent {
+            CustomTextStyle(viewModel = fontViewModel)
             NavigationMap()
         }
         createNotificationChannel(this)
@@ -148,7 +151,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "passwordreset") {
+        NavHost(navController = navController, startDestination = "colors") {
             composable("login") {
                 LoginScreen(navController, context)
             }
@@ -178,6 +181,9 @@ class MainActivity : ComponentActivity() {
             }
             composable("colors") {
                 ColorSettings(navController,context)
+            }
+            composable("students") {
+                ManageUsers(navController)
             }
 
         }

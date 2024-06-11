@@ -1,6 +1,5 @@
 package com.mike.myclass
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,13 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,12 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mike.myclass.ui.theme.Amatic
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mike.myclass.ui.theme.Zeyada
 
 object CommonComponents {
     @Composable
@@ -42,15 +37,16 @@ object CommonComponents {
         label: String,
         enabled: Boolean = true,
         isError: Boolean = false,
-        singleLine: Boolean
+        singleLine: Boolean,
+        fontViewModel: FontViewModel
     ) {
-        var passwordVisibility by remember { mutableStateOf(false) } // Moved inside function for each instance
+        var passwordVisibility by remember { mutableStateOf(false) }
 
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = TextStyle(fontFamily = Amatic),
-            label = { Text(text = label, fontFamily = Amatic) },
+            textStyle = TextStyle(fontFamily = fontViewModel.selectedFontFamily.value ?: Zeyada),
+            label = { Text(text = label, fontFamily = fontViewModel.selectedFontFamily.value ?: Zeyada) },
             singleLine = true,
             enabled = enabled,
             isError = isError,
@@ -74,7 +70,6 @@ object CommonComponents {
         )
     }
 
-
     @Composable
     fun SingleLinedTextField(
         modifier: Modifier = Modifier,
@@ -83,14 +78,14 @@ object CommonComponents {
         label: String,
         enabled: Boolean = true,
         isError: Boolean = false,
-        singleLine: Boolean
+        singleLine: Boolean,
+        fontViewModel: FontViewModel
     ) {
-
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = TextStyle(fontFamily = Amatic),
-            label = { Text(text = label, fontFamily = Amatic, fontSize = 14.sp) },
+            textStyle = TextStyle(fontFamily = fontViewModel.selectedFontFamily.value ?: Zeyada),
+            label = { Text(text = label, fontFamily = fontViewModel.selectedFontFamily.value ?: Zeyada, fontSize = 14.sp) },
             singleLine = singleLine,
             enabled = enabled,
             isError = isError,
@@ -105,12 +100,13 @@ object CommonComponents {
     }
 
     @Composable
-    fun BasicTextField(title: String, onTitleChange: (String) -> Unit, singleLine: Boolean) {
-        androidx.compose.foundation.text.BasicTextField(value = title,
+    fun BasicTextField(title: String, onTitleChange: (String) -> Unit, singleLine: Boolean, fontViewModel: FontViewModel) {
+        androidx.compose.foundation.text.BasicTextField(
+            value = title,
             singleLine = singleLine,
-            onValueChange = { onTitleChange },
+            onValueChange = { onTitleChange(it) },
             modifier = Modifier.fillMaxWidth(),
-            textStyle = TextStyle(fontSize = 16.sp),
+            textStyle = TextStyle(fontSize = 16.sp, fontFamily = fontViewModel.selectedFontFamily.value ?: FontFamily.Default),
             decorationBox = { innerTextField ->
                 Box(
                     modifier = Modifier
@@ -120,28 +116,44 @@ object CommonComponents {
                         .padding(8.dp)
                 ) {
                     if (title.isEmpty()) {
-                        Text("Title", style = descriptionTextStyle)
+                        Text("Title", style = descriptionTextStyle(fontViewModel))
                     }
                     innerTextField()
                 }
-            })
+            }
+        )
     }
 
-    val titleTextStyle = TextStyle(
-        fontFamily = Amatic,
-        color = GlobalColors.textColor,
-        fontWeight = FontWeight.Bold,
-        fontSize = 25.sp
-    )
-
-    val descriptionTextStyle = TextStyle(
-        fontFamily = Amatic, color = GlobalColors.textColor, fontSize = 15.sp
-    )
-    val backbrush = Brush.verticalGradient(
-        colors = listOf(
-            GlobalColors.primaryColor, GlobalColors.secondaryColor, GlobalColors.primaryColor
+    @Composable
+    fun descriptionTextStyle(fontViewModel: FontViewModel): TextStyle {
+        return TextStyle(
+            fontFamily = fontViewModel.selectedFontFamily.value ?: Zeyada,
+            color = GlobalColors.textColor,
+            fontSize = 15.sp
         )
-    )
+    }
+
+    @Composable
+    fun backbrush(fontViewModel: FontViewModel): Brush {
+        return Brush.verticalGradient(
+            listOf(
+                GlobalColors.primaryColor,
+                GlobalColors.textColor,
+                GlobalColors.secondaryColor,
+            )
+        )
+
+    }
+
+    @Composable
+    fun titleTextStyle(fontViewModel: FontViewModel): TextStyle {
+        return TextStyle(
+            fontFamily = fontViewModel.selectedFontFamily.value ?: FontFamily.Default,
+            color = GlobalColors.textColor,
+            fontWeight = FontWeight.Bold,
+            fontSize = 25.sp
+        )
+    }
 
     @Composable
     fun appTextFieldColors(): TextFieldColors {
@@ -158,5 +170,3 @@ object CommonComponents {
         )
     }
 }
-
-

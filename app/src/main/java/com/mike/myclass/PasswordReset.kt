@@ -3,13 +3,20 @@ package com.mike.myclass
 import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,59 +45,95 @@ fun PasswordReset(navController: NavController,context: Context) {
     var email by remember { mutableStateOf("") }
     val message by remember { mutableStateOf("") }
     val auth: FirebaseAuth = Firebase.auth
+    var loading by remember { mutableStateOf(false) }
+    var visible by remember { mutableStateOf(true) }
 
-    Scaffold(
-        topBar = {
-            
-            TopAppBar(title = { Text("Password Reset", style = CC.titleTextStyle, fontSize = 20.sp) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor,
-                    titleContentColor = GlobalColors.textColor,)
-                )
-        },
-        containerColor = GlobalColors.primaryColor
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInHorizontally(initialOffsetX = { it }), // Slide in from right
+        exit = slideOutHorizontally(targetOffsetX = { -it }) // Slide out to left
     ) {
-        Column(
-            modifier = Modifier
-                .padding(it)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+
+        Scaffold(
+            topBar = {
+
+                TopAppBar(
+                    title = { Text("Password Reset", style = CC.titleTextStyle, fontSize = 20.sp) },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = GlobalColors.primaryColor,
+                        titleContentColor = GlobalColors.textColor,
+                    )
+                )
+            },
+            containerColor = GlobalColors.primaryColor
         ) {
-            CC.SingleLinedTextField(
-                value = email,
-                onValueChange = { it -> email = it },
-                label = "Email",
-                singleLine = true
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = {
-                auth.sendPasswordResetEmail(email)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(
-                                context,
-                                "Password reset email sent to $email",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Failed to send password reset email.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-            }
+            Column(
+                modifier = Modifier
+                    .padding(it)
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Send Reset Email", style = CC.descriptionTextStyle)
+                CC.SingleLinedTextField(
+                    value = email,
+                    onValueChange = { it -> email = it },
+                    label = "Email",
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        loading = true
+                        if (email.isEmpty()) {
+                            Toast.makeText(context, "Please enter your email", Toast.LENGTH_SHORT)
+                                .show()
+                            loading = false
+                        } else {
+                            auth.sendPasswordResetEmail(email)
+                                .addOnCompleteListener { task ->
+                                    if (task.isSuccessful) {
+                                        loading = false
+                                        Toast.makeText(
+                                            context,
+                                            "Password reset email sent to $email",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        navController.navigate("login")
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Failed to send password reset email.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        loading = false
+                                    }
+                                }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = GlobalColors.secondaryColor,
+                        contentColor = GlobalColors.tertiaryColor
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.width(200.dp)
+                ) {
+                    Text("Send Reset Email", style = CC.descriptionTextStyle)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                if (loading) {
+                    CircularProgressIndicator(
+                        color = GlobalColors.secondaryColor,
+                        trackColor = GlobalColors.textColor
+                    )
+                }
+                Text(message)
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(message)
         }
     }
 }
-
 @Preview
 @Composable
 fun MyPrev(){

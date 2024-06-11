@@ -53,6 +53,9 @@ val Amatic = FontFamily(
 val Crimson = FontFamily(
     Font(R.font.crimson, FontWeight.Normal)
 )
+val Zeyada = FontFamily(
+    Font(R.font.zeyada, FontWeight.Normal)
+)
 
 
 

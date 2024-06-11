@@ -6,7 +6,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -64,7 +66,16 @@ fun TimetableScreen(navController: NavController, context: Context) {
     var expanded by remember { mutableStateOf(false) }
 
 
+    var visible by remember { mutableStateOf(true) }
 
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInHorizontally(initialOffsetX = { it }), // Slide in from right
+        exit = slideOutHorizontally(targetOffsetX = { -it }) // Slide out to left
+    ) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Timetable", style = CC.titleTextStyle) }, navigationIcon = {
@@ -399,6 +410,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
             }
         }
     }
+}
 }
 
 @Composable

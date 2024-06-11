@@ -7,6 +7,9 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -81,6 +84,16 @@ fun ManageUsers(navController: NavController){
             loading = false
         }
     }
+    var visible by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInHorizontally(initialOffsetX = { it }), // Slide in from right
+        exit = slideOutHorizontally(targetOffsetX = { -it }) // Slide out to left
+    ) {
     Scaffold(
         topBar = {
             TopAppBar(navigationIcon = {
@@ -129,7 +142,7 @@ fun ManageUsers(navController: NavController){
 
     }
 
-}
+}}
 
 
 @Composable
