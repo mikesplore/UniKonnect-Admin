@@ -148,7 +148,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "colors") {
+        NavHost(navController = navController, startDestination = "passwordreset") {
             composable("login") {
                 LoginScreen(navController, context)
             }
