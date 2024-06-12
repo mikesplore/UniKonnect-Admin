@@ -1,5 +1,6 @@
 package com.mike.myclass
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,14 +20,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mike.myclass.ui.theme.RobotoMono
+import com.mike.myclass.ui.theme.Segoe
+
 
 object CommonComponents {
+
     @Composable
     fun PasswordTextField(
         modifier: Modifier = Modifier,
@@ -36,15 +40,18 @@ object CommonComponents {
         enabled: Boolean = true,
         isError: Boolean = false,
         singleLine: Boolean,
+        context: Context
 
     ) {
+        val currentFont = currentFontFamily(context) // Get initial font
+        var selectedFontFamily by remember { mutableStateOf(currentFont) }
         var passwordVisibility by remember { mutableStateOf(false) }
 
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = TextStyle(fontFamily = RobotoMono),
-            label = { Text(text = label, fontFamily = RobotoMono) },
+            textStyle = TextStyle(fontFamily = selectedFontFamily),
+            label = { Text(text = label, fontFamily = selectedFontFamily) },
             singleLine = true,
             enabled = enabled,
             isError = isError,
@@ -77,13 +84,16 @@ object CommonComponents {
         enabled: Boolean = true,
         isError: Boolean = false,
         singleLine: Boolean,
+        context: Context
 
     ) {
+        val currentFont = currentFontFamily(context) // Get initial font
+        var selectedFontFamily by remember { mutableStateOf(currentFont) }
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = TextStyle(fontFamily = RobotoMono),
-            label = { Text(text = label, fontFamily = RobotoMono, fontSize = 14.sp) },
+            textStyle = TextStyle(fontFamily =selectedFontFamily ),
+            label = { Text(text = label, fontFamily = selectedFontFamily, fontSize = 14.sp) },
             singleLine = singleLine,
             enabled = enabled,
             isError = isError,
@@ -98,13 +108,15 @@ object CommonComponents {
     }
 
     @Composable
-    fun BasicTextField(title: String, onTitleChange: (String) -> Unit, singleLine: Boolean) {
+    fun BasicTextField(title: String, onTitleChange: (String) -> Unit, singleLine: Boolean, context: Context) {
+        val currentFont = currentFontFamily(context) // Get initial font
+        var selectedFontFamily by remember { mutableStateOf(currentFont) }
         androidx.compose.foundation.text.BasicTextField(
             value = title,
             singleLine = singleLine,
             onValueChange = { onTitleChange(it) },
             modifier = Modifier.fillMaxWidth(),
-            textStyle = TextStyle(fontSize = 16.sp, fontFamily = RobotoMono),
+            textStyle = TextStyle(fontSize = 16.sp, fontFamily = selectedFontFamily),
             decorationBox = { innerTextField ->
                 Box(
                     modifier = Modifier
@@ -114,7 +126,7 @@ object CommonComponents {
                         .padding(8.dp)
                 ) {
                     if (title.isEmpty()) {
-                        Text("Title", style = descriptionTextStyle)
+                        Text("Title", style = descriptionTextStyle(context))
                     }
                     innerTextField()
                 }
@@ -122,16 +134,19 @@ object CommonComponents {
         )
     }
 
-
-    val descriptionTextStyle = TextStyle (
-            fontFamily = RobotoMono,
+    @Composable
+    fun descriptionTextStyle(context: Context):TextStyle {
+        val currentFont = currentFontFamily(context) // Get initial font
+        var selectedFontFamily by remember { mutableStateOf(currentFont) }
+        return TextStyle(
+            fontFamily = selectedFontFamily,
             color = GlobalColors.textColor,
             fontSize = 15.sp
         )
+    }
 
 
-
-    val backbrush =  Brush.verticalGradient(
+    val backbrush = Brush.verticalGradient(
             listOf(
                 GlobalColors.primaryColor,
                 GlobalColors.textColor,
@@ -140,14 +155,17 @@ object CommonComponents {
         )
 
 
-
-
-    val titleTextStyle =  TextStyle (
-            fontFamily = RobotoMono,
+    @Composable
+    fun titleTextStyle(context: Context):TextStyle {
+        val currentFont = currentFontFamily(context) // Get initial font
+        var selectedFontFamily by remember { mutableStateOf(currentFont) }
+        return TextStyle(
+            fontFamily = selectedFontFamily,
             color = GlobalColors.textColor,
-            fontWeight = FontWeight.Bold,
             fontSize = 25.sp
         )
+    }
+    
 
 
     @Composable

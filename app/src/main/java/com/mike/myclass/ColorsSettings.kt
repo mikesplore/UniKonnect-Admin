@@ -63,7 +63,7 @@ import com.google.gson.Gson
 import com.mike.myclass.ui.theme.Amatic
 import com.mike.myclass.ui.theme.Crimson
 import com.mike.myclass.ui.theme.Lora
-import com.mike.myclass.ui.theme.RobotoMono
+import com.mike.myclass.ui.theme.Segoe
 import com.mike.myclass.ui.theme.Zeyada
 import java.io.File
 import com.mike.myclass.CommonComponents as CC
@@ -134,6 +134,8 @@ fun ColorSettings(navController: NavController, context: Context) {
     var secondaryColor by remember { mutableStateOf(GlobalColors.currentScheme.secondaryColor) }
     var tertiaryColor by remember { mutableStateOf(GlobalColors.currentScheme.tertiaryColor) }
     var textColor by remember { mutableStateOf(GlobalColors.currentScheme.textColor) }
+    var currentFont by remember { mutableStateOf<FontFamily?>(null) }
+    var fontUpdated by remember { mutableStateOf(false) }
 
     // Listen to changes in global color scheme and update local states
     LaunchedEffect(GlobalColors.currentScheme) {
@@ -157,7 +159,7 @@ fun ColorSettings(navController: NavController, context: Context) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(text = "COLORS", style = CC.titleTextStyle) },
+                    title = { Text(text = "Colors and Font", style = CC.titleTextStyle(context)) },
                     navigationIcon = {
                         IconButton(onClick = { navController.navigate("dashboard") }) {
                             Icon(Icons.Default.ArrowBackIosNew, "Back")
@@ -207,44 +209,51 @@ fun ColorSettings(navController: NavController, context: Context) {
                 ColorInputField(
                     label = "Primary Color",
                     colorValue = primaryColor,
-                    onValueChange = { newValue -> primaryColor = newValue }
+                    onValueChange = { newValue -> primaryColor = newValue },
+                    context
                 )
 
                 ColorInputField(
                     label = "Secondary Color",
                     colorValue = secondaryColor,
-                    onValueChange = { newValue -> secondaryColor = newValue }
+                    onValueChange = { newValue -> secondaryColor = newValue },
+                    context
                 )
 
                 ColorInputField(
                     label = "Tertiary Color",
                     colorValue = tertiaryColor,
-                    onValueChange = { newValue -> tertiaryColor = newValue }
+                    onValueChange = { newValue -> tertiaryColor = newValue },
+                    context
                 )
 
                 ColorInputField(
                     label = "Text Color",
                     colorValue = textColor,
-                    onValueChange = { newValue -> textColor = newValue }
+                    onValueChange = { newValue -> textColor = newValue },
+                    context
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
                 ColorPicker(context)
                 Spacer(modifier = Modifier.height(20.dp))
-                CustomTextStyle(context)
-
-
+                CustomTextStyle(context = LocalContext.current) { selectedFont ->
+                    currentFont = selectedFont
+                    fontUpdated = !fontUpdated // Toggle the state to trigger recomposition
+                }
             }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColorInputField(
     label: String,
     colorValue: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    context: Context
 ) {
     var isValidColor by remember { mutableStateOf(true) } // State to track validity
 
@@ -255,13 +264,13 @@ fun ColorInputField(
     ) {
         Text(
             text = label,
-            style = CC.descriptionTextStyle,
+            style = CC.descriptionTextStyle(context),
             color = GlobalColors.textColor
         )
         OutlinedTextField(
             value = colorValue,
             onValueChange = { newValue ->
-                isValidColor = isValidHexColor(newValue)
+                isValidColor = isValidHexColor("#$newValue")
                 onValueChange(newValue)
             },
             modifier = Modifier
@@ -273,7 +282,7 @@ fun ColorInputField(
                 )
                 .padding(8.dp)
                 .background(GlobalColors.primaryColor, shape = RoundedCornerShape(8.dp)),
-            textStyle = CC.descriptionTextStyle,
+            textStyle = CC.descriptionTextStyle(context),
             isError = !isValidColor,
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 focusedBorderColor = GlobalColors.textColor,
@@ -287,24 +296,26 @@ fun ColorInputField(
         )
         if (!isValidColor) {
             Text(
-                text = "Invalid color code",
+                text = "Invalid color code. Ensure it is a valid hex code (e.g., #RRGGBB).",
                 color = Color.Red,
-                style = CC.descriptionTextStyle,
+                style = CC.descriptionTextStyle(context),
                 fontSize = 12.sp
             )
         }
     }
 }
 
+
 // Helper function to check if a string is a valid hex color code
 fun isValidHexColor(colorString: String): Boolean {
     return try {
-        Color(android.graphics.Color.parseColor("#$colorString")) // Try parsing with #
+        Color(android.graphics.Color.parseColor(colorString))
         true
     } catch (e: IllegalArgumentException) {
         false
     }
 }
+
 
 
 @Composable
@@ -359,20 +370,30 @@ fun ColorPicker(context: Context) {
         )
     )
 
-
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = GlobalColors.textColor,
+                shape = RoundedCornerShape(10.dp)
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
     Column(
         modifier = Modifier
             .height(300.dp)
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .border(1.dp, Color.Gray, shape = RoundedCornerShape(10.dp))
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+
         colorCategories.forEach { (category, colors) ->
             Text(
                 text = category,
-                style = CC.descriptionTextStyle,
+                style = CC.descriptionTextStyle(context),
                 modifier = Modifier.padding(vertical = 8.dp)
             )
 
@@ -404,23 +425,47 @@ fun ColorPicker(context: Context) {
                         )
                     }
                 }
-            }
+
         }
     }
+    }
+        }
 }
 
-class FontViewModel : ViewModel() {
-    var selectedFontFamily = mutableStateOf<FontFamily?>(FontFamily.Default)
+class FontPreferences(context: Context) {
+    private val prefs = context.getSharedPreferences("font_prefs", Context.MODE_PRIVATE)
 
-    fun setFontFamily(fontFamily: FontFamily) {
-        selectedFontFamily.value = fontFamily
+    fun saveSelectedFont(fontName: String?) {
+        prefs.edit().putString("selected_font", fontName).apply()
+    }
+
+    fun getSelectedFont(): String? {
+        return prefs.getString("selected_font", null) // Default to null (system font)
     }
 }
 
 @Composable
-fun CustomTextStyle(context: Context, ) {
+fun currentFontFamily(context: Context): FontFamily {
+    val fontPrefs = remember { FontPreferences(context) }
+    val selectedFontName = fontPrefs.getSelectedFont()
+
+    return when (selectedFontName) {
+        "Segoe" -> Segoe
+        "Lora" -> Lora
+        "Amatic" -> Amatic
+        "Crimson" -> Crimson
+        "Zeyada" -> Zeyada
+        else -> FontFamily.Default // Use system font if no preference is saved
+    }
+}
+
+@Composable
+fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
+    val fontPrefs = remember { FontPreferences(context) }
+    var fontUpdated by remember { mutableStateOf(false) }
+    var selectedFontFamily by remember { mutableStateOf<FontFamily?>(null) }
     val fontFamilies = mapOf(
-        "Segoer" to RobotoMono,
+        "Segoe" to Segoe,
         "Amatic" to Amatic,
         "Lora" to Lora,
         "Crimson" to Crimson,
@@ -434,7 +479,7 @@ fun CustomTextStyle(context: Context, ) {
             .fillMaxWidth()
             .border(
                 width = 1.dp,
-                color = Color.Gray,
+                color = GlobalColors.textColor,
                 shape = RoundedCornerShape(10.dp)
             )
     ) {
@@ -445,7 +490,7 @@ fun CustomTextStyle(context: Context, ) {
                 .height(20.dp),
             horizontalArrangement = Arrangement.Center
         ) {
-            Text("Font Styles", style = CC.descriptionTextStyle)
+            Text("Font Styles", style = CC.descriptionTextStyle(context)) // Assuming CC.descriptionTextStyle(context) is defined elsewhere
         }
 
         fontFamilies.forEach { (fontName, fontFamily) ->
@@ -459,7 +504,7 @@ fun CustomTextStyle(context: Context, ) {
                     )
                     .fillMaxWidth()
                     .height(40.dp)
-                    .clickable {  },
+                    .clickable { selectedFontFamily = fontFamily },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -481,7 +526,8 @@ fun CustomTextStyle(context: Context, ) {
         ) {
             Text(
                 "Selected Font Preview:",
-                style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                style = CC.titleTextStyle(context),
+                fontSize = 18.sp
             )
         }
 
@@ -499,6 +545,7 @@ fun CustomTextStyle(context: Context, ) {
         ) {
             Text(
                 "This is a preview of the selected font.",
+                fontFamily = selectedFontFamily,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(start = 10.dp)
             )
@@ -508,7 +555,9 @@ fun CustomTextStyle(context: Context, ) {
 
         Button(
             onClick = {
-                // Save logic: Display a toast with the selected font family name
+                fontPrefs.saveSelectedFont(fontFamilies.entries.find { it.value == selectedFontFamily }?.key)
+                selectedFontFamily?.let { onFontSelected(it) }
+                fontUpdated = !fontUpdated // Trigger recomposition in parent
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -520,20 +569,18 @@ fun CustomTextStyle(context: Context, ) {
 }
 
 
-
-
-
-
-
-
 @Preview
 @Composable
 fun ColorSettingsPreview() {
     val context = LocalContext.current
+//        CustomTextStyle(
+//            context = context,
+//            onFontSelected = {}
+//        )
 
-     // Load the color scheme when the composable is launched
-     LaunchedEffect(Unit) {
-         GlobalColors.currentScheme = GlobalColors.loadColorScheme(context)
-     }
-     ColorSettings(rememberNavController(), LocalContext.current)
+    // Load the color scheme when the composable is launched
+    LaunchedEffect(Unit) {
+        GlobalColors.currentScheme = GlobalColors.loadColorScheme(context)
+    }
+    ColorSettings(rememberNavController(), LocalContext.current)
 }

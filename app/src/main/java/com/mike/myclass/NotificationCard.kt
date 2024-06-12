@@ -1,5 +1,6 @@
 package com.mike.myclass
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,7 +47,7 @@ import com.mike.myclass.CommonComponents as CC
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NotificationCard(
-    title: String, message: String, visibleState: MutableState<Boolean>
+    title: String, message: String, visibleState: MutableState<Boolean>, context: Context
 ) {
     val swipeableState = rememberSwipeableState(initialValue = 0)
     val sizePx = with(LocalDensity.current) { 300.dp.toPx() }
@@ -81,7 +83,7 @@ fun NotificationCard(
                         text = title,
                         fontWeight = FontWeight.Bold,
                         fontSize = 17.sp,
-                        style = CC.descriptionTextStyle,
+                        style = CC.descriptionTextStyle(context),
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
                     var isExpanded by remember { mutableStateOf(false) } // State to track expansion
@@ -92,7 +94,7 @@ fun NotificationCard(
                                 17
                             )
                         }... Read more",
-                        style = CC.descriptionTextStyle,
+                        style = CC.descriptionTextStyle(context),
                         modifier = Modifier
                             .padding(bottom = 4.dp)
                             .clickable(enabled = message.length > 20) { isExpanded = !isExpanded },
@@ -121,7 +123,7 @@ fun NotificationCard(
 fun NotificationCardPreview() {
     NotificationCard(title = "Title of the notification",
         message = "This is the announcement that will show up on the screen",
-        visibleState = remember { mutableStateOf(true) })
+        visibleState = remember { mutableStateOf(true) }, context = LocalContext.current)
 }
 
 

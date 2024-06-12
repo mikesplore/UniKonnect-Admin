@@ -120,7 +120,7 @@ fun Dashboard(navController: NavController, context: Context) {
                     .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text("This is the first Box", style = CC.descriptionTextStyle)
+                Text("This is the first Box", style = CC.descriptionTextStyle(context))
             }
         }
 
@@ -133,7 +133,7 @@ fun Dashboard(navController: NavController, context: Context) {
                     .background(GlobalColors.tertiaryColor, RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Second one", style = CC.descriptionTextStyle)
+                Text("Second one", style = CC.descriptionTextStyle(context))
             }
         }
 
@@ -146,7 +146,7 @@ fun Dashboard(navController: NavController, context: Context) {
                     .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Third one", style = CC.descriptionTextStyle)
+                Text("Third one", style = CC.descriptionTextStyle(context))
             }
         }
 
@@ -178,7 +178,7 @@ fun Dashboard(navController: NavController, context: Context) {
                     title = {
                         Text(
                             "${getGreetingMessage()}, ${Details.name.value}",
-                            style = CC.descriptionTextStyle,
+                            style = CC.descriptionTextStyle(context),
                             fontSize = 20.sp
                         )
                     },
@@ -203,7 +203,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                             contentDescription = "",
                                             tint = GlobalColors.textColor
                                         )
-                                        Text(" Users", style = CC.descriptionTextStyle)
+                                        Text(" Users", style = CC.descriptionTextStyle(context))
                                     }
                                 },
                                 onClick = {
@@ -219,7 +219,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                             contentDescription = "",
                                             tint = GlobalColors.textColor
                                         )
-                                        Text(" Assignments", style = CC.descriptionTextStyle)
+                                        Text(" Assignments", style = CC.descriptionTextStyle(context))
                                     }
                                 },
                                 onClick = {
@@ -236,7 +236,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                             contentDescription = "",
                                             tint = GlobalColors.textColor
                                         )
-                                        Text(" Announcements", style = CC.descriptionTextStyle)
+                                        Text(" Announcements", style = CC.descriptionTextStyle(context))
                                     }
                                 },
                                 onClick = {
@@ -252,7 +252,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                             contentDescription = "",
                                             tint = GlobalColors.textColor
                                         )
-                                        Text(" Timetable", style = CC.descriptionTextStyle)
+                                        Text(" Timetable", style = CC.descriptionTextStyle(context))
                                     }
                                 },
                                 onClick = {
@@ -268,7 +268,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                             contentDescription = "",
                                             tint = GlobalColors.textColor
                                         )
-                                        Text(" Colors", style = CC.descriptionTextStyle)
+                                        Text(" Colors", style = CC.descriptionTextStyle(context))
                                     }
                                 },
                                 onClick = {
@@ -284,7 +284,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                             contentDescription = "",
                                             tint = GlobalColors.textColor
                                         )
-                                        Text(" Logout", style = CC.descriptionTextStyle)
+                                        Text(" Logout", style = CC.descriptionTextStyle(context))
                                     }
                                 },
                                 onClick = {
@@ -381,7 +381,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                 ) {
                                     Text(
                                         text = title,
-                                        style = CC.descriptionTextStyle,
+                                        style = CC.descriptionTextStyle(context),
                                         color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
                                     )
                                 }

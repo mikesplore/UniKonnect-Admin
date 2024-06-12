@@ -102,7 +102,7 @@ fun ManageUsers(navController: NavController){
                         Icons.Default.ArrowBackIosNew, "back", tint = GlobalColors.textColor
                     )
                     }
-            }, title = { Text("Manage Users", style = CC.titleTextStyle) }, colors = TopAppBarDefaults.topAppBarColors(
+            }, title = { Text("Manage Users", style = CC.titleTextStyle(context)) }, colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = GlobalColors.primaryColor,
                 titleContentColor = GlobalColors.textColor
             ))
@@ -127,13 +127,14 @@ fun ManageUsers(navController: NavController){
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("Name", style = CC.descriptionTextStyle)
-                Text("Email", style = CC.descriptionTextStyle)
+                Text("Name", style = CC.descriptionTextStyle(context))
+                Text("Email", style = CC.descriptionTextStyle(context))
             }
             users?.forEach { user ->
                 RowImages(
                     user = user,
                     route = "profile",
+                    context = context,
                     navController = navController
                 )
             }
@@ -146,7 +147,7 @@ fun ManageUsers(navController: NavController){
 
 
 @Composable
-fun RowImages(user:User, route:String, navController: NavController){
+fun RowImages(user:User, route:String, navController: NavController, context: Context){
     Row(
         modifier = Modifier
 
@@ -154,8 +155,8 @@ fun RowImages(user:User, route:String, navController: NavController){
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(user.name, style = CC.descriptionTextStyle)
-        Text(user.email, style = CC.descriptionTextStyle)
+        Text(user.name, style = CC.descriptionTextStyle(context))
+        Text(user.email, style = CC.descriptionTextStyle(context))
 
     }
     HorizontalDivider(color = GlobalColors.textColor)

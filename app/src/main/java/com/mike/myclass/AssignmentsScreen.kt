@@ -72,7 +72,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
     ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Assignments", style = CC.titleTextStyle) }, navigationIcon = {
+            TopAppBar(title = { Text("Assignments", style = CC.titleTextStyle(context)) }, navigationIcon = {
                 IconButton(onClick = {navController.navigate("dashboard")}) {
                     Icon(Icons.Default.ArrowBackIosNew, "Back", tint = GlobalColors.textColor)
                 }
@@ -110,7 +110,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             Icon(Icons.Default.AddCircleOutline,"Add unit",
                                 tint = GlobalColors.textColor)
                             Spacer(modifier = Modifier.width(5.dp))
-                        Text("Add Unit", style = CC.descriptionTextStyle)
+                        Text("Add Unit", style = CC.descriptionTextStyle(context))
 
                         }},
                         onClick = {
@@ -122,7 +122,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             Icon(Icons.Default.AddCircleOutline,"Add subject",
                                 tint = GlobalColors.textColor)
                             Spacer(modifier = Modifier.width(5.dp))
-                            Text("Add Subject", style = CC.descriptionTextStyle)
+                            Text("Add Subject", style = CC.descriptionTextStyle(context))
 
                         }
                     }, onClick = {
@@ -179,7 +179,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                         trackColor = GlobalColors.textColor
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text("Loading Units", style = CC.descriptionTextStyle)
+                    Text("Loading Units", style = CC.descriptionTextStyle(context))
 
                 }
 
@@ -239,7 +239,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     ) {
                         Text(
                             text = "Add Subject",
-                            style = CC.titleTextStyle,
+                            style = CC.titleTextStyle(context),
                             color = GlobalColors.textColor
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -270,7 +270,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             ) {
                                 Text(
                                     "Cancel",
-                                    style = CC.descriptionTextStyle,
+                                    style = CC.descriptionTextStyle(context),
                                     color = GlobalColors.primaryColor
                                 )
                             }
@@ -294,7 +294,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             ) {
                                 Text(
                                     "Add",
-                                    style = CC.descriptionTextStyle,
+                                    style = CC.descriptionTextStyle(context),
                                     color = GlobalColors.primaryColor
                                 )
                             }
@@ -317,7 +317,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     ) {
                         Text(
                             text = "Add Assignment",
-                            style = CC.titleTextStyle,
+                            style = CC.titleTextStyle(context),
                             color = GlobalColors.textColor
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -360,7 +360,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             ) {
                                 Text(
                                     "Cancel",
-                                    style = CC.descriptionTextStyle,
+                                    style = CC.descriptionTextStyle(context),
                                     color = GlobalColors.primaryColor
                                 )
                             }
@@ -392,7 +392,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             ) {
                                 Text(
                                     "Add",
-                                    style = CC.descriptionTextStyle,
+                                    style = CC.descriptionTextStyle(context),
                                     color = GlobalColors.primaryColor
                                 )
                             }
@@ -424,7 +424,7 @@ fun AssignmentsList(subjectId: String, context: Context) {
                 color = GlobalColors.secondaryColor,
                 trackColor = GlobalColors.textColor
             )
-            Text("Loading Assignments...Please wait", style = CC.descriptionTextStyle)
+            Text("Loading Assignments...Please wait", style = CC.descriptionTextStyle(context))
         }
     } else {
         LazyColumn {
@@ -435,7 +435,7 @@ fun AssignmentsList(subjectId: String, context: Context) {
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("No assignments found.", style = CC.descriptionTextStyle)
+                        Text("No assignments found.", style = CC.descriptionTextStyle(context))
                     }
                 }
             }
@@ -474,7 +474,7 @@ fun AssignmentsList(subjectId: String, context: Context) {
                                 ).show()
                             }
                         }
-                    })
+                    },context)
                 }
             }
         }
@@ -484,7 +484,7 @@ fun AssignmentsList(subjectId: String, context: Context) {
 
 @Composable
 fun AssignmentCard(
-    assignment: Assignment, onEdit: (Assignment) -> Unit = {}, onDelete: (String) -> Unit = {}
+    assignment: Assignment, onEdit: (Assignment) -> Unit = {}, onDelete: (String) -> Unit = {}, context: Context
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var editedName by remember { mutableStateOf(assignment.name) }
@@ -527,7 +527,7 @@ fun AssignmentCard(
                 } else {
                     Text(
                         text = assignment.name,
-                        style = CC.titleTextStyle.copy(fontSize = 18.sp),
+                        style = CC.titleTextStyle(context).copy(fontSize = 18.sp),
                         color = GlobalColors.textColor
                     )
                 }
@@ -593,7 +593,7 @@ fun AssignmentCard(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Author: ${Details.name.value}",
-                style = CC.descriptionTextStyle,
+                style = CC.descriptionTextStyle(context),
                 color = GlobalColors.tertiaryColor
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -614,7 +614,7 @@ fun AssignmentCard(
             } else {
                 Text(
                     text = assignment.description,
-                    style = CC.descriptionTextStyle,
+                    style = CC.descriptionTextStyle(context),
                     color = GlobalColors.textColor
                 )
             }

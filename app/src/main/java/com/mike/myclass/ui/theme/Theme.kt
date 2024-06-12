@@ -1,6 +1,5 @@
 package com.mike.myclass.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -12,7 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import com.mike.myclass.R
 
@@ -37,8 +35,8 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
-val RobotoMono = FontFamily(
-    Font(R.font.segoepr, FontWeight.Normal),
+val Segoe = FontFamily(
+    Font(R.font.segoe, FontWeight.Normal),
 
 )
 

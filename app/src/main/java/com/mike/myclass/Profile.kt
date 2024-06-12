@@ -76,7 +76,7 @@ data class Profile(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(navController: NavController, context: Context) {
     val profile = Profile()
     Scaffold(
         topBar = {
@@ -133,28 +133,28 @@ fun ProfileScreen(navController: NavController) {
                             modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            Text(profile.fieldOfStudy, style = CC.titleTextStyle)
+                            Text(profile.fieldOfStudy, style = CC.titleTextStyle(context))
                             Spacer(modifier = Modifier.height(8.dp)) // Add spacing between elements
 
                             // Use a Row for better visual alignment of contact info
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Phone, contentDescription = null, tint = GlobalColors.tertiaryColor)
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(profile.phoneNumber, style = CC.descriptionTextStyle)
+                                Text(profile.phoneNumber, style = CC.descriptionTextStyle(context))
                             }
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Email, contentDescription = null, tint = GlobalColors.tertiaryColor)
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(profile.email, style = CC.descriptionTextStyle)
+                                Text(profile.email, style = CC.descriptionTextStyle(context))
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text("Bio", style = CC.descriptionTextStyle.copy(fontWeight = FontWeight.Bold)) // Subtle emphasis for the bio title
+                            Text("Bio", style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold)) // Subtle emphasis for the bio title
 
                             Text(
                                 profile.bio,
-                                style = CC.descriptionTextStyle,
+                                style = CC.descriptionTextStyle(context),
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -268,7 +268,7 @@ fun TopProfile() {
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = name.uppercase(java.util.Locale.ROOT),
-                style = CC.titleTextStyle,
+                style = CC.titleTextStyle(context),
                 fontWeight = FontWeight.ExtraBold
             )
         }
@@ -293,6 +293,6 @@ fun saveImageToInternalStorage(context: Context, bitmap: Bitmap): String {
 @Preview
 @Composable
 fun ProfileScreenPreview() {
-    ProfileScreen(rememberNavController())
+    ProfileScreen(rememberNavController(), context = LocalContext.current)
 
 }

@@ -165,9 +165,9 @@ fun LoginScreen(navController: NavController, context: Context) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("Or", style = CC.descriptionTextStyle)
+                        Text("Or", style = CC.descriptionTextStyle(context))
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text("Enter your Credentials below ", style = CC.descriptionTextStyle)
+                        Text("Enter your Credentials below ", style = CC.descriptionTextStyle(context))
                     }
                 }
 
@@ -191,7 +191,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                                     value = name,
                                     onValueChange = { name = it },
                                     label = "Name",
-                                    singleLine = true
+                                    singleLine = true,
+                                    context = context
                                 )
                             }
                         }
@@ -211,7 +212,8 @@ fun LoginScreen(navController: NavController, context: Context) {
                             value = email,
                             onValueChange = { email = it },
                             label = "Email",
-                            singleLine = true
+                            singleLine = true,
+                            context = context
                         )
                     }
 
@@ -230,6 +232,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                             onValueChange = { password = it },
                             label = "Password",
                             singleLine = true,
+                            context = context
                         )
                     }
                 }
@@ -354,13 +357,13 @@ fun LoginScreen(navController: NavController, context: Context) {
                 ) {
                     Text(
                         text = if (isSigningUp) "Already have an account? " else "Don't have an account?",
-                        style = CC.descriptionTextStyle,
+                        style = CC.descriptionTextStyle(context),
                         fontWeight = FontWeight.Bold,
                         color = GlobalColors.textColor
                     )
                     Text(
                         text = if (isSigningUp) "Sign In" else "Sign Up",
-                        style = CC.descriptionTextStyle.copy(fontWeight = FontWeight.Bold),
+                        style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold),
                         modifier = Modifier.clickable { /* Switch between sign in and sign up */ },
                         color = GlobalColors.textColor
                     )

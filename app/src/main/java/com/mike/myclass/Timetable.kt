@@ -78,7 +78,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
     ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Timetable", style = CC.titleTextStyle) }, navigationIcon = {
+            TopAppBar(title = { Text("Timetable", style = CC.titleTextStyle(context)) }, navigationIcon = {
                 IconButton(onClick = {navController.navigate("dashboard")}) {
                     Icon(Icons.Default.ArrowBackIosNew, "Back", tint = GlobalColors.textColor)
                 }
@@ -116,7 +116,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                             Icon(Icons.Default.AddCircleOutline,"Add Day",
                                 tint = GlobalColors.textColor)
                             Spacer(modifier = Modifier.width(5.dp))
-                            Text("Add day", style = CC.descriptionTextStyle)
+                            Text("Add day", style = CC.descriptionTextStyle(context))
 
                         }},
                         onClick = {
@@ -128,7 +128,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                             Icon(Icons.Default.AddCircleOutline,"Add timetable",
                                 tint = GlobalColors.textColor)
                             Spacer(modifier = Modifier.width(5.dp))
-                            Text("Add Timetable", style = CC.descriptionTextStyle)
+                            Text("Add Timetable", style = CC.descriptionTextStyle(context))
 
                         }
                     }, onClick = {
@@ -185,7 +185,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                         trackColor = GlobalColors.textColor
                     )
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text("Loading Days...Please wait", style = CC.descriptionTextStyle)
+                    Text("Loading Days...Please wait", style = CC.descriptionTextStyle(context))
 
                 }
 
@@ -245,7 +245,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                     ) {
                         Text(
                             text = "Add Day",
-                            style = CC.titleTextStyle,
+                            style = CC.titleTextStyle(context),
                             color = GlobalColors.textColor
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -269,7 +269,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                             ) {
                                 Text(
                                     "Cancel",
-                                    style = CC.descriptionTextStyle,
+                                    style = CC.descriptionTextStyle(context),
                                     color = GlobalColors.primaryColor
                                 )
                             }
@@ -293,7 +293,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                             ) {
                                 Text(
                                     "Add",
-                                    style = CC.descriptionTextStyle,
+                                    style = CC.descriptionTextStyle(context),
                                     color = GlobalColors.primaryColor
                                 )
                             }
@@ -316,7 +316,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                     ) {
                         Text(
                             text = "Add Timetable",
-                            style = CC.titleTextStyle,
+                            style = CC.titleTextStyle(context),
                             color = GlobalColors.textColor
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -365,7 +365,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                             ) {
                                 Text(
                                     "Cancel",
-                                    style = CC.descriptionTextStyle,
+                                    style = CC.descriptionTextStyle(context),
                                     color = GlobalColors.primaryColor
                                 )
                             }
@@ -400,7 +400,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                             ) {
                                 Text(
                                     "Add",
-                                    style = CC.descriptionTextStyle,
+                                    style = CC.descriptionTextStyle(context),
                                     color = GlobalColors.primaryColor
                                 )
                             }
@@ -432,8 +432,8 @@ fun DayList(dayid: String, context: Context) {
                 color = GlobalColors.secondaryColor,
                 trackColor = GlobalColors.textColor
             )
-            Text("Loading Events...Please wait", style = CC.descriptionTextStyle)
-            Text("If this takes longer, please check your internet connection", style = CC.descriptionTextStyle, textAlign = TextAlign.Center)
+            Text("Loading Events...Please wait", style = CC.descriptionTextStyle(context))
+            Text("If this takes longer, please check your internet connection", style = CC.descriptionTextStyle(context), textAlign = TextAlign.Center)
         }
     } else {
         LazyColumn {
@@ -444,7 +444,7 @@ fun DayList(dayid: String, context: Context) {
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("No event found.", style = CC.descriptionTextStyle)
+                        Text("No event found.", style = CC.descriptionTextStyle(context))
                     }
                 }
             }
@@ -483,7 +483,7 @@ fun DayList(dayid: String, context: Context) {
                                 ).show()
                             }
                         }
-                    })
+                    }, context = context)
                 }
             }
         }
@@ -495,7 +495,8 @@ fun DayList(dayid: String, context: Context) {
 fun TimetableCard(
     timetable: Timetable,
     onEdit: (Timetable) -> Unit = {},
-    onDelete: (String) -> Unit = {}
+    onDelete: (String) -> Unit = {},
+    context: Context
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var editedUnitName by remember { mutableStateOf(timetable.unitName) }
@@ -540,7 +541,7 @@ fun TimetableCard(
                 } else {
                     Text(
                         text = timetable.unitName,
-                        style = CC.titleTextStyle.copy(fontSize = 18.sp),
+                        style = CC.titleTextStyle(context).copy(fontSize = 18.sp),
                         color = GlobalColors.textColor
                     )
                 }
@@ -657,7 +658,7 @@ fun TimetableCard(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = timetable.venue,
-                            style = CC.descriptionTextStyle,
+                            style = CC.descriptionTextStyle(context),
                             color = GlobalColors.textColor
                         )
                     }
@@ -667,7 +668,7 @@ fun TimetableCard(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = timetable.lecturer,
-                            style = CC.descriptionTextStyle,
+                            style = CC.descriptionTextStyle(context),
                             color = GlobalColors.textColor
                         )
                     }
@@ -677,7 +678,7 @@ fun TimetableCard(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "${timetable.startTime} - ${timetable.endTime}",
-                            style = CC.descriptionTextStyle,
+                            style = CC.descriptionTextStyle(context),
                             color = GlobalColors.textColor
                         )
                     }

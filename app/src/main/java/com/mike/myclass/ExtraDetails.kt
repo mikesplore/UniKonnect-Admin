@@ -49,7 +49,7 @@ fun MoreDetails(context: Context, navController: NavController) {
     Scaffold(topBar = {
         TopAppBar(title = {
             Text(
-                text = "More Details", style = CC.titleTextStyle
+                text = "More Details", style = CC.titleTextStyle(context)
             )
         },
             navigationIcon = {
@@ -96,6 +96,7 @@ fun MoreDetails(context: Context, navController: NavController) {
                         value = Details.name.value,
                         onValueChange = { Details.name.value = it },
                         label = "First name",
+                        context = context,
                         singleLine = true
                     )
 
@@ -122,7 +123,7 @@ fun MoreDetails(context: Context, navController: NavController) {
                     ) {
                         Text(
                             text = "Proceed",
-                            style = CC.descriptionTextStyle,
+                            style = CC.descriptionTextStyle(context),
                             modifier = Modifier.padding(10.dp) // Add padding to the Text
                         )
                     }

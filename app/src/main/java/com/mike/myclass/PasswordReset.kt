@@ -61,7 +61,7 @@ fun PasswordReset(navController: NavController,context: Context) {
             topBar = {
 
                 TopAppBar(
-                    title = { Text("Password Reset", style = CC.titleTextStyle, fontSize = 20.sp) },
+                    title = { Text("Password Reset", style = CC.titleTextStyle(context), fontSize = 20.sp) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = GlobalColors.primaryColor,
                         titleContentColor = GlobalColors.textColor,
@@ -81,7 +81,8 @@ fun PasswordReset(navController: NavController,context: Context) {
                     value = email,
                     onValueChange = { it -> email = it },
                     label = "Email",
-                    singleLine = true
+                    singleLine = true,
+                    context = context
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
@@ -120,7 +121,7 @@ fun PasswordReset(navController: NavController,context: Context) {
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.width(200.dp)
                 ) {
-                    Text("Send Reset Email", style = CC.descriptionTextStyle)
+                    Text("Send Reset Email", style = CC.descriptionTextStyle(context))
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 if (loading) {
