@@ -1,6 +1,7 @@
 package com.mike.myclass
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
@@ -13,6 +14,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,6 +25,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,8 +55,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -62,6 +68,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -71,6 +78,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.myclass.MyDatabase.getAnnouncements
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalTime
@@ -104,10 +112,11 @@ fun Dashboard(navController: NavController, context: Context) {
 
         @Composable
         fun FirstBox() {
-            val present by remember { mutableStateOf(10)}
-            val absent by remember { mutableStateOf(10) }
-            val percentage = (present/absent)*100
-            val brush = Brush.linearGradient(
+            val present by remember { mutableIntStateOf(10) }
+            val absent by remember { mutableStateOf(1) }
+            val total by remember { derivedStateOf { present + absent } } // Calculate total efficiently
+            val percentage by remember { derivedStateOf { (present.toFloat() / total) * 100 }}
+                val brush = Brush.linearGradient(
                 listOf(
                     GlobalColors.primaryColor,
                     GlobalColors.secondaryColor,
@@ -468,11 +477,12 @@ fun Dashboard(navController: NavController, context: Context) {
                     }
 
                     when (selectedTabIndex) {
-                        0 -> AttendanceItem()
-                        1 -> TimetableItem()
-                        2 -> AssignmentsItem()
-                        3 -> DocumentationItem()
-                        4 -> ManageUsersItem()
+                        0 -> AnnouncementItem(context)
+                        1 -> AttendanceItem()
+                        2 -> TimetableItem()
+                        3 -> AssignmentsItem()
+                        4 -> DocumentationItem()
+                        5 -> ManageUsersItem()
                         else -> {}
                     }
 
@@ -483,6 +493,44 @@ fun Dashboard(navController: NavController, context: Context) {
         }
     }
 }
+
+@Composable
+fun AnnouncementItem(context: Context){
+    var loading by remember { mutableStateOf(true) }
+    val announcements = remember { mutableStateListOf<Announcement>() }
+    LaunchedEffect(Unit) {
+        getAnnouncements { fetchedAnnouncements ->
+            announcements.addAll(fetchedAnnouncements ?: emptyList())
+            loading = false
+        }
+    }
+
+    Spacer(modifier = Modifier.height(10.dp))
+    Column(modifier= Modifier
+        .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+        Text("Latest Announcement", style = CC.descriptionTextStyle(context = context))
+        Column(
+            modifier = Modifier
+                .padding(10.dp)
+                .fillMaxWidth(0.9f)
+                .height(200.dp)
+                .border(
+                    width = 1.dp,
+                    color = GlobalColors.textColor,
+                    shape = RoundedCornerShape(10.dp)
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            if(loading){
+                MyDatabase.getAnnouncements {
+                }
+            }
+
+        }
+    }
+}
+
 @Composable
 fun AttendanceItem(){
     Text("Attendance")
@@ -506,19 +554,23 @@ fun ManageUsersItem(){
 }
 
 @Composable
-fun AttendanceProgressIndicator(progress: Int, context: Context) {
+fun AttendanceProgressIndicator(progress: Float, context: Context) {
     val color = when {
-        progress < 30f -> Color.Red
-        progress < 70f -> Color.Yellow
+        progress < 30 -> Color.Red
+        progress < 70 -> Color.Yellow
         else -> Color.Green
     }
 
     Box(contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
-            progress = { (progress / 100).toFloat() },
+            progress = {
+                progress / 100f // Directly use progress as a float (0-1)
+            },
             modifier = Modifier.size(130.dp),
             color = color,
             strokeWidth = 10.dp,
+            trackColor = GlobalColors.tertiaryColor,
+            strokeCap = StrokeCap.Round
         )
         Text(
             text = "${progress.toInt()}%",
