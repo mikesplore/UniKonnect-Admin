@@ -48,7 +48,7 @@ import com.mike.myclass.CommonComponents as CC
 
 object Details {
     var email: MutableState<String> = mutableStateOf("")
-    var name: MutableState<String> = mutableStateOf("")
+    var name: MutableState<String> = mutableStateOf("Mike")
     var showdialog: MutableState<Boolean> = mutableStateOf(true)
 }
 
@@ -153,7 +153,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "colors") {
+        NavHost(navController = navController, startDestination = "dashboard") {
             composable("login") {
                 LoginScreen(navController, context)
             }

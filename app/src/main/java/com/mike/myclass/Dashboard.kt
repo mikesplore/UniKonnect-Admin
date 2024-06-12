@@ -1,7 +1,6 @@
 package com.mike.myclass
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
@@ -22,33 +21,32 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Announcement
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Announcement
 import androidx.compose.material.icons.filled.AssignmentInd
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabPosition
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -62,8 +60,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -103,6 +104,16 @@ fun Dashboard(navController: NavController, context: Context) {
 
         @Composable
         fun FirstBox() {
+            val present by remember { mutableStateOf(10)}
+            val absent by remember { mutableStateOf(10) }
+            val percentage = (present/absent)*100
+            val brush = Brush.linearGradient(
+                listOf(
+                    GlobalColors.primaryColor,
+                    GlobalColors.secondaryColor,
+                    GlobalColors.primaryColor
+                )
+            )
             Box(
                 modifier = Modifier
                     .border(
@@ -117,20 +128,75 @@ fun Dashboard(navController: NavController, context: Context) {
                     )
                     .fillMaxHeight()
                     .width(350.dp)
-                    .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp)),
+                    .background(brush, RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text("This is the first Box", style = CC.descriptionTextStyle(context))
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ){
+                    Row(modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center) {
+                        Text("Attendance Summary", style = CC.titleTextStyle(context), fontSize = 20.sp)
+                    }
+                    Row(modifier = Modifier
+                        .fillMaxHeight(1f)
+                        .fillMaxWidth()) {
+                        Column(modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(0.5f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement. SpaceEvenly) {
+                            Text("Present: $present", style = CC.descriptionTextStyle(context))
+                            Text("Absent: $absent", style = CC.descriptionTextStyle(context))
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Button(onClick = {},
+                                modifier = Modifier
+                                    .padding(start = 5.dp)
+                                    .fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = GlobalColors.primaryColor
+                                )
+                            ) {
+                                Text("Sign Attendance", style = CC.descriptionTextStyle(context), fontSize = 13.sp)
+                            }
+
+                        }
+                        Column(modifier = Modifier
+                            .fillMaxSize(),
+                            verticalArrangement = Arrangement.Top,
+                            horizontalAlignment = Alignment.CenterHorizontally)
+                        {
+                            AttendanceProgressIndicator(percentage, context)
+                        }
+                    }
+                    
+                }
             }
         }
 
         @Composable
         fun SecondBox() {
+            val brush = Brush.linearGradient(
+                listOf(
+                    GlobalColors.secondaryColor,
+                    GlobalColors.primaryColor,
+                    GlobalColors.secondaryColor
+                )
+            )
             Box(
                 modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = GlobalColors.textColor,
+                        shape = RoundedCornerShape(10.dp)
+                    )
                     .fillMaxHeight()
                     .width(350.dp)
-                    .background(GlobalColors.tertiaryColor, RoundedCornerShape(10.dp)),
+                    .background(brush, RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text("Second one", style = CC.descriptionTextStyle(context))
@@ -139,11 +205,22 @@ fun Dashboard(navController: NavController, context: Context) {
 
         @Composable
         fun ThirdBox() {
+            val brush = Brush.linearGradient(
+                listOf(
+                    GlobalColors.primaryColor,
+                    GlobalColors.secondaryColor
+                )
+            )
             Box(
                 modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = GlobalColors.textColor,
+                        shape = RoundedCornerShape(10.dp)
+                    )
                     .fillMaxHeight()
                     .width(350.dp)
-                    .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp)),
+                    .background(brush, RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text("Third one", style = CC.descriptionTextStyle(context))
@@ -232,7 +309,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                 text = {
                                     Row {
                                         Icon(
-                                            Icons.Default.Announcement,
+                                            Icons.AutoMirrored.Filled.Announcement,
                                             contentDescription = "",
                                             tint = GlobalColors.textColor
                                         )
@@ -319,9 +396,9 @@ fun Dashboard(navController: NavController, context: Context) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Spacer(modifier = Modifier.width(10.dp))
-                    FirstBox()
-                    Spacer(modifier = Modifier.width(10.dp))
                     SecondBox()
+                    Spacer(modifier = Modifier.width(10.dp))
+                    FirstBox()
                     Spacer(modifier = Modifier.width(10.dp))
                     ThirdBox()
                 }
@@ -427,6 +504,30 @@ fun ManageUsersItem(){
     Text("Manage Users")
 
 }
+
+@Composable
+fun AttendanceProgressIndicator(progress: Int, context: Context) {
+    val color = when {
+        progress < 30f -> Color.Red
+        progress < 70f -> Color.Yellow
+        else -> Color.Green
+    }
+
+    Box(contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(
+            progress = { (progress / 100).toFloat() },
+            modifier = Modifier.size(130.dp),
+            color = color,
+            strokeWidth = 10.dp,
+        )
+        Text(
+            text = "${progress.toInt()}%",
+            style = CC.titleTextStyle(context)
+        )
+    }
+}
+
+
 
 @Preview
 @Composable

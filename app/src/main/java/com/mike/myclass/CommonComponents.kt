@@ -20,13 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mike.myclass.ui.theme.Segoe
 
 
 object CommonComponents {
@@ -39,12 +36,11 @@ object CommonComponents {
         label: String,
         enabled: Boolean = true,
         isError: Boolean = false,
-        singleLine: Boolean,
         context: Context
 
     ) {
         val currentFont = currentFontFamily(context) // Get initial font
-        var selectedFontFamily by remember { mutableStateOf(currentFont) }
+        val selectedFontFamily by remember { mutableStateOf(currentFont) }
         var passwordVisibility by remember { mutableStateOf(false) }
 
         OutlinedTextField(
@@ -88,7 +84,7 @@ object CommonComponents {
 
     ) {
         val currentFont = currentFontFamily(context) // Get initial font
-        var selectedFontFamily by remember { mutableStateOf(currentFont) }
+        val selectedFontFamily by remember { mutableStateOf(currentFont) }
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
@@ -110,7 +106,7 @@ object CommonComponents {
     @Composable
     fun BasicTextField(title: String, onTitleChange: (String) -> Unit, singleLine: Boolean, context: Context) {
         val currentFont = currentFontFamily(context) // Get initial font
-        var selectedFontFamily by remember { mutableStateOf(currentFont) }
+        val selectedFontFamily by remember { mutableStateOf(currentFont) }
         androidx.compose.foundation.text.BasicTextField(
             value = title,
             singleLine = singleLine,
@@ -137,7 +133,7 @@ object CommonComponents {
     @Composable
     fun descriptionTextStyle(context: Context):TextStyle {
         val currentFont = currentFontFamily(context) // Get initial font
-        var selectedFontFamily by remember { mutableStateOf(currentFont) }
+        val selectedFontFamily by remember { mutableStateOf(currentFont) }
         return TextStyle(
             fontFamily = selectedFontFamily,
             color = GlobalColors.textColor,
@@ -149,7 +145,6 @@ object CommonComponents {
     val backbrush = Brush.verticalGradient(
             listOf(
                 GlobalColors.primaryColor,
-                GlobalColors.textColor,
                 GlobalColors.secondaryColor,
             )
         )
@@ -158,7 +153,7 @@ object CommonComponents {
     @Composable
     fun titleTextStyle(context: Context):TextStyle {
         val currentFont = currentFontFamily(context) // Get initial font
-        var selectedFontFamily by remember { mutableStateOf(currentFont) }
+        val selectedFontFamily by remember { mutableStateOf(currentFont) }
         return TextStyle(
             fontFamily = selectedFontFamily,
             color = GlobalColors.textColor,

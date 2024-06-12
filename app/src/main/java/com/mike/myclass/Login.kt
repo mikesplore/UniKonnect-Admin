@@ -231,7 +231,6 @@ fun LoginScreen(navController: NavController, context: Context) {
                             value = password,
                             onValueChange = { password = it },
                             label = "Password",
-                            singleLine = true,
                             context = context
                         )
                     }

@@ -170,6 +170,7 @@ fun ColorSettings(navController: NavController, context: Context) {
                             onClick = {
                                 GlobalColors.resetToDefaultColors(context)
                                 refreshTrigger = !refreshTrigger
+
                             }
                         ) {
                             Icon(Icons.Filled.Replay, "Revert", tint = GlobalColors.tertiaryColor)
@@ -441,6 +442,9 @@ class FontPreferences(context: Context) {
 
     fun getSelectedFont(): String? {
         return prefs.getString("selected_font", null) // Default to null (system font)
+    }
+    fun resetToSystemFont() {
+        prefs.edit().remove("selected_font").apply()
     }
 }
 
