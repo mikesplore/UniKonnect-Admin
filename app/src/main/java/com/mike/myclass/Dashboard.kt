@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Announcement
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -51,6 +52,8 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabPosition
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -72,6 +75,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -496,6 +500,10 @@ fun Dashboard(navController: NavController, context: Context) {
 
 @Composable
 fun AnnouncementItem(context: Context){
+    var title by remember { mutableStateOf("") }
+    var date  = CC.CurrentDate()
+    var description by remember { mutableStateOf("") }
+    var author = Details.name.value
     var loading by remember { mutableStateOf(true) }
     val announcements = remember { mutableStateListOf<Announcement>() }
     LaunchedEffect(Unit) {
@@ -522,13 +530,190 @@ fun AnnouncementItem(context: Context){
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if(loading){
-                MyDatabase.getAnnouncements {
+            if (loading) {
+                Column(modifier = Modifier
+                    .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center) {
+                    CircularProgressIndicator(
+                        color = GlobalColors.secondaryColor,
+                        trackColor = GlobalColors.textColor
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Fetching data...", style = CC.descriptionTextStyle(context))
+                }
+
+            } else if (announcements.isNotEmpty()) {
+                val firstAnnouncement = announcements[announcements.lastIndex]
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    // Title row
+                    Row(
+                        modifier = Modifier
+                            .padding(top = 16.dp, bottom = 8.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            firstAnnouncement.title,
+                            style = CC.titleTextStyle(context),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+
+                    // Content column with vertical scrolling
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(rememberScrollState())
+                            .fillMaxWidth()
+                            .fillMaxHeight(1f)
+                            .background(GlobalColors.primaryColor)  // Adding a background color for better contrast
+                    ) {
+                        // Author and date row
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween  // Space items evenly across the row
+                        ) {
+                            Text(
+                                firstAnnouncement.author,
+                                style = CC.descriptionTextStyle(context),
+                                color = GlobalColors.secondaryColor  // Adding color for better visual separation
+                            )
+                            Text(
+                                firstAnnouncement.date,
+                                style = CC.descriptionTextStyle(context),
+                                color = GlobalColors.secondaryColor
+                            )
+                        }
+
+                        // Description column
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.Start  // Align text to the start (left)
+                        ) {
+                            Text(
+                                firstAnnouncement.description,
+                                style = CC.descriptionTextStyle(context),
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.padding(8.dp)  // Adding padding around the text
+                            )
+                        }
+                    }
+                }
+
+            } else {
+                Column(modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("No announcements available", style = CC.descriptionTextStyle(context)) // Handle the case of an empty list
+                }
+
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+        Text("Make Quick Announcement", style = CC.descriptionTextStyle(context))
+        Column (modifier = Modifier
+
+            .fillMaxHeight(1f)
+            .verticalScroll(rememberScrollState())
+            .fillMaxWidth()
+            .padding(10.dp)
+            .border(
+                width = 1.dp,
+                color = GlobalColors.textColor,
+                shape = RoundedCornerShape(10.dp)
+            ), horizontalAlignment = Alignment.CenterHorizontally
+            ){
+            Spacer(modifier = Modifier.height(10.dp))
+            QuickInput(
+                modifier = Modifier.width(50.dp),
+                value = title,
+                label = "Title",
+                singleLine = true,
+                onValueChange = {
+                    title = it
+                }
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            QuickInput(
+                Modifier
+                    .height(200.dp)
+                    .width(50.dp),
+                value = description,
+                label = "Description",
+                singleLine = false,
+                onValueChange = {description = it},
+              )
+            Row(modifier = Modifier
+                .padding(end = 20.dp)
+                .fillMaxWidth(),
+                horizontalArrangement = Arrangement.End) {
+                Button(onClick = {
+                    loading = true
+                    if (title.isEmpty() && description.isEmpty()){
+                        Toast.makeText(context, "Please enter a title and description", Toast.LENGTH_SHORT).show()
+                        loading = false
+                    }else{
+
+
+                    val announcement = Announcement(title, description, author, date)
+                    MyDatabase.writeAnnouncement(announcement)
+                    title = ""
+                    description = ""
+                        Toast.makeText(context, "Announcement posted", Toast.LENGTH_SHORT).show()
+                        getAnnouncements { fetchedAnnouncements ->
+                            announcements.clear()
+                            announcements.addAll(fetchedAnnouncements ?: emptyList())}
+                    loading = false}
+                },
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = GlobalColors.primaryColor,
+                        contentColor = GlobalColors.textColor
+                    )
+                ) {
+                    Text("Post & Refresh")
                 }
             }
 
         }
     }
+}
+
+@Composable
+fun QuickInput(
+    modifier: Modifier  = Modifier,
+    value: String,
+    label: String,
+    singleLine: Boolean,
+    onValueChange: (String) -> Unit
+
+){
+    TextField(value = value, onValueChange = onValueChange,
+        label = { Text(label) },
+        modifier = Modifier
+            .padding(10.dp)
+            .width(250.dp),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = GlobalColors.primaryColor,
+            unfocusedLabelColor = GlobalColors.textColor,
+            focusedIndicatorColor = GlobalColors.textColor,
+            unfocusedContainerColor = Color.Transparent,
+            unfocusedTextColor = GlobalColors.textColor,
+            focusedTextColor = GlobalColors.textColor,
+            focusedLabelColor = GlobalColors.textColor,
+            unfocusedIndicatorColor = GlobalColors.textColor
+        ),
+        singleLine = singleLine
+    )
+
+
 }
 
 @Composable

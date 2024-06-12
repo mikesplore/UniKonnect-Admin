@@ -1,6 +1,7 @@
 package com.mike.myclass
 
 import android.content.Context
+import android.icu.util.Calendar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -148,6 +149,14 @@ object CommonComponents {
                 GlobalColors.secondaryColor,
             )
         )
+    @Composable
+    fun CurrentDate(): String {
+        val calendar = Calendar.getInstance()
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+        val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-indexed, so add 1
+        val year = calendar.get(Calendar.YEAR)
+        return "$day/$month/$year"
+    }
 
 
     @Composable

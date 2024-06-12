@@ -84,16 +84,17 @@ fun parseColor(hex: String): Color {
 }
 
 object GlobalColors {
-    private const val COLORS_FILE_NAME = "color_scheme.json"
+    private const val PREFS_NAME = "color_scheme_prefs"
+    private const val COLOR_SCHEME_KEY = "color_scheme"
 
     private val defaultScheme = ColorScheme("164863", "427D9D", "9BBEC8", "DDF2FD")
 
     var currentScheme by mutableStateOf(defaultScheme)
 
     fun loadColorScheme(context: Context): ColorScheme {
-        val file = File(context.filesDir, COLORS_FILE_NAME)
-        return if (file.exists()) {
-            val json = file.readText()
+        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val json = sharedPreferences.getString(COLOR_SCHEME_KEY, null)
+        return if (json != null) {
             Gson().fromJson(json, ColorScheme::class.java)
         } else {
             defaultScheme
@@ -101,12 +102,11 @@ object GlobalColors {
     }
 
     fun saveColorScheme(context: Context, scheme: ColorScheme) {
-        val file = File(context.filesDir, COLORS_FILE_NAME)
-        if (file.exists()) {
-            file.delete()  // Delete the old color scheme file
-        }
+        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
         val json = Gson().toJson(scheme)
-        file.writeText(json)
+        editor.putString(COLOR_SCHEME_KEY, json)
+        editor.apply()
         currentScheme = scheme
     }
 
@@ -137,6 +137,15 @@ fun ColorSettings(navController: NavController, context: Context) {
     var currentFont by remember { mutableStateOf<FontFamily?>(null) }
     var fontUpdated by remember { mutableStateOf(false) }
 
+    // Load color scheme from SharedPreferences
+    LaunchedEffect(Unit) {
+        val scheme = GlobalColors.loadColorScheme(context)
+        primaryColor = scheme.primaryColor
+        secondaryColor = scheme.secondaryColor
+        tertiaryColor = scheme.tertiaryColor
+        textColor = scheme.textColor
+    }
+
     // Listen to changes in global color scheme and update local states
     LaunchedEffect(GlobalColors.currentScheme) {
         primaryColor = GlobalColors.currentScheme.primaryColor
@@ -145,7 +154,6 @@ fun ColorSettings(navController: NavController, context: Context) {
         textColor = GlobalColors.currentScheme.textColor
     }
 
-    var refreshTrigger by remember { mutableStateOf(false) } // Trigger to force recomposition
     var visible by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -169,8 +177,6 @@ fun ColorSettings(navController: NavController, context: Context) {
                         IconButton(
                             onClick = {
                                 GlobalColors.resetToDefaultColors(context)
-                                refreshTrigger = !refreshTrigger
-
                             }
                         ) {
                             Icon(Icons.Filled.Replay, "Revert", tint = GlobalColors.tertiaryColor)
@@ -184,7 +190,6 @@ fun ColorSettings(navController: NavController, context: Context) {
                                     textColor = textColor
                                 )
                                 GlobalColors.saveColorScheme(context, newScheme)
-                                refreshTrigger = !refreshTrigger
                             }
                         ) {
                             Icon(Icons.Filled.Check, "Save", tint = GlobalColors.tertiaryColor)

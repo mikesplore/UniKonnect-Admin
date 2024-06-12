@@ -178,7 +178,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                             onClick = {
                                 showNotification.value = true
                                 val newAnnouncement = Announcement(
-
+                                    author = Details.name.value,
                                     date = date,
                                     title = title,
                                     description = description,
