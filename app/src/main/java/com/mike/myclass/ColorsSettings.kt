@@ -231,7 +231,7 @@ fun ColorSettings(navController: NavController, context: Context) {
                 Spacer(modifier = Modifier.height(16.dp))
                 ColorPicker(context)
                 Spacer(modifier = Modifier.height(20.dp))
-                CustomTextStyle(context,FontViewModel())
+                CustomTextStyle(context)
 
 
             }
@@ -418,7 +418,7 @@ class FontViewModel : ViewModel() {
 }
 
 @Composable
-fun CustomTextStyle(context: Context, viewModel: FontViewModel) {
+fun CustomTextStyle(context: Context, ) {
     val fontFamilies = mapOf(
         "Segoer" to RobotoMono,
         "Amatic" to Amatic,
@@ -459,7 +459,7 @@ fun CustomTextStyle(context: Context, viewModel: FontViewModel) {
                     )
                     .fillMaxWidth()
                     .height(40.dp)
-                    .clickable { viewModel.setFontFamily(fontFamily) },
+                    .clickable {  },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -499,7 +499,6 @@ fun CustomTextStyle(context: Context, viewModel: FontViewModel) {
         ) {
             Text(
                 "This is a preview of the selected font.",
-                fontFamily = viewModel.selectedFontFamily.value ?: FontFamily.Default,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(start = 10.dp)
             )
@@ -510,8 +509,6 @@ fun CustomTextStyle(context: Context, viewModel: FontViewModel) {
         Button(
             onClick = {
                 // Save logic: Display a toast with the selected font family name
-                val fontName = fontFamilies.entries.find { it.value == viewModel.selectedFontFamily.value }?.key ?: "System"
-                Toast.makeText(context, "Selected font: $fontName", Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -533,8 +530,6 @@ fun CustomTextStyle(context: Context, viewModel: FontViewModel) {
 @Composable
 fun ColorSettingsPreview() {
     val context = LocalContext.current
-    CustomTextStyle(context, FontViewModel())
-
 
      // Load the color scheme when the composable is launched
      LaunchedEffect(Unit) {

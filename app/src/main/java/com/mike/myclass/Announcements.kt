@@ -66,7 +66,7 @@ import com.mike.myclass.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AnnouncementsScreen(navController: NavController, context: Context, viewModel: FontViewModel) {
+fun AnnouncementsScreen(navController: NavController, context: Context) {
 
     var isAnnouncementLoading by rememberSaveable { mutableStateOf(true) }
     val announcements = remember { mutableStateListOf<Announcement>() }
@@ -105,7 +105,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context, viewMode
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Announcements", style = CC.titleTextStyle(fontViewModel = viewModel)) },
+                title = { Text("Announcements", style = CC.titleTextStyle) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate("dashboard") }) {
                         Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back", tint = GlobalColors.textColor)
@@ -143,14 +143,14 @@ fun AnnouncementsScreen(navController: NavController, context: Context, viewMode
     ) {
         Column(
             modifier = Modifier
-                .background(CC.backbrush(fontViewModel = viewModel))
+                .background(CC.backbrush)
                 .fillMaxSize()
                 .padding(it)
         ) {
             if (addAnnouncementDialog) {
                 AlertDialog(
                     onDismissRequest = { addAnnouncementDialog = false },
-                    title = { Text("Add Announcement", style = CC.titleTextStyle(fontViewModel = viewModel)) },
+                    title = { Text("Add Announcement", style = CC.titleTextStyle) },
                     text = {
                         Column(
                             modifier = Modifier.height(350.dp)
@@ -160,14 +160,13 @@ fun AnnouncementsScreen(navController: NavController, context: Context, viewMode
                                 onValueChange = { title = it },
                                 label = "Title",
                                 singleLine = true,
-                                fontViewModel = viewModel
+                                
                             )
                             CC.SingleLinedTextField(
                                 value = description,
                                 onValueChange = { description = it },
                                 label = "Description",
                                 singleLine = true,
-                                fontViewModel = viewModel,
                                 modifier = Modifier.height(200.dp)
                             )
                         }
@@ -189,7 +188,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context, viewMode
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor)
                         ) {
-                            Text("Add", style = CC.descriptionTextStyle(fontViewModel = viewModel))
+                            Text("Add", style = CC.descriptionTextStyle)
                         }
                     },
                     dismissButton = {
@@ -197,7 +196,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context, viewMode
                             onClick = { addAnnouncementDialog = false },
                             colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.tertiaryColor)
                         ) {
-                            Text("Cancel", style = CC.descriptionTextStyle(fontViewModel = viewModel), color = GlobalColors.primaryColor)
+                            Text("Cancel", style = CC.descriptionTextStyle, color = GlobalColors.primaryColor)
                         }
                     },
                     modifier = Modifier.height(350.dp),
@@ -208,7 +207,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context, viewMode
             if (editAnnouncementDialog) {
                 AlertDialog(
                     onDismissRequest = { editAnnouncementDialog = false },
-                    title = { Text("Edit Announcement", style = CC.titleTextStyle(fontViewModel = viewModel)) },
+                    title = { Text("Edit Announcement", style = CC.titleTextStyle) },
                     text = {
                         Column(
                             modifier = Modifier.height(350.dp)
@@ -218,14 +217,14 @@ fun AnnouncementsScreen(navController: NavController, context: Context, viewMode
                                 onValueChange = { title = it },
                                 label = "Title",
                                 singleLine = true,
-                                fontViewModel = viewModel
+                                
                             )
                             CC.SingleLinedTextField(
                                 value = description,
                                 onValueChange = { description = it },
                                 label = "Description",
                                 singleLine = true,
-                                fontViewModel = viewModel,
+
                                 modifier = Modifier.height(200.dp)
                             )
                         }
@@ -247,7 +246,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context, viewMode
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor)
                         ) {
-                            Text("Save", style = CC.descriptionTextStyle(fontViewModel = viewModel))
+                            Text("Save", style = CC.descriptionTextStyle)
                         }
                     },
                     dismissButton = {
@@ -255,7 +254,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context, viewMode
                             onClick = { editAnnouncementDialog = false },
                             colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.tertiaryColor)
                         ) {
-                            Text("Cancel", style = CC.descriptionTextStyle(fontViewModel = viewModel), color = GlobalColors.primaryColor)
+                            Text("Cancel", style = CC.descriptionTextStyle, color = GlobalColors.primaryColor)
                         }
                     },
                     modifier = Modifier.height(350.dp),
@@ -276,7 +275,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context, viewMode
                         trackColor = GlobalColors.textColor
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Loading Announcements...", style = CC.descriptionTextStyle(fontViewModel = viewModel))
+                    Text("Loading Announcements...", style = CC.descriptionTextStyle)
                 }
             } else {
                 NotificationCard(
@@ -352,7 +351,7 @@ fun AnnouncementCard(
             )
             Text(
                 text = announcement.title,
-                style = CC.descriptionTextStyle(fontViewModel = viewModel),
+                style = CC.descriptionTextStyle,
                 fontWeight = FontWeight.Bold,
                 color = GlobalColors.textColor,
                 maxLines = 1,
@@ -363,7 +362,7 @@ fun AnnouncementCard(
                 onClick = { expanded = !expanded },
                 colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor)
             ) {
-                Text(text, style = CC.descriptionTextStyle(fontViewModel = viewModel))
+                Text(text, style = CC.descriptionTextStyle)
             }
         }
 
@@ -371,7 +370,7 @@ fun AnnouncementCard(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = announcement.description,
-                style = CC.descriptionTextStyle(fontViewModel = viewModel).copy(fontSize = 14.sp),
+                style = CC.descriptionTextStyle.copy(fontSize = 14.sp),
                 color = GlobalColors.textColor.copy(alpha = 0.8f),
                 maxLines = if (expanded) Int.MAX_VALUE else 3,
                 overflow = TextOverflow.Ellipsis
@@ -384,12 +383,12 @@ fun AnnouncementCard(
             ) {
                 Text(
                     text = announcement.author,
-                    style = CC.descriptionTextStyle(fontViewModel = viewModel).copy(fontSize = 12.sp),
+                    style = CC.descriptionTextStyle.copy(fontSize = 12.sp),
                     color = GlobalColors.textColor.copy(alpha = 0.6f),
                 )
                 Text(
                     text = announcement.date,
-                    style = CC.descriptionTextStyle(fontViewModel = viewModel).copy(fontSize = 12.sp),
+                    style = CC.descriptionTextStyle.copy(fontSize = 12.sp),
                     color = GlobalColors.textColor.copy(alpha = 0.6f),
                 )
             }
@@ -402,14 +401,14 @@ fun AnnouncementCard(
                     onClick = { onEdit(announcement) },
                     colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor)
                 ) {
-                    Text("Edit", style = CC.descriptionTextStyle(fontViewModel = viewModel))
+                    Text("Edit", style = CC.descriptionTextStyle)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = { onDelete(announcement.id) },
                     colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.tertiaryColor)
                 ) {
-                    Text("Delete", style = CC.descriptionTextStyle(fontViewModel = viewModel))
+                    Text("Delete", style = CC.descriptionTextStyle)
                 }
             }
         }
@@ -422,6 +421,5 @@ fun AnnouncementCard(
 @Composable
 fun AlertsPreview(){
     AnnouncementsScreen(navController = rememberNavController(), context = LocalContext.current,
-        FontViewModel()
     )
 }

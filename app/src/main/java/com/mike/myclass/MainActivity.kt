@@ -51,14 +51,12 @@ object Details {
 class MainActivity : ComponentActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
-    private val fontViewModel: FontViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
         setContent {
-            CustomTextStyle(viewModel = fontViewModel)
+            CustomTextStyle(context = this)
             NavigationMap()
         }
         createNotificationChannel(this)
