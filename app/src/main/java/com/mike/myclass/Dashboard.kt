@@ -7,6 +7,7 @@ import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -68,12 +69,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -119,8 +123,8 @@ fun Dashboard(navController: NavController, context: Context) {
             val present by remember { mutableIntStateOf(10) }
             val absent by remember { mutableStateOf(1) }
             val total by remember { derivedStateOf { present + absent } } // Calculate total efficiently
-            val percentage by remember { derivedStateOf { (present.toFloat() / total) * 100 }}
-                val brush = Brush.linearGradient(
+            val percentage by remember { derivedStateOf { (present.toFloat() / total) * 100 } }
+            val brush = Brush.linearGradient(
                 listOf(
                     GlobalColors.primaryColor,
                     GlobalColors.secondaryColor,
@@ -147,25 +151,36 @@ fun Dashboard(navController: NavController, context: Context) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                ){
-                    Row(modifier = Modifier
-                        .padding(10.dp)
-                        .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center) {
-                        Text("Attendance Summary", style = CC.titleTextStyle(context), fontSize = 20.sp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            "Attendance Summary",
+                            style = CC.titleTextStyle(context),
+                            fontSize = 20.sp
+                        )
                     }
-                    Row(modifier = Modifier
-                        .fillMaxHeight(1f)
-                        .fillMaxWidth()) {
-                        Column(modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(0.5f),
+                    Row(
+                        modifier = Modifier
+                            .fillMaxHeight(1f)
+                            .fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(0.5f),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement. SpaceEvenly) {
+                            verticalArrangement = Arrangement.SpaceEvenly
+                        ) {
                             Text("Present: $present", style = CC.descriptionTextStyle(context))
                             Text("Absent: $absent", style = CC.descriptionTextStyle(context))
                             Spacer(modifier = Modifier.height(10.dp))
-                            Button(onClick = {},
+                            Button(
+                                onClick = {},
                                 modifier = Modifier
                                     .padding(start = 5.dp)
                                     .fillMaxWidth(),
@@ -174,19 +189,25 @@ fun Dashboard(navController: NavController, context: Context) {
                                     containerColor = GlobalColors.primaryColor
                                 )
                             ) {
-                                Text("Sign Attendance", style = CC.descriptionTextStyle(context), fontSize = 13.sp)
+                                Text(
+                                    "Sign Attendance",
+                                    style = CC.descriptionTextStyle(context),
+                                    fontSize = 13.sp
+                                )
                             }
 
                         }
-                        Column(modifier = Modifier
-                            .fillMaxSize(),
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize(),
                             verticalArrangement = Arrangement.Top,
-                            horizontalAlignment = Alignment.CenterHorizontally)
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        )
                         {
                             AttendanceProgressIndicator(percentage, context)
                         }
                     }
-                    
+
                 }
             }
         }
@@ -309,7 +330,10 @@ fun Dashboard(navController: NavController, context: Context) {
                                             contentDescription = "",
                                             tint = GlobalColors.textColor
                                         )
-                                        Text(" Assignments", style = CC.descriptionTextStyle(context))
+                                        Text(
+                                            " Assignments",
+                                            style = CC.descriptionTextStyle(context)
+                                        )
                                     }
                                 },
                                 onClick = {
@@ -326,7 +350,10 @@ fun Dashboard(navController: NavController, context: Context) {
                                             contentDescription = "",
                                             tint = GlobalColors.textColor
                                         )
-                                        Text(" Announcements", style = CC.descriptionTextStyle(context))
+                                        Text(
+                                            " Announcements",
+                                            style = CC.descriptionTextStyle(context)
+                                        )
                                     }
                                 },
                                 onClick = {
@@ -499,11 +526,11 @@ fun Dashboard(navController: NavController, context: Context) {
 }
 
 @Composable
-fun AnnouncementItem(context: Context){
+fun AnnouncementItem(context: Context) {
     var title by remember { mutableStateOf("") }
-    var date  = CC.CurrentDate()
+    val date = CC.CurrentDate()
     var description by remember { mutableStateOf("") }
-    var author = Details.name.value
+    val author = Details.name.value
     var loading by remember { mutableStateOf(true) }
     val announcements = remember { mutableStateListOf<Announcement>() }
     LaunchedEffect(Unit) {
@@ -514,12 +541,21 @@ fun AnnouncementItem(context: Context){
     }
 
     Spacer(modifier = Modifier.height(10.dp))
-    Column(modifier= Modifier
-        .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("Latest Announcement", style = CC.descriptionTextStyle(context = context))
+
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Latest Announcement",
+            style = CC.descriptionTextStyle(context = context),
+            fontWeight = FontWeight.Bold
+        )
         Column(
             modifier = Modifier
+                .background(Color.Transparent, RoundedCornerShape(10.dp))
                 .padding(10.dp)
                 .fillMaxWidth(0.9f)
                 .height(200.dp)
@@ -531,10 +567,13 @@ fun AnnouncementItem(context: Context){
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             if (loading) {
-                Column(modifier = Modifier
-                    .fillMaxSize(),
+                Column(
+                    modifier = Modifier
+                        .background(Color.Transparent, RoundedCornerShape(10.dp))
+                        .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center) {
+                    verticalArrangement = Arrangement.Center
+                ) {
                     CircularProgressIndicator(
                         color = GlobalColors.secondaryColor,
                         trackColor = GlobalColors.textColor
@@ -545,140 +584,196 @@ fun AnnouncementItem(context: Context){
 
             } else if (announcements.isNotEmpty()) {
                 val firstAnnouncement = announcements[announcements.lastIndex]
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    // Title row
-                    Row(
+                Box(modifier = Modifier.background(Color.Transparent, RoundedCornerShape(10.dp))) {
+                    Image(
+                        painter = painterResource(R.drawable.announcement),
+                        contentDescription = "", // Provide a meaningful content description
                         modifier = Modifier
-                            .padding(top = 16.dp, bottom = 8.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            firstAnnouncement.title,
-                            style = CC.titleTextStyle(context),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-                    }
+                            .clip(RoundedCornerShape(10.dp))
+                            .fillMaxSize(),
+                        contentScale = ContentScale.Crop // Fill the Box while maintaining aspect ratio
+                    )
 
-                    // Content column with vertical scrolling
                     Column(
-                        modifier = Modifier
-                            .verticalScroll(rememberScrollState())
-                            .fillMaxWidth()
-                            .fillMaxHeight(1f)
-                            .background(GlobalColors.primaryColor)  // Adding a background color for better contrast
+                        modifier = Modifier.fillMaxSize(),
                     ) {
-                        // Author and date row
+                        // Title row
                         Row(
                             modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .padding(top = 16.dp, bottom = 8.dp)
                                 .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween  // Space items evenly across the row
+                            horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                firstAnnouncement.author,
-                                style = CC.descriptionTextStyle(context),
-                                color = GlobalColors.secondaryColor  // Adding color for better visual separation
-                            )
-                            Text(
-                                firstAnnouncement.date,
-                                style = CC.descriptionTextStyle(context),
-                                color = GlobalColors.secondaryColor
+                                firstAnnouncement.title,
+                                style = CC.titleTextStyle(context),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
 
-                        // Description column
+                        // Content column with vertical scrolling
                         Column(
                             modifier = Modifier
+                                .verticalScroll(rememberScrollState())
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.Start  // Align text to the start (left)
+                                .fillMaxHeight(1f)
+                                .background(
+                                    GlobalColors.primaryColor.copy(alpha = 0.5f),
+                                    RoundedCornerShape(10.dp)
+                                )  // Adding a background color for better contrast
                         ) {
-                            Text(
-                                firstAnnouncement.description,
-                                style = CC.descriptionTextStyle(context),
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier.padding(8.dp)  // Adding padding around the text
-                            )
+                            // Author and date row
+                            Row(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween  // Space items evenly across the row
+                            ) {
+                                Text(
+                                    firstAnnouncement.author,
+                                    style = CC.descriptionTextStyle(context),
+                                    // Adding color for better visual separation
+                                )
+                                Text(
+                                    firstAnnouncement.date,
+                                    style = CC.descriptionTextStyle(context),
+                                )
+                            }
+
+                            // Description column
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.Start  // Align text to the start (left)
+                            ) {
+                                Text(
+                                    firstAnnouncement.description,
+                                    style = CC.descriptionTextStyle(context),
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier.padding(8.dp)  // Adding padding around the text
+                                )
+                            }
                         }
                     }
                 }
 
             } else {
-                Column(modifier = Modifier.fillMaxSize(),
+                Column(
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("No announcements available", style = CC.descriptionTextStyle(context)) // Handle the case of an empty list
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "No announcements available",
+                        style = CC.descriptionTextStyle(context)
+                    ) // Handle the case of an empty list
                 }
 
             }
         }
         Spacer(modifier = Modifier.height(20.dp))
-        Text("Make Quick Announcement", style = CC.descriptionTextStyle(context))
-        Column (modifier = Modifier
+        Text(
+            "Make Quick Announcement",
+            style = CC.descriptionTextStyle(context),
+            fontWeight = FontWeight.Bold
+        )
 
-            .fillMaxHeight(1f)
-            .verticalScroll(rememberScrollState())
-            .fillMaxWidth()
-            .padding(10.dp)
-            .border(
-                width = 1.dp,
-                color = GlobalColors.textColor,
-                shape = RoundedCornerShape(10.dp)
-            ), horizontalAlignment = Alignment.CenterHorizontally
-            ){
-            Spacer(modifier = Modifier.height(10.dp))
-            QuickInput(
-                modifier = Modifier.width(50.dp),
-                value = title,
-                label = "Title",
-                singleLine = true,
-                onValueChange = {
-                    title = it
-                }
+
+
+        Box(modifier = Modifier.fillMaxHeight(1f)) {
+            Image(
+                painter = painterResource(R.drawable.write),
+                contentDescription = "Write Icon", // Provide a meaningful content description
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(10.dp))
+                    .padding(10.dp), // Add padding around the image
+                contentScale = ContentScale.Crop
             )
-            Spacer(modifier = Modifier.height(10.dp))
-            QuickInput(
-                Modifier
-                    .height(200.dp)
-                    .width(50.dp),
-                value = description,
-                label = "Description",
-                singleLine = false,
-                onValueChange = {description = it},
-              )
-            Row(modifier = Modifier
-                .padding(end = 20.dp)
-                .fillMaxWidth(),
-                horizontalArrangement = Arrangement.End) {
-                Button(onClick = {
-                    loading = true
-                    if (title.isEmpty() && description.isEmpty()){
-                        Toast.makeText(context, "Please enter a title and description", Toast.LENGTH_SHORT).show()
-                        loading = false
-                    }else{
+            Column(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
+                    .padding(10.dp)
+                    .border(
+                        width = 1.dp,
+                        color = GlobalColors.textColor,
+                        shape = RoundedCornerShape(10.dp)
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Image now inside the Column
 
 
-                    val announcement = Announcement(title, description, author, date)
-                    MyDatabase.writeAnnouncement(announcement)
-                    title = ""
-                    description = ""
-                        Toast.makeText(context, "Announcement posted", Toast.LENGTH_SHORT).show()
-                        getAnnouncements { fetchedAnnouncements ->
-                            announcements.clear()
-                            announcements.addAll(fetchedAnnouncements ?: emptyList())}
-                    loading = false}
-                },
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = GlobalColors.primaryColor,
-                        contentColor = GlobalColors.textColor
-                    )
+                Spacer(modifier = Modifier.height(10.dp))
+                QuickInput(
+                    modifier = Modifier.width(50.dp),
+                    value = title,
+                    label = "Title",
+                    singleLine = true,
+                    onValueChange = {
+                        title = it
+                    }
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                QuickInput(
+                    Modifier
+                        .height(200.dp)
+                        .width(50.dp),
+                    value = description,
+                    label = "Description",
+                    singleLine = false,
+                    onValueChange = { description = it },
+                )
+                Row(
+                    modifier = Modifier
+                        .padding(end = 20.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Text("Post & Refresh")
+                    Button(
+                        onClick = {
+                            loading = true
+                            if (title.isEmpty() && description.isEmpty()) {
+                                Toast.makeText(
+                                    context,
+                                    "Please enter a title and description",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                loading = false
+                            } else {
+
+
+                                val newAnnouncement = Announcement(
+                                    author = Details.name.value,
+                                    date = date,
+                                    title = title,
+                                    description = description,
+
+                                    )
+                                MyDatabase.writeAnnouncement(newAnnouncement)
+                                title = ""
+                                description = ""
+                                Toast.makeText(context, "Announcement posted", Toast.LENGTH_SHORT)
+                                    .show()
+                                getAnnouncements { fetchedAnnouncements ->
+                                    announcements.clear()
+                                    announcements.addAll(fetchedAnnouncements ?: emptyList())
+                                }
+                                loading = false
+                            }
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = GlobalColors.primaryColor,
+                            contentColor = GlobalColors.textColor
+                        )
+                    ) {
+                        Text("Post & Refresh")
+                    }
                 }
             }
 
@@ -688,26 +783,27 @@ fun AnnouncementItem(context: Context){
 
 @Composable
 fun QuickInput(
-    modifier: Modifier  = Modifier,
+    modifier: Modifier = Modifier,
     value: String,
     label: String,
     singleLine: Boolean,
     onValueChange: (String) -> Unit
 
-){
-    TextField(value = value, onValueChange = onValueChange,
+) {
+    TextField(
+        value = value, onValueChange = onValueChange,
         label = { Text(label) },
         modifier = Modifier
             .padding(10.dp)
             .width(250.dp),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = GlobalColors.primaryColor,
-            unfocusedLabelColor = GlobalColors.textColor,
+            unfocusedLabelColor = GlobalColors.primaryColor,
             focusedIndicatorColor = GlobalColors.textColor,
             unfocusedContainerColor = Color.Transparent,
             unfocusedTextColor = GlobalColors.textColor,
             focusedTextColor = GlobalColors.textColor,
-            focusedLabelColor = GlobalColors.textColor,
+            focusedLabelColor = GlobalColors.primaryColor,
             unfocusedIndicatorColor = GlobalColors.textColor
         ),
         singleLine = singleLine
@@ -717,23 +813,27 @@ fun QuickInput(
 }
 
 @Composable
-fun AttendanceItem(){
+fun AttendanceItem() {
     Text("Attendance")
 }
+
 @Composable
-fun TimetableItem(){
+fun TimetableItem() {
     Text("Timetable")
 }
+
 @Composable
-fun AssignmentsItem(){
+fun AssignmentsItem() {
     Text("Assignments")
 }
+
 @Composable
-fun DocumentationItem(){
+fun DocumentationItem() {
     Text("Documentation")
 }
+
 @Composable
-fun ManageUsersItem(){
+fun ManageUsersItem() {
     Text("Manage Users")
 
 }
@@ -763,7 +863,6 @@ fun AttendanceProgressIndicator(progress: Float, context: Context) {
         )
     }
 }
-
 
 
 @Preview
