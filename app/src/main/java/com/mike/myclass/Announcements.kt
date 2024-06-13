@@ -58,12 +58,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import com.mike.myclass.MyDatabase.database
+import com.google.firebase.database.database
 import com.mike.myclass.MyDatabase.getAnnouncements
-import kotlinx.coroutines.delay
 import com.mike.myclass.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,27 +79,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
             isLoading = false
         }
     }
-    val announcementsListener = database.child("Announcements").addValueEventListener(object :
-        ValueEventListener {
-        override fun onDataChange(snapshot: DataSnapshot) {
-            val fetchedAnnouncements = snapshot.children.mapNotNull { it.getValue(Announcement::class.java) }
-            announcements.clear()
-            announcements.addAll(fetchedAnnouncements)
 
-            // Check if there are new announcements
-            if (fetchedAnnouncements.isNotEmpty()) {
-                showNotification(
-                    title = "New Announcement",
-                    message = "You have New announcement!",
-                    context = context
-                )
-            }
-        }
-
-        override fun onCancelled(error: DatabaseError) {
-            // Handle errors
-        }
-    })
 
     var addAnnouncementDialog by remember { mutableStateOf(false) }
     var editAnnouncementDialog by remember { mutableStateOf(false) }
@@ -212,7 +192,6 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                                     title,
                                     description,
                                 )
-                                //refresh
                                 isLoading = true
                                 getAnnouncements { fetchedAnnouncements ->
                                     announcements.clear()

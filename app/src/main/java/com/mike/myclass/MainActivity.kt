@@ -69,14 +69,9 @@ class MainActivity : ComponentActivity() {
                 Log.w("FCM", "Fetching FCM registration token failed", task.exception)
                 return@OnCompleteListener
             }
-
+            // retrieve device token and send to database
             val token = task.result
-            val msg = getString(R.string.msg_token_fmt, token)
-            Log.d("FCM", msg)
-            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-            Toast.makeText(this, "FCM Token: $token", Toast.LENGTH_SHORT).show()
-            // Now you have the token, you can send it to your server or store it locally
-            Log.d("FCM", "FCM Token is: $token")
+            MyDatabase.writeFcmToken(token = Fcm(token = token))
         })
         enableEdgeToEdge()
         sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)

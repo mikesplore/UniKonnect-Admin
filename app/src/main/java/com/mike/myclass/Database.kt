@@ -72,8 +72,11 @@ data class Announcement(
     val title: String = "",
     val description: String = "",
     val author: String = ""
+)
 
-
+data class Fcm(
+    val id: String = MyDatabase.generateFcmID(),
+    val token: String = ""
 )
 
 object MyDatabase {
@@ -87,6 +90,7 @@ object MyDatabase {
     private var subjectsID = 0
     private var dayID = 0
     private var attendanceID = 0
+    private var FcmID = 0
 
     private var calendar: Calendar = Calendar.getInstance()
     private var year = calendar.get(Calendar.YEAR)
@@ -96,6 +100,11 @@ object MyDatabase {
         val currentID = userID
         userID++
         return "CP$currentID$year"
+    }
+    fun generateFcmID(): String {
+        val currentID = FcmID
+        FcmID++
+        return "FC$currentID$year"
     }
 
     fun generateAttendanceID(): String {
@@ -134,12 +143,13 @@ object MyDatabase {
         return "DY$currentID$year"
     }
 
+    fun writeStudent(student: Student) {
+        database.child("Students").child(student.id).setValue(student)
+    }
+
 
     fun writeUsers(user: User) {
         database.child("Users").child(user.id).setValue(user)
-    }
-    fun writeStudent(student: Student) {
-        database.child("Students").child(student.id).setValue(student)
     }
 
     fun getUsers(onUsersFetched: (List<User>?) -> Unit) {
@@ -154,6 +164,11 @@ object MyDatabase {
             }
         })
     }
+    //send the token to the database
+    fun writeFcmToken(token: Fcm) {
+        database.child("FCM").child(token.id).setValue(token)
+    }
+
 
     fun writeTimetable(timetable: Timetable, onComplete: (Boolean) -> Unit) {
         database.child("Timetable").child(timetable.id).setValue(timetable)
