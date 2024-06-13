@@ -79,7 +79,7 @@ fun LoginScreen(navController: NavController, context: Context) {
             Column(
                 modifier = Modifier
                     .padding(it)
-                    .background(GlobalColors.primaryColor)
+                    .background(CC.backbrush)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -101,9 +101,9 @@ fun LoginScreen(navController: NavController, context: Context) {
                     Row(
                         modifier = Modifier
                             .height(100.dp)
-                            .width(320.dp),
+                            .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         GoogleAuth(
                             firebaseAuth = firebaseAuth,
@@ -319,7 +319,6 @@ fun LoginScreen(navController: NavController, context: Context) {
 
                 Row(
                     modifier = Modifier
-                        .background(GlobalColors.primaryColor, RoundedCornerShape(20.dp))
                         .clickable { isSigningUp = !isSigningUp },
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
@@ -334,7 +333,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                     Text(
                         text = if (isSigningUp) "Sign In" else "Sign Up",
                         style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold),
-                        color = GlobalColors.textColor
+                        color = GlobalColors.tertiaryColor
                     )
                 }
             }

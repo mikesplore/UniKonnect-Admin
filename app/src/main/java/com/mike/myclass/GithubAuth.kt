@@ -68,7 +68,7 @@ fun GitAuth(
             )
             .background(GlobalColors.secondaryColor, shape = RoundedCornerShape(10.dp))
             .height(60.dp)
-            .width(150.dp),
+            .width(130.dp),
         contentAlignment = Alignment.Center
     ) {
         if (isLoading) {
