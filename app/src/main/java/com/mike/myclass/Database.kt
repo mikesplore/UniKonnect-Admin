@@ -5,19 +5,26 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import java.sql.Time
-import java.util.UUID
+import java.util.Calendar
 
 
-data class User(
-    val id: String = UUID.randomUUID().toString(),
+
+open class User(
+    val id: String = MyDatabase.generateIndexNumber(),
     val name: String = "",
     val email: String = "",
 
     )
+
+open class Admin(
+
+    val password: String = ""
+
+): User()
+
 data class Timetable(
-    val id: String = UUID.randomUUID().toString(),
-    val startTime: String = "",
+    val id: String = MyDatabase.generateTimetableID(),
+    val startTime: String = "Calendat",
     val endTime: String = "",
     val unitName: String = "",
     val venue: String = "",
@@ -26,13 +33,13 @@ data class Timetable(
 )
 
 data class Subjects(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = MyDatabase.generateSubjectsID(),
     val name: String = "",
 
     )
 
 data class Assignment(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = MyDatabase.generateAssignmentID(),
     val name: String = "",
     val description: String = "",
     val dueDate: String = "",
@@ -40,12 +47,12 @@ data class Assignment(
 )
 
 data class Day(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = MyDatabase.generateDayID(),
     val name: String = ""
 )
 
 data class Announcement(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = MyDatabase.generateAnnouncementID(),
     val date: String = "",
     val title: String = "",
     val description: String = "",
@@ -56,6 +63,55 @@ data class Announcement(
 
 object MyDatabase {
     private val database: DatabaseReference = FirebaseDatabase.getInstance().reference
+
+    //initialize the Unique id of the items
+    private var userID = 0
+    private var announcementID = 0
+    private var timetableID = 0
+    private var assignmentID = 0
+    private var subjectsID = 0
+    private var dayID = 0
+
+    private var calendar: Calendar = Calendar.getInstance()
+    private var year = calendar.get(Calendar.YEAR)
+
+    // index number
+    fun generateIndexNumber(): String {
+        val currentID = userID
+        userID++
+        return "CP$currentID$year"
+    }
+
+    fun generateAnnouncementID(): String {
+        val currentID = announcementID
+        announcementID++
+        return "AN$currentID$year"
+    }
+
+    fun generateTimetableID(): String {
+        val currentID = timetableID
+        timetableID++
+        return "TT$currentID$year"
+    }
+
+    fun generateAssignmentID(): String {
+        val currentID = assignmentID
+        assignmentID++
+        return "AS$currentID$year"
+    }
+
+    fun generateSubjectsID(): String {
+        val currentID = subjectsID
+        subjectsID++
+        return "SB$currentID"
+    }
+
+    fun generateDayID(): String {
+        val currentID = dayID
+        dayID++
+        return "DY$currentID$year"
+    }
+
 
     // Write Announcement to the database
     fun writeUsers(user: User) {
@@ -219,7 +275,5 @@ object MyDatabase {
     fun deleteAnnouncement(announcementId: String) {
         database.child("Announcements").child(announcementId.toString()).removeValue()
     }
-
-
 }
 

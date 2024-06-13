@@ -427,6 +427,7 @@ fun AssignmentsList(subjectId: String, context: Context) {
             Text("Loading Assignments...Please wait", style = CC.descriptionTextStyle(context))
         }
     } else {
+
         LazyColumn {
             if (assignments!!.isEmpty()) {
                 item {
@@ -440,15 +441,7 @@ fun AssignmentsList(subjectId: String, context: Context) {
                 }
             }
             items(assignments!!) { assignment ->
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
-                        animationSpec = tween(500)
-                    ),
-                    exit = fadeOut(animationSpec = tween(500)) + slideOutVertically(
-                        animationSpec = tween(500)
-                    )
-                ) {
+
                     AssignmentCard(assignment = assignment, onEdit = {
                         MyDatabase.editAssignment(it) { isSuccess ->
                             if (isSuccess) {
@@ -475,7 +468,7 @@ fun AssignmentsList(subjectId: String, context: Context) {
                             }
                         }
                     },context)
-                }
+
             }
         }
     }
@@ -492,6 +485,13 @@ fun AssignmentCard(
     var isSaving by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    AnimatedVisibility(
+        visible = true,
+        enter = slideInVertically(tween(1000)),
+        exit = slideOutVertically(tween(1000))
+    ) {
+
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -499,20 +499,23 @@ fun AssignmentCard(
             containerColor = GlobalColors.secondaryColor, contentColor = GlobalColors.textColor
         ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(8.dp)
     ) {
-        Column(modifier = Modifier
-            .border(
-                width = 1.dp,
-                color = GlobalColors.textColor,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .border(
+                    width = 1.dp,
+                    color = GlobalColors.textColor,
+                    shape = RoundedCornerShape(8.dp)
+                )
+                .padding(16.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 if (isEditing) {
-                    OutlinedTextField(value = editedName,
+                    OutlinedTextField(
+                        value = editedName,
                         onValueChange = { editedName = it },
                         label = { Text("Assignment Name", color = GlobalColors.tertiaryColor) },
                         colors = TextFieldDefaults.colors(
@@ -598,7 +601,8 @@ fun AssignmentCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
             if (isEditing) {
-                OutlinedTextField(value = editedDescription,
+                OutlinedTextField(
+                    value = editedDescription,
                     onValueChange = { editedDescription = it },
                     label = { Text("Description", color = GlobalColors.tertiaryColor) },
                     colors = TextFieldDefaults.colors(
@@ -635,6 +639,7 @@ fun AssignmentCard(
             }
         }
     }
+}
 }
 
 

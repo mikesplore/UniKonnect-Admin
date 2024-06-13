@@ -54,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -186,6 +187,17 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                                 )
                                 MyDatabase.writeAnnouncement(newAnnouncement)
                                 addAnnouncementDialog = false
+                                showNotification(
+                                    context,
+                                    title,
+                                    description,
+                                )
+                                isLoading = true
+                                getAnnouncements { fetchedAnnouncements ->
+                                    announcements.clear()
+                                    announcements.addAll(fetchedAnnouncements ?: emptyList())
+                                    isLoading = false
+                                }
                                 Toast.makeText(context, "Announcement added", Toast.LENGTH_SHORT).show()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor)
@@ -274,14 +286,20 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CircularProgressIndicator(
-                        color = GlobalColors.secondaryColor,
-                        trackColor = GlobalColors.textColor
-                    )
+                    MyProgress()
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Loading Announcements...", style = CC.descriptionTextStyle(context))
                 }
-            } else {
+            } else
+                if (announcements.isEmpty()) {
+                    Column(modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("😒", fontSize = 50.sp)
+                        Text("No Announcements found. Tap the + Icon to add one.", style = CC.descriptionTextStyle(context),
+                            textAlign = TextAlign.Center)
+                    }
+                }else{
                 NotificationCard(
                     title = title,
                     message = description,
@@ -330,16 +348,10 @@ fun AnnouncementCard(
 
     var expanded by remember { mutableStateOf(false) }
     val text = if (expanded) "Close" else "Open"
-    val animatedHeight by animateDpAsState(
-        targetValue = if (expanded) 200.dp else 100.dp,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow),
-        label = ""
-    )
+
     Column(
         modifier = Modifier
-            .height(animatedHeight)
             .fillMaxWidth()
-            .padding(16.dp)
             .background(GlobalColors.secondaryColor, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
     ) {
@@ -419,6 +431,18 @@ fun AnnouncementCard(
             }
         }
     }
+}
+
+@Composable
+fun MyProgress(){
+    Column(modifier = Modifier.height(70.dp)) {  }
+    CircularProgressIndicator(
+        color = GlobalColors.secondaryColor,
+        trackColor = GlobalColors.textColor
+    )
+    Spacer(modifier = Modifier.height(10.dp))
+    Text("👁️👄👁️", fontSize = 40.sp)
+
 }
 
 

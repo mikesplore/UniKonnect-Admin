@@ -65,17 +65,6 @@ fun TimetableScreen(navController: NavController, context: Context) {
     var showaddDay by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
 
-
-    var visible by remember { mutableStateOf(true) }
-
-    LaunchedEffect(Unit) {
-        visible = true
-    }
-    AnimatedVisibility(
-        visible = visible,
-        enter = slideInHorizontally(initialOffsetX = { it }), // Slide in from right
-        exit = slideOutHorizontally(targetOffsetX = { -it }) // Slide out to left
-    ) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Timetable", style = CC.titleTextStyle(context)) }, navigationIcon = {
@@ -410,7 +399,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
             }
         }
     }
-}
+
 }
 
 @Composable
@@ -736,5 +725,14 @@ fun CustomOutlinedTextField(
 @Preview
 @Composable
 fun TimetableScreenPreview() {
-    TimetableScreen(rememberNavController(), LocalContext.current)
+    //TimetableScreen(rememberNavController(), LocalContext.current)
+    TimetableCard(
+        timetable = Timetable(
+            lecturer = "Michael",
+            startTime = "11:30",
+            endTime = "12:30",
+            venue = "Here"),
+        {},{},LocalContext.current
+        )
+
 }

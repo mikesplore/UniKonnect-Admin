@@ -12,6 +12,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -153,38 +156,176 @@ class MainActivity : ComponentActivity() {
         }
 
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "dashboard") {
-            composable("login") {
+        NavHost(navController = navController, startDestination = "announcements") {
+            composable("login",
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                }
+
+
+
+            ) {
                 LoginScreen(navController, context)
             }
-            composable("announcements") {
+            composable("announcements",
+
+                exitTransition = {
+
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                }) {
                 AnnouncementsScreen(navController, context)
             }
-            composable("passwordreset") {
+            composable("passwordreset",
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                }) {
                 PasswordReset(navController, context)
             }
-            composable("dashboard") {
+            composable("dashboard",
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                }) {
                 Dashboard(navController, context)
             }
-            composable("moredetails") {
+            composable("moredetails",
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                }) {
                 MoreDetails(context, navController)
             }
-            composable("profile") {
+            composable("profile",
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                }) {
                 ProfileScreen(navController, context)
             }
-            composable("manageusers") {
+            composable("manageusers",
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                }) {
                 ManageUsers(navController)
             }
-            composable("assignments") {
+            composable("assignments",
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                }) {
                 AssignmentScreen(navController,context)
             }
-            composable("timetable") {
+            composable("timetable",
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                }) {
                 TimetableScreen(navController,context)
             }
-            composable("colors") {
+            composable("colors",
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                }) {
                 ColorSettings(navController,context)
             }
-            composable("students") {
+            composable("students",
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                }) {
                 ManageUsers(navController)
             }
 

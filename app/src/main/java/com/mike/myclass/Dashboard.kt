@@ -754,9 +754,16 @@ fun AnnouncementItem(context: Context) {
                                     description = description,
 
                                     )
+
                                 MyDatabase.writeAnnouncement(newAnnouncement)
+                                showNotification(
+                                    context,
+                                    title = title,
+                                    message = description
+                                )
                                 title = ""
                                 description = ""
+
                                 Toast.makeText(context, "Announcement posted", Toast.LENGTH_SHORT)
                                     .show()
                                 getAnnouncements { fetchedAnnouncements ->
