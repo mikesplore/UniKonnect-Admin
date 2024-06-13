@@ -548,7 +548,7 @@ fun Dashboard(navController: NavController, context: Context) {
 @Composable
 fun AnnouncementItem(context: Context) {
     var title by remember { mutableStateOf("") }
-    val date = CC.CurrentDate()
+    val date = CC.currentDate()
     var description by remember { mutableStateOf("") }
     val author = Details.name.value
     var loading by remember { mutableStateOf(true) }

@@ -2,10 +2,6 @@ package com.mike.myclass
 
 import android.content.Context
 import android.icu.util.Calendar
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -89,7 +85,7 @@ object CommonComponents {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = TextStyle(fontFamily =selectedFontFamily ),
+            textStyle = TextStyle(fontFamily = selectedFontFamily),
             label = { Text(text = label, fontFamily = selectedFontFamily, fontSize = 14.sp) },
             singleLine = singleLine,
             enabled = enabled,
@@ -104,35 +100,10 @@ object CommonComponents {
         )
     }
 
-    @Composable
-    fun BasicTextField(title: String, onTitleChange: (String) -> Unit, singleLine: Boolean, context: Context) {
-        val currentFont = currentFontFamily(context) // Get initial font
-        val selectedFontFamily by remember { mutableStateOf(currentFont) }
-        androidx.compose.foundation.text.BasicTextField(
-            value = title,
-            singleLine = singleLine,
-            onValueChange = { onTitleChange(it) },
-            modifier = Modifier.fillMaxWidth(),
-            textStyle = TextStyle(fontSize = 16.sp, fontFamily = selectedFontFamily),
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier
-                        .background(
-                            GlobalColors.tertiaryColor, shape = MaterialTheme.shapes.small
-                        )
-                        .padding(8.dp)
-                ) {
-                    if (title.isEmpty()) {
-                        Text("Title", style = descriptionTextStyle(context))
-                    }
-                    innerTextField()
-                }
-            }
-        )
-    }
+
 
     @Composable
-    fun descriptionTextStyle(context: Context):TextStyle {
+    fun descriptionTextStyle(context: Context): TextStyle {
         val currentFont = currentFontFamily(context) // Get initial font
         val selectedFontFamily by remember { mutableStateOf(currentFont) }
         return TextStyle(
@@ -144,13 +115,14 @@ object CommonComponents {
 
 
     val backbrush = Brush.verticalGradient(
-            listOf(
-                GlobalColors.primaryColor,
-                GlobalColors.secondaryColor,
-            )
+        listOf(
+            GlobalColors.primaryColor,
+            GlobalColors.secondaryColor,
         )
+    )
+
     @Composable
-    fun CurrentDate(): String {
+    fun currentDate(): String {
         val calendar = Calendar.getInstance()
         val day = calendar.get(Calendar.DAY_OF_MONTH)
         val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-indexed, so add 1
@@ -160,7 +132,7 @@ object CommonComponents {
 
 
     @Composable
-    fun titleTextStyle(context: Context):TextStyle {
+    fun titleTextStyle(context: Context): TextStyle {
         val currentFont = currentFontFamily(context) // Get initial font
         val selectedFontFamily by remember { mutableStateOf(currentFont) }
         return TextStyle(
@@ -169,7 +141,6 @@ object CommonComponents {
             fontSize = 25.sp
         )
     }
-    
 
 
     @Composable

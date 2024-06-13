@@ -2,6 +2,7 @@ package com.mike.myclass
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.ui.platform.LocalContext
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -76,7 +77,7 @@ data class Announcement(
 )
 
 object MyDatabase {
-    private val database: DatabaseReference = FirebaseDatabase.getInstance().reference
+    val database: DatabaseReference = FirebaseDatabase.getInstance().reference
 
     //initialize the Unique id of the items
     private var userID = 0
@@ -364,4 +365,6 @@ object MyDatabase {
             batch.child(key).setValue(record)
         }
     }
+
+
 }

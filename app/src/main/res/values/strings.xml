@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">MyClass</string>
+    <string name="msg_token_fmt">FCM Token: %s</string>
 </resources>

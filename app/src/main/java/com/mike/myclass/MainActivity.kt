@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -47,6 +48,8 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import com.mike.myclass.CommonComponents as CC
 
 object Details {
@@ -60,6 +63,21 @@ class MainActivity : ComponentActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+
+                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+
+            val token = task.result
+            val msg = getString(R.string.msg_token_fmt, token)
+            Log.d("FCM", msg)
+            Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "FCM Token: $token", Toast.LENGTH_SHORT).show()
+            // Now you have the token, you can send it to your server or store it locally
+            Log.d("FCM", "FCM Token is: $token")
+        })
         enableEdgeToEdge()
         sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
         setContent {
@@ -68,6 +86,7 @@ class MainActivity : ComponentActivity() {
         }
         createNotificationChannel(this)
     }
+
 
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -355,4 +374,5 @@ class MainActivity : ComponentActivity() {
             Details.showdialog.value = false
         }
     }
+
 }
