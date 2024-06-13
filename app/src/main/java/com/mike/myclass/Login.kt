@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,7 +51,6 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.mike.myclass.CommonComponents as CC
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController, context: Context) {
@@ -58,16 +59,16 @@ fun LoginScreen(navController: NavController, context: Context) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isSigningUp by remember { mutableStateOf(true) } // Track if signing up or logging in
-    var feedbackMessage by remember { mutableStateOf("") }
     var isGithubLoading by remember { mutableStateOf(false) }
     var isGoogleLoading by remember { mutableStateOf(false) }
     val firebaseAuth = FirebaseAuth.getInstance()
-
     var visible by remember { mutableStateOf(true) }
+    var loading by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         visible = true
     }
+
     AnimatedVisibility(
         visible = visible,
         enter = slideInHorizontally(initialOffsetX = { it }), // Slide in from right
@@ -75,26 +76,29 @@ fun LoginScreen(navController: NavController, context: Context) {
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(title = {
-                    Text(
-                        text = if (isSigningUp) "Sign Up" else "Sign In",
-                        fontSize = 30.sp,
-                        color = GlobalColors.textColor
-                    )
-                }, navigationIcon = {
-                    IconButton(onClick = { /* Handle back button click */ }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBackIosNew,
-                            contentDescription = "Back",
-                            tint = GlobalColors.textColor
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = if (isSigningUp) "Sign Up" else "Sign In",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = GlobalColors.textColor
                         )
-                    }
-                }, colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor
-                )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { /* Handle back button click */ }) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBackIosNew,
+                                contentDescription = "Back",
+                                tint = GlobalColors.textColor
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = GlobalColors.primaryColor
+                    )
                 )
             },
-            modifier = Modifier.background(GlobalColors.primaryColor),
             containerColor = GlobalColors.primaryColor
         ) {
             Column(
@@ -106,22 +110,25 @@ fun LoginScreen(navController: NavController, context: Context) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Column(
-                    modifier = Modifier.width(350.dp),
-                    verticalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .width(350.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = if (isSigningUp) "Sign up with one of the following options" else "Sign In with one of the following options",
-                        fontSize = 15.sp,
+                        text = if (isSigningUp) "Sign up with one of the following options" else "Sign in with one of the following options",
+                        fontSize = 16.sp,
                         color = GlobalColors.textColor,
-                        modifier = Modifier.padding(start = 20.dp)
+                        modifier = Modifier.align(Alignment.Start)
                     )
+
                     Row(
                         modifier = Modifier
                             .height(100.dp)
                             .width(320.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         GoogleAuth(
                             firebaseAuth = firebaseAuth,
@@ -161,53 +168,39 @@ fun LoginScreen(navController: NavController, context: Context) {
                             navController
                         )
                     }
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("Or", style = CC.descriptionTextStyle(context))
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text("Enter your Credentials below ", style = CC.descriptionTextStyle(context))
-                    }
-                }
-
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    if (isSigningUp) {
-                        Column {
-                            Text(
-                                "Name",
-                                fontSize = 16.sp,
-                                color = GlobalColors.textColor,
-                                modifier = Modifier.padding(start = 50.dp, top = 20.dp)
-                            )
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                CC.SingleLinedTextField(
-                                    value = name,
-                                    onValueChange = { name = it },
-                                    label = "Name",
-                                    singleLine = true,
-                                    context = context
-                                )
-                            }
-                        }
-                    }
 
                     Text(
-                        "Email",
-                        fontSize = 16.sp,
-                        color = GlobalColors.textColor,
-                        modifier = Modifier.padding(start = 50.dp, top = 20.dp)
+                        text = "Or",
+                        style = CC.descriptionTextStyle(context),
+                        color = GlobalColors.textColor
                     )
+
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        if (isSigningUp) {
+                            Text(
+                                text = "Name",
+                                fontSize = 16.sp,
+                                color = GlobalColors.textColor,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                            CC.SingleLinedTextField(
+                                value = name,
+                                onValueChange = { name = it },
+                                label = "Name",
+                                singleLine = true,
+                                context = context
+                            )
+                        }
+
+                        Text(
+                            text = "Email",
+                            fontSize = 16.sp,
+                            color = GlobalColors.textColor,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
                         CC.SingleLinedTextField(
                             value = email,
                             onValueChange = { email = it },
@@ -215,18 +208,13 @@ fun LoginScreen(navController: NavController, context: Context) {
                             singleLine = true,
                             context = context
                         )
-                    }
 
-                    Text(
-                        "Password",
-                        fontSize = 16.sp,
-                        color = GlobalColors.textColor,
-                        modifier = Modifier.padding(start = 50.dp, top = 20.dp)
-                    )
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
+                        Text(
+                            text = "Password",
+                            fontSize = 16.sp,
+                            color = GlobalColors.textColor,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
                         CC.PasswordTextField(
                             value = password,
                             onValueChange = { password = it },
@@ -236,122 +224,119 @@ fun LoginScreen(navController: NavController, context: Context) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Column(
+                Box(
                     modifier = Modifier
+                        .border(
+                            width = 1.dp,
+                            color = GlobalColors.textColor,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .background(
+                            GlobalColors.secondaryColor,
+                            shape = RoundedCornerShape(10.dp)
+                        )
                         .height(50.dp)
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                        .width(300.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .border(
-                                width = 1.dp,
-                                color = GlobalColors.textColor,
-                                shape = RoundedCornerShape(10.dp)
-                            )
-                            .background(
-                                GlobalColors.secondaryColor,
-                                shape = RoundedCornerShape(10.dp)
-                            )
-                            .height(50.dp)
-                            .width(300.dp)
-                    ) {
-                        Button(
-                            onClick = {
-                                if (isSigningUp) {
-                                    if (email.isNotEmpty() && password.isNotEmpty()) {
-                                        firebaseAuth.createUserWithEmailAndPassword(email, password)
-                                            .addOnCompleteListener { task ->
-                                                if (task.isSuccessful) {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Registration successful!",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                    MyDatabase.writeUsers(
-                                                        User(
-                                                            name = name,
-                                                            email = email
-                                                        )
+                    Button(
+                        onClick = {
+                            if (isSigningUp) {
+                                if (email.isNotEmpty() && password.isNotEmpty()) {
+                                    loading = true
+                                    firebaseAuth.createUserWithEmailAndPassword(email, password)
+                                        .addOnCompleteListener { task ->
+                                            if (task.isSuccessful) {
+                                                loading = false
+                                                Toast.makeText(
+                                                    context,
+                                                    "Registration successful!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                MyDatabase.writeUsers(
+                                                    User(
+                                                        name = name,
+                                                        email = email
                                                     )
-                                                    navController.navigate("users")
-
-
-                                                } else {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Authentication failed.",
-                                                        Toast.LENGTH_SHORT,
-                                                    ).show()
-
-                                                }
+                                                )
+                                                navController.navigate("dashboard")
+                                            } else {
+                                                loading = false
+                                                Toast.makeText(
+                                                    context,
+                                                    "Authentication failed.",
+                                                    Toast.LENGTH_SHORT,
+                                                ).show()
                                             }
-                                    } else {
-                                        Toast.makeText(
-                                            context, "Please fill all fields", Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
+                                        }
                                 } else {
-                                    if (email.isNotEmpty() && password.isNotEmpty()) {
-                                        firebaseAuth.signInWithEmailAndPassword(email, password)
-                                            .addOnCompleteListener { task ->
-                                                if (task.isSuccessful) {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Sign In successful!",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-
-                                                    navController.navigate("dashboard")
-                                                } else {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "Authentication failed.",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-
-                                                }
-                                            }
-                                    } else {
-                                        Toast.makeText(
-                                            context, "Please fill all fields", Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
+                                    Toast.makeText(
+                                        context, "Please fill all fields", Toast.LENGTH_SHORT
+                                    ).show()
                                 }
-                            },
-                            modifier = Modifier.fillMaxSize(),
-                            colors = ButtonDefaults.buttonColors(Color.Transparent)
-                        ) {
-                            Text(if (isSigningUp) "Sign Up" else "Sign In")
+                            } else {
+                                if (email.isNotEmpty() && password.isNotEmpty()) {
+                                    loading = true
+                                    firebaseAuth.signInWithEmailAndPassword(email, password)
+                                        .addOnCompleteListener { task ->
+                                            if (task.isSuccessful) {
+                                                loading = false
+                                                Toast.makeText(
+                                                    context,
+                                                    "Sign In successful!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                navController.navigate("dashboard")
+                                            } else {
+                                                loading = false
+                                                Toast.makeText(
+                                                    context,
+                                                    "Authentication failed.",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                } else {
+                                    Toast.makeText(
+                                        context, "Please fill all fields", Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize(),
+                        colors = ButtonDefaults.buttonColors(Color.Transparent)
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center){
+                            if (loading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(30.dp),
+                                    color = GlobalColors.primaryColor,
+                                    trackColor = GlobalColors.textColor)}
+                            else{
+                                Text(if (isSigningUp) "Sign Up" else "Sign In")
+
+                            }
                         }
+
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                if (isSigningUp) {
-                    Row(
-                        modifier = Modifier
-                            .clickable { navController.navigate("reset") }
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            "Forgot Password? Reset",
-                            fontSize = 16.sp,
-                            color = GlobalColors.textColor,
-                        )
-                    }
+                if (!isSigningUp) {
+                    Text(
+                        text = "Forgot Password? Reset",
+                        fontSize = 16.sp,
+                        color = GlobalColors.textColor,
+                        modifier = Modifier.clickable { navController.navigate("passwordreset") }
+                    )
                     Spacer(modifier = Modifier.height(20.dp))
                 }
 
                 Row(
-                    modifier = Modifier
-                        .clickable { isSigningUp = !isSigningUp }
-                        .fillMaxWidth(),
-
+                    modifier = Modifier.clickable { isSigningUp = !isSigningUp },
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
@@ -363,16 +348,13 @@ fun LoginScreen(navController: NavController, context: Context) {
                     Text(
                         text = if (isSigningUp) "Sign In" else "Sign Up",
                         style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold),
-                        modifier = Modifier.clickable { /* Switch between sign in and sign up */ },
                         color = GlobalColors.textColor
                     )
                 }
             }
-
         }
     }
 }
-
 
 @Preview
 @Composable

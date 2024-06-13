@@ -69,9 +69,10 @@ fun GoogleAuth(
         if (isLoading) {
             // Show CircularProgressIndicator when loading
             CircularProgressIndicator(
-                modifier = Modifier.size(50.dp),
-                color = GlobalColors.textColor,
-                strokeWidth = 4.dp
+                modifier = Modifier.size(30.dp),
+                color = GlobalColors.primaryColor,
+                trackColor = GlobalColors.textColor
+
             )
         } else {
             // Show Google image when not loading

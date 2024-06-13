@@ -1,5 +1,7 @@
 package com.mike.myclass
 
+import android.content.Context
+import android.util.Log
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -24,7 +26,7 @@ open class Admin(
 
 data class Timetable(
     val id: String = MyDatabase.generateTimetableID(),
-    val startTime: String = "Calendat",
+    val startTime: String = "",
     val endTime: String = "",
     val unitName: String = "",
     val venue: String = "",
@@ -37,6 +39,18 @@ data class Subjects(
     val name: String = "",
 
     )
+data class Student(
+    val id: String = MyDatabase.generateIndexNumber(),
+    val firstName: String)
+
+data class AttendanceRecord(
+    val studentId: String,
+    val dayOfWeek: String,
+    val isPresent: Boolean,
+    val lesson: String
+)
+
+
 
 data class Assignment(
     val id: String = MyDatabase.generateAssignmentID(),
@@ -71,6 +85,7 @@ object MyDatabase {
     private var assignmentID = 0
     private var subjectsID = 0
     private var dayID = 0
+    private var attendanceID = 0
 
     private var calendar: Calendar = Calendar.getInstance()
     private var year = calendar.get(Calendar.YEAR)
@@ -80,6 +95,12 @@ object MyDatabase {
         val currentID = userID
         userID++
         return "CP$currentID$year"
+    }
+
+    fun generateAttendanceID(): String {
+        val currentID = attendanceID
+        attendanceID++
+        return "AT$currentID$year"
     }
 
     fun generateAnnouncementID(): String {
@@ -113,12 +134,13 @@ object MyDatabase {
     }
 
 
-    // Write Announcement to the database
     fun writeUsers(user: User) {
         database.child("Users").child(user.id).setValue(user)
     }
+    fun writeStudent(student: Student) {
+        database.child("Students").child(student.id).setValue(student)
+    }
 
-    // Retrieve Announcement data from the database
     fun getUsers(onUsersFetched: (List<User>?) -> Unit) {
         database.child("Users").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -139,7 +161,6 @@ object MyDatabase {
             }
     }
 
-    // Retrieve Announcement data from the database
     fun getTimetable(dayId: String, onAssignmentsFetched: (List<Timetable>?) -> Unit) {
         database.child("Timetable").orderByChild("dayId").equalTo(dayId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -257,7 +278,6 @@ object MyDatabase {
         database.child("Announcements").child(announcement.id).setValue(announcement)
     }
 
-    // Retrieve Announcement data from the database
     fun getAnnouncements(onUsersFetched: (List<Announcement>?) -> Unit) {
         database.child("Announcements").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -275,5 +295,73 @@ object MyDatabase {
     fun deleteAnnouncement(announcementId: String) {
         database.child("Announcements").child(announcementId.toString()).removeValue()
     }
-}
 
+    fun loadSubjectsAndAssignments(callback: (List<Subjects>?) -> Unit) {
+        database.child("Subjects").get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val subjectsList = task.result.children.mapNotNull { dataSnapshot ->
+                    val subject = dataSnapshot.getValue(Subjects::class.java)
+                    if (subject?.name.isNullOrEmpty()) {
+                        Log.e("DataFetch", "Subject with missing name: $dataSnapshot")
+                        null
+                    } else {
+                        subject
+                    }
+                }
+                callback(subjectsList)
+            } else {
+                Log.e("DataFetch", "Error fetching subjects: ${task.exception?.message}")
+                callback(null)
+            }
+        }
+    }
+
+    fun loadStudents(onStudentsLoaded: (List<Student>?) -> Unit) {
+        database.child("Students").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val students = snapshot.children.mapNotNull {
+                    val id = it.child("id").getValue(String::class.java)
+                    val firstName = it.child("firstName").getValue(String::class.java)
+                    if (id != null && firstName != null) {
+                        Student(id, firstName)
+                    } else null
+                }
+                onStudentsLoaded(students)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onStudentsLoaded(null)
+            }
+        })
+    }
+
+    fun loadAttendanceRecords(onAttendanceRecordsLoaded: (List<AttendanceRecord>?) -> Unit) {
+        database.child("attendanceRecords")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val attendanceRecords = snapshot.children.mapNotNull {
+                        val studentId = it.child("studentId").getValue(String::class.java)
+                        val dayOfWeek = it.child("dayOfWeek").getValue(String::class.java)
+                        val isPresent = it.child("isPresent").getValue(Boolean::class.java)
+                        val lesson = it.child("lesson").getValue(String::class.java)
+                        if (studentId != null && dayOfWeek != null && isPresent != null && lesson != null) {
+                            AttendanceRecord(studentId, dayOfWeek, isPresent, lesson)
+                        } else null
+                    }
+                    onAttendanceRecordsLoaded(attendanceRecords)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    onAttendanceRecordsLoaded(null)
+                }
+            })
+    }
+
+    fun saveAttendanceRecords(records: List<AttendanceRecord>, onComplete: (Boolean) -> Unit) {
+        val batch = database.child("attendanceRecords")
+        records.map { record ->
+            val key = batch.push().key ?: ""
+            batch.child(key).setValue(record)
+        }
+    }
+}

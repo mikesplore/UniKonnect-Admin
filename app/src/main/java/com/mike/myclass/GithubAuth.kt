@@ -74,9 +74,10 @@ fun GitAuth(
         if (isLoading) {
             // Show CircularProgressIndicator when loading
             CircularProgressIndicator(
-                modifier = Modifier.size(50.dp), // Match image size
-                color = GlobalColors.textColor,  // You can customize the color
-                strokeWidth = 4.dp     // Adjust stroke width if needed
+                modifier = Modifier.size(30.dp),
+                color = GlobalColors.primaryColor,
+                trackColor = GlobalColors.textColor
+
             )
         } else {
             // Show GitHub image when not loading

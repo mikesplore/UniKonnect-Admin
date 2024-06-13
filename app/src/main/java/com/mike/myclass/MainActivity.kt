@@ -124,7 +124,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(bottom = 8.dp) // Add spacing below title
                     )
                     Text(
-                        "Please enable notifications to enable realtime updates.",
+                        "Please enable notifications to receive realtime updates.",
                         style = CC.descriptionTextStyle(context),
                         modifier = Modifier.padding(bottom = 16.dp) // Add spacing below description
                     )
@@ -156,7 +156,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "announcements") {
+        NavHost(navController = navController, startDestination = "login") {
             composable("login",
                 exitTransition = {
                     slideOutOfContainer(
@@ -196,13 +196,13 @@ class MainActivity : ComponentActivity() {
             composable("passwordreset",
                 exitTransition = {
                     slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        AnimatedContentTransitionScope.SlideDirection.Right,
                         animationSpec = tween(1000)
                     )
                 },
                 enterTransition = {
                     slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        AnimatedContentTransitionScope.SlideDirection.Left,
                         animationSpec = tween(1000)
                     )
                 }) {
@@ -211,13 +211,13 @@ class MainActivity : ComponentActivity() {
             composable("dashboard",
                 exitTransition = {
                     slideOutOfContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        AnimatedContentTransitionScope.SlideDirection.Right,
                         animationSpec = tween(1000)
                     )
                 },
                 enterTransition = {
                     slideIntoContainer(
-                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        AnimatedContentTransitionScope.SlideDirection.Left,
                         animationSpec = tween(1000)
                     )
                 }) {
@@ -312,6 +312,21 @@ class MainActivity : ComponentActivity() {
                     )
                 }) {
                 ColorSettings(navController,context)
+            }
+            composable("attendance",
+                exitTransition = {
+                    slideOutOfContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Right,
+                        animationSpec = tween(1000)
+                    )
+                },
+                enterTransition = {
+                    slideIntoContainer(
+                        AnimatedContentTransitionScope.SlideDirection.Left,
+                        animationSpec = tween(1000)
+                    )
+                }) {
+                RecordAttendanceScreen(navController,context)
             }
             composable("students",
                 exitTransition = {

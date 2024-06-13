@@ -38,6 +38,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AssignmentInd
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.PendingActions
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -338,6 +339,25 @@ fun Dashboard(navController: NavController, context: Context) {
                                 },
                                 onClick = {
                                     navController.navigate("assignments")
+                                    expanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Row {
+                                        Icon(
+                                            Icons.Default.PendingActions,
+                                            contentDescription = "",
+                                            tint = GlobalColors.textColor
+                                        )
+                                        Text(
+                                            " Attendance",
+                                            style = CC.descriptionTextStyle(context)
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    navController.navigate("attendance")
                                     expanded = false
                                 }
                             )
