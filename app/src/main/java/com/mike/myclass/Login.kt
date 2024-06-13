@@ -2,42 +2,17 @@ package com.mike.myclass
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,14 +26,14 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.mike.myclass.CommonComponents as CC
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun LoginScreen(navController: NavController, context: Context) {
     val auth: FirebaseAuth = FirebaseAuth.getInstance()
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var isSigningUp by remember { mutableStateOf(true) } // Track if signing up or logging in
+    var isSigningUp by remember { mutableStateOf(true) }
     var isGithubLoading by remember { mutableStateOf(false) }
     var isGoogleLoading by remember { mutableStateOf(false) }
     val firebaseAuth = FirebaseAuth.getInstance()
@@ -175,52 +150,57 @@ fun LoginScreen(navController: NavController, context: Context) {
                         color = GlobalColors.textColor
                     )
 
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        if (isSigningUp) {
+                    AnimatedContent(targetState = isSigningUp, transitionSpec = {
+                        fadeIn(animationSpec = tween(300)) + slideInVertically() with
+                                fadeOut(animationSpec = tween(300)) + slideOutVertically()
+                    }, label = "") { targetState ->
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            if (targetState) {
+                                Text(
+                                    text = "Name",
+                                    fontSize = 16.sp,
+                                    color = GlobalColors.textColor,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                                CC.SingleLinedTextField(
+                                    value = name,
+                                    onValueChange = { name = it },
+                                    label = "Name",
+                                    singleLine = true,
+                                    context = context
+                                )
+                            }
+
                             Text(
-                                text = "Name",
+                                text = "Email",
                                 fontSize = 16.sp,
                                 color = GlobalColors.textColor,
                                 modifier = Modifier.padding(start = 8.dp)
                             )
                             CC.SingleLinedTextField(
-                                value = name,
-                                onValueChange = { name = it },
-                                label = "Name",
+                                value = email,
+                                onValueChange = { email = it },
+                                label = "Email",
                                 singleLine = true,
                                 context = context
                             )
+
+                            Text(
+                                text = "Password",
+                                fontSize = 16.sp,
+                                color = GlobalColors.textColor,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                            CC.PasswordTextField(
+                                value = password,
+                                onValueChange = { password = it },
+                                label = "Password",
+                                context = context
+                            )
                         }
-
-                        Text(
-                            text = "Email",
-                            fontSize = 16.sp,
-                            color = GlobalColors.textColor,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-                        CC.SingleLinedTextField(
-                            value = email,
-                            onValueChange = { email = it },
-                            label = "Email",
-                            singleLine = true,
-                            context = context
-                        )
-
-                        Text(
-                            text = "Password",
-                            fontSize = 16.sp,
-                            color = GlobalColors.textColor,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-                        CC.PasswordTextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            label = "Password",
-                            context = context
-                        )
                     }
                 }
 
@@ -307,43 +287,49 @@ fun LoginScreen(navController: NavController, context: Context) {
                         modifier = Modifier.fillMaxSize(),
                         colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
-                        Box(modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center){
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
                             if (loading) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(30.dp),
                                     color = GlobalColors.primaryColor,
-                                    trackColor = GlobalColors.textColor)}
-                            else{
+                                    trackColor = GlobalColors.textColor
+                                )
+                            } else {
                                 Text(if (isSigningUp) "Sign Up" else "Sign In")
-
                             }
                         }
-
                     }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                if (!isSigningUp) {
+                AnimatedVisibility(visible = !isSigningUp) {
                     Text(
                         text = "Forgot Password? Reset",
                         fontSize = 16.sp,
                         color = GlobalColors.textColor,
                         modifier = Modifier.clickable { navController.navigate("passwordreset") }
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
                 }
 
+                Spacer(modifier = Modifier.height(20.dp))
+
                 Row(
-                    modifier = Modifier.clickable { isSigningUp = !isSigningUp },
-                    horizontalArrangement = Arrangement.Center
+                    modifier = Modifier
+                        .background(GlobalColors.primaryColor, RoundedCornerShape(20.dp))
+                        .clickable { isSigningUp = !isSigningUp },
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = if (isSigningUp) "Already have an account? " else "Don't have an account?",
                         style = CC.descriptionTextStyle(context),
                         fontWeight = FontWeight.Bold,
-                        color = GlobalColors.textColor
+                        color = GlobalColors.textColor,
+                        modifier = Modifier.padding(5.dp)
                     )
                     Text(
                         text = if (isSigningUp) "Sign In" else "Sign Up",
