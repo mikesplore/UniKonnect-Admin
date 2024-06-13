@@ -550,7 +550,6 @@ fun AnnouncementItem(context: Context) {
     var title by remember { mutableStateOf("") }
     val date = CC.currentDate()
     var description by remember { mutableStateOf("") }
-    val author = Details.name.value
     var loading by remember { mutableStateOf(true) }
     val announcements = remember { mutableStateListOf<Announcement>() }
     LaunchedEffect(Unit) {
@@ -730,7 +729,6 @@ fun AnnouncementItem(context: Context) {
 
                 Spacer(modifier = Modifier.height(10.dp))
                 QuickInput(
-                    modifier = Modifier.width(50.dp),
                     value = title,
                     label = "Title",
                     singleLine = true,
@@ -740,9 +738,6 @@ fun AnnouncementItem(context: Context) {
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 QuickInput(
-                    Modifier
-                        .height(200.dp)
-                        .width(50.dp),
                     value = description,
                     label = "Description",
                     singleLine = false,
@@ -810,7 +805,6 @@ fun AnnouncementItem(context: Context) {
 
 @Composable
 fun QuickInput(
-    modifier: Modifier = Modifier,
     value: String,
     label: String,
     singleLine: Boolean,

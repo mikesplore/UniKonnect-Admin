@@ -149,6 +149,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                         style = CC.descriptionTextStyle(context),
                         color = GlobalColors.textColor
                     )
+                    Text(if(isSigningUp)"Sign up with your email and password" else "Sign in with your email and password", style = CC.descriptionTextStyle(context))
 
                     AnimatedContent(targetState = isSigningUp, transitionSpec = {
                         fadeIn(animationSpec = tween(300)) + slideInVertically() with
@@ -159,12 +160,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             if (targetState) {
-                                Text(
-                                    text = "Name",
-                                    fontSize = 16.sp,
-                                    color = GlobalColors.textColor,
-                                    modifier = Modifier.padding(start = 8.dp)
-                                )
+                                Spacer(modifier = Modifier.height(20.dp))
                                 CC.SingleLinedTextField(
                                     value = name,
                                     onValueChange = { name = it },
@@ -174,12 +170,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                                 )
                             }
 
-                            Text(
-                                text = "Email",
-                                fontSize = 16.sp,
-                                color = GlobalColors.textColor,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
+                            Spacer(modifier = Modifier.height(20.dp))
                             CC.SingleLinedTextField(
                                 value = email,
                                 onValueChange = { email = it },
@@ -188,12 +179,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                                 context = context
                             )
 
-                            Text(
-                                text = "Password",
-                                fontSize = 16.sp,
-                                color = GlobalColors.textColor,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
+                            Spacer(modifier = Modifier.height(20.dp))
                             CC.PasswordTextField(
                                 value = password,
                                 onValueChange = { password = it },

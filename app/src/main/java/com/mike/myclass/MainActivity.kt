@@ -58,6 +58,7 @@ object Details {
     var showdialog: MutableState<Boolean> = mutableStateOf(true)
 }
 
+
 class MainActivity : ComponentActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences

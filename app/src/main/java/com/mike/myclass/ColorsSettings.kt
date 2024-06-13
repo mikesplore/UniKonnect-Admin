@@ -290,13 +290,12 @@ fun ColorInputField(
                 .background(GlobalColors.primaryColor, shape = RoundedCornerShape(8.dp)),
             textStyle = CC.descriptionTextStyle(context),
             isError = !isValidColor,
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                focusedBorderColor = GlobalColors.textColor,
-                unfocusedBorderColor = GlobalColors.tertiaryColor,
-                cursorColor = GlobalColors.textColor,
+            colors = TextFieldDefaults.colors(
+                errorIndicatorColor = Color.Red,
                 focusedTextColor = GlobalColors.textColor,
                 unfocusedTextColor = GlobalColors.textColor,
-                errorBorderColor = Color.Red
+                focusedIndicatorColor = GlobalColors.textColor,
+                unfocusedIndicatorColor = GlobalColors.secondaryColor
             ),
             singleLine = true
         )
