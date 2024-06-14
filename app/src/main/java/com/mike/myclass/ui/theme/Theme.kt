@@ -54,6 +54,9 @@ val Crimson = FontFamily(
 val Zeyada = FontFamily(
     Font(R.font.zeyada, FontWeight.Normal)
 )
+val Caveat = FontFamily(
+    Font(R.font.caveat, FontWeight.Normal)
+)
 
 
 
