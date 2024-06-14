@@ -46,6 +46,11 @@ data class AttendanceRecord(
     val studentId: String, val dayOfWeek: String, val isPresent: Boolean, val lesson: String
 )
 
+data class Feedback(
+    val id: String = MyDatabase.generateFeedbackID(),
+    val message: String = "",
+    val sender: String = ""
+)
 
 data class Assignment(
     val id: String = MyDatabase.generateAssignmentID(),
@@ -71,6 +76,8 @@ data class Fcm(
     val id: String = MyDatabase.generateFcmID(), val token: String = ""
 )
 
+
+
 object MyDatabase {
     val database: DatabaseReference = FirebaseDatabase.getInstance().reference
 
@@ -83,6 +90,7 @@ object MyDatabase {
     private var dayID = 0
     private var attendanceID = 0
     private var FcmID = 0
+    private var feedbackID = 0
 
     private var calendar: Calendar = Calendar.getInstance()
     private var year = calendar.get(Calendar.YEAR)
@@ -98,6 +106,12 @@ object MyDatabase {
         val currentID = FcmID
         FcmID++
         return "FC$currentID$year"
+    }
+
+    fun generateFeedbackID(): String {
+        val currentID = feedbackID
+        feedbackID++
+        return "FD$currentID$year"
     }
 
     fun generateAttendanceID(): String {
@@ -140,6 +154,28 @@ object MyDatabase {
         database.child("Students").child(student.id).setValue(student)
     }
 
+    fun updateUser(userId: String, newName: String, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
+        val userRef = database.child("Users").child(userId)
+        val updates = hashMapOf<String, Any>(
+            "name" to newName // Update only the "name" property
+        )
+        userRef.updateChildren(updates)
+            .addOnSuccessListener {
+                onSuccess() // Callback on successful update
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception) // Callback on failure with exception
+            }
+    }
+    fun deleteUser(userId: String, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
+        database.child("Users").child(userId).removeValue()
+            .addOnSuccessListener {
+                onSuccess() // Callback on successful deletion
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception) // Callback on failure with exception
+            }
+    }
 
     fun writeUsers(user: User) {
         database.child("Users").child(user.id).setValue(user)
@@ -156,6 +192,17 @@ object MyDatabase {
                 onUsersFetched(null)
             }
         })
+    }
+
+    fun writeFeedback(feedback: Feedback, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
+        val feedbackRef = database.child("Feedback").child(feedback.id)
+        feedbackRef.setValue(feedback)
+            .addOnSuccessListener {
+                onSuccess() // Callback on successful write
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception) // Callback on failure with exception
+            }
     }
 
     //send the token to the database
