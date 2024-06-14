@@ -1,18 +1,19 @@
 package com.mike.myclass
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,18 +47,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.gson.Gson
@@ -65,8 +64,9 @@ import com.mike.myclass.ui.theme.Crimson
 import com.mike.myclass.ui.theme.Lora
 import com.mike.myclass.ui.theme.Segoe
 import com.mike.myclass.ui.theme.Zeyada
-import java.io.File
 import com.mike.myclass.CommonComponents as CC
+
+
 
 data class ColorScheme(
     val primaryColor: String,
@@ -94,11 +94,13 @@ object GlobalColors {
     fun loadColorScheme(context: Context): ColorScheme {
         val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val json = sharedPreferences.getString(COLOR_SCHEME_KEY, null)
-        return if (json != null) {
+        val scheme = if (json != null) {
             Gson().fromJson(json, ColorScheme::class.java)
         } else {
             defaultScheme
         }
+        currentScheme = scheme
+        return scheme
     }
 
     fun saveColorScheme(context: Context, scheme: ColorScheme) {
@@ -126,6 +128,7 @@ object GlobalColors {
     val textColor: Color
         get() = parseColor(currentScheme.textColor)
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -212,34 +215,10 @@ fun ColorSettings(navController: NavController, context: Context) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.SpaceEvenly,
             ) {
-                ColorInputField(
-                    label = "Primary Color",
-                    colorValue = primaryColor,
-                    onValueChange = { newValue -> primaryColor = newValue },
-                    context
-                )
 
-                ColorInputField(
-                    label = "Secondary Color",
-                    colorValue = secondaryColor,
-                    onValueChange = { newValue -> secondaryColor = newValue },
-                    context
-                )
 
-                ColorInputField(
-                    label = "Tertiary Color",
-                    colorValue = tertiaryColor,
-                    onValueChange = { newValue -> tertiaryColor = newValue },
-                    context
-                )
-
-                ColorInputField(
-                    label = "Text Color",
-                    colorValue = textColor,
-                    onValueChange = { newValue -> textColor = newValue },
-                    context
-                )
-
+                Spacer(modifier = Modifier.height(16.dp))
+                ColorPallete()
                 Spacer(modifier = Modifier.height(16.dp))
                 ColorPicker(context)
                 Spacer(modifier = Modifier.height(20.dp))
@@ -251,75 +230,128 @@ fun ColorSettings(navController: NavController, context: Context) {
         }
     }
 }
-
-
-@OptIn(ExperimentalMaterial3Api::class)
+data class Theme(val name: String, val colors: List<Color>)
 @Composable
-fun ColorInputField(
-    label: String,
-    colorValue: String,
-    onValueChange: (String) -> Unit,
-    context: Context
-) {
-    var isValidColor by remember { mutableStateOf(true) } // State to track validity
+fun ColorPallete(){
+    val oceanTheme = Theme("Ocean", listOf(
+        Color(0xFF00BCD4),
+        Color(0xFF2196F3),
+        Color(0xFF009688),
+        Color(0xFFBBDEFB)
+    ))
+    val sunsetTheme = Theme("Sunset", listOf(
+        Color(0xFFFF9800),
+        Color(0xFFFF5722),
+        Color(0xFFFFEB3B),
+        Color(0xFFFFC107)
+    ))
 
-    Column(
+    val forestTheme = Theme("Forest", listOf(
+        Color(0xFF4CAF50), // Green
+        Color(0xFF388E3C), // Dark Green
+        Color(0xFF8BC34A), // Light Green
+        Color(0xFFCDDC39)  // Lime
+    ))
+
+    val berryTheme = Theme("Berry", listOf(
+        Color(0xFFE91E63), // Pink
+        Color(0xFF9C27B0), // Purple
+        Color(0xFF673AB7), // Deep Purple
+        Color(0xFF3F51B5)  // Indigo
+    ))
+
+    val coffeeTheme = Theme("Coffee", listOf(
+        Color(0xFF795548), // Brown
+        Color(0xFFA1887F), // Light Brown
+        Color(0xFFD7CCC8), // Grey
+        Color(0xFFBCAAA4)  // Light Grey
+    ))
+    val pastelTheme = Theme("Pastel", listOf(
+        Color(0xFFE0BBE4), // Lavender
+        Color(0xFF957DAD), // Dusty Rose
+        Color(0xFFD291BC), // Pale Pink
+        Color(0xFFFEC8D8)  // Peach
+    ))
+
+    val neonTheme = Theme("Neon", listOf(
+        Color(0xFF00FFFF), // Cyan
+        Color(0xFF00FF00), // Green
+        Color(0xFFFF00FF), // Magenta
+        Color(0xFFFF0000)  // Red
+    ))
+
+    val vintageTheme = Theme("Vintage", listOf(
+        Color(0xFFD4AC0D), // Golden Yellow
+        Color(0xFF856D4D), // Brown
+        Color(0xFFF5CBA7), // Beige
+        Color(0xFFF4D03F)  // Bright Yellow
+    ))
+
+    val monochromeTheme = Theme("Monochrome", listOf(
+        Color(0xFF000000), // Black
+        Color(0xFF333333), // Dark Grey
+        Color(0xFFCCCCCC), // Light Grey
+        Color(0xFFFFFFFF)  // White
+    ))
+
+    val tropicalTheme = Theme("Tropical", listOf(
+        Color(0xFF00FF7F), // Spring Green
+        Color(0xFF32CD32), // Lime Green
+        Color(0xFFADFF2F), // Green Yellow
+        Color(0xFF228B22)  // Forest Green
+    ))
+
+    Row(modifier = Modifier
+        .border(
+            width = 1.dp,
+            color = GlobalColors.textColor,
+            shape = RoundedCornerShape(10.dp)
+        )
+        .background(Color.Transparent, RoundedCornerShape(10.dp))
+        .clip(RoundedCornerShape(10.dp))
+        .horizontalScroll(rememberScrollState())
+        .height(200.dp)
+        .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center) {
+        ThemeColorRow(oceanTheme.colors)
+        ThemeColorRow(sunsetTheme.colors)
+        ThemeColorRow(forestTheme.colors)
+        ThemeColorRow(berryTheme.colors)
+        ThemeColorRow(coffeeTheme.colors)
+        ThemeColorRow(pastelTheme.colors)
+        ThemeColorRow(neonTheme.colors)
+        ThemeColorRow(vintageTheme.colors)
+        ThemeColorRow(monochromeTheme.colors)
+        ThemeColorRow(tropicalTheme.colors)
+
+    }
+}
+@Composable
+fun ThemeColorRow(colors: List<Color>) {
+    Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(5.dp)
+            .border(
+                width = 1.dp,
+                color = GlobalColors.textColor,
+                shape = RoundedCornerShape(10.dp)
+            )
+            .fillMaxHeight()
+            .width(350.dp)
+            .background(Color.Transparent, RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(10.dp)) // Add clip modifier here
     ) {
-        Text(
-            text = label,
-            style = CC.descriptionTextStyle(context),
-            color = GlobalColors.textColor
-        )
-        OutlinedTextField(
-            value = colorValue,
-            onValueChange = { newValue ->
-                isValidColor = isValidHexColor("#$newValue")
-                onValueChange(newValue)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(
-                    width = 1.dp,
-                    color = if (isValidColor) GlobalColors.textColor else Color.Red,
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .padding(8.dp)
-                .background(GlobalColors.primaryColor, shape = RoundedCornerShape(8.dp)),
-            textStyle = CC.descriptionTextStyle(context),
-            isError = !isValidColor,
-            colors = TextFieldDefaults.colors(
-                errorIndicatorColor = Color.Red,
-                focusedTextColor = GlobalColors.textColor,
-                unfocusedTextColor = GlobalColors.textColor,
-                focusedIndicatorColor = GlobalColors.textColor,
-                unfocusedIndicatorColor = GlobalColors.secondaryColor
-            ),
-            singleLine = true
-        )
-        if (!isValidColor) {
-            Text(
-                text = "Invalid color code. Ensure it is a valid hex code (e.g., #RRGGBB).",
-                color = Color.Red,
-                style = CC.descriptionTextStyle(context),
-                fontSize = 12.sp
+        colors.forEach { color ->
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(color)
             )
         }
     }
 }
 
-
-// Helper function to check if a string is a valid hex color code
-fun isValidHexColor(colorString: String): Boolean {
-    return try {
-        Color(android.graphics.Color.parseColor(colorString))
-        true
-    } catch (e: IllegalArgumentException) {
-        false
-    }
-}
 
 
 
@@ -555,6 +587,7 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
                 "This is a preview of the selected font.",
                 fontFamily = selectedFontFamily,
                 fontSize = 16.sp,
+                color = GlobalColors.textColor,
                 modifier = Modifier.padding(start = 10.dp)
             )
         }
@@ -567,11 +600,14 @@ fun CustomTextStyle(context: Context, onFontSelected: (FontFamily) -> Unit) {
                 selectedFontFamily?.let { onFontSelected(it) }
                 fontUpdated = !fontUpdated // Trigger recomposition in parent
             },
+            colors = ButtonDefaults.buttonColors(GlobalColors.primaryColor),
+            shape = RoundedCornerShape(10.dp),
             modifier = Modifier
+                .width(200.dp)
                 .align(Alignment.CenterHorizontally)
                 .padding(bottom = 16.dp)
         ) {
-            Text("Save")
+            Text("Save", style = CC.descriptionTextStyle(context))
         }
     }
 }
