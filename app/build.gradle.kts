@@ -60,6 +60,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.fragment.ktx) // Or a newer version
     implementation(libs.coil.kt.coil.compose)
     implementation (libs.accompanist.pager)
     implementation (libs.accompanist.pager.indicators)
