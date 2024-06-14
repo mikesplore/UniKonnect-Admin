@@ -56,7 +56,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
     var venue by remember { mutableStateOf("") }
     var lecturer by remember { mutableStateOf("") }
     var unitName by remember { mutableStateOf("") }
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var selectedTabIndex by remember { mutableIntStateOf(CC.currentDayID() - 1) }
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     var loading by remember { mutableStateOf(true) }
