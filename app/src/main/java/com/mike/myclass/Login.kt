@@ -1,6 +1,7 @@
 package com.mike.myclass
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
@@ -23,7 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
 import com.mike.myclass.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
@@ -55,9 +58,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                     title = {
                         Text(
                             text = if (isSigningUp) "Sign Up" else "Sign In",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = GlobalColors.textColor
+                            style = CC.titleTextStyle(context)
                         )
                     },
                     navigationIcon = {
@@ -93,9 +94,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                 ) {
                     Text(
                         text = if (isSigningUp) "Sign up with one of the following options" else "Sign in with one of the following options",
-                        fontSize = 16.sp,
-                        color = GlobalColors.textColor,
-                        modifier = Modifier.align(Alignment.Start)
+                        style = CC.descriptionTextStyle(context)
                     )
 
                     Row(
@@ -118,6 +117,16 @@ fun LoginScreen(navController: NavController, context: Context) {
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 navController.navigate("moredetails")
+                                FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+                                    if (!task.isSuccessful) {
+
+                                        Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                                        return@OnCompleteListener
+                                    }
+                                    // retrieve device token and send to database
+                                    val token = task.result
+                                    MyDatabase.writeFcmToken(token = Fcm(token = token))
+                                })
                             },
                             onSignInFailure = {
                                 Toast.makeText(context, "Sign-in failed: $it", Toast.LENGTH_SHORT)
@@ -134,6 +143,16 @@ fun LoginScreen(navController: NavController, context: Context) {
                                 val user = firebaseAuth.currentUser
                                 Details.email.value = user?.email.toString()
                                 navController.navigate("moredetails")
+                                FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+                                    if (!task.isSuccessful) {
+
+                                        Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                                        return@OnCompleteListener
+                                    }
+                                    // retrieve device token and send to database
+                                    val token = task.result
+                                    MyDatabase.writeFcmToken(token = Fcm(token = token))
+                                })
                             },
                             onSignInFailure = {
                                 Toast.makeText(context, "Sign-in failed: $it", Toast.LENGTH_SHORT)
@@ -254,6 +273,17 @@ fun LoginScreen(navController: NavController, context: Context) {
                                                     Toast.LENGTH_SHORT
                                                 ).show()
                                                 navController.navigate("dashboard")
+                                                FirebaseMessaging.getInstance().token.addOnCompleteListener(
+                                                    OnCompleteListener { task ->
+                                                    if (!task.isSuccessful) {
+
+                                                        Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                                                        return@OnCompleteListener
+                                                    }
+                                                    // retrieve device token and send to database
+                                                    val token = task.result
+                                                    MyDatabase.writeFcmToken(token = Fcm(token = token))
+                                                })
                                             } else {
                                                 loading = false
                                                 Toast.makeText(
@@ -284,7 +314,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                                     trackColor = GlobalColors.textColor
                                 )
                             } else {
-                                Text(if (isSigningUp) "Sign Up" else "Sign In")
+                                Text(if (isSigningUp) "Sign Up" else "Sign In", style = CC.descriptionTextStyle(context = context))
                             }
                         }
                     }
