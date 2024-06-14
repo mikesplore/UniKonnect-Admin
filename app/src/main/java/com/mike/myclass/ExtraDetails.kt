@@ -111,7 +111,7 @@ fun MoreDetails(context: Context, navController: NavController) {
                     }
                 } else {
                     loading = false
-                    Toast.makeText(context, "Email does not exist", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Add your name", Toast.LENGTH_SHORT).show()
                 }
             }
         }
