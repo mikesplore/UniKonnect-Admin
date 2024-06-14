@@ -440,7 +440,7 @@ fun Dashboard(navController: NavController, context: Context) {
                         .fillMaxWidth()
                         .weight(1f),
                 ) {
-                    var selectedTabIndex by remember { mutableIntStateOf(1) }
+                    var selectedTabIndex by remember { mutableIntStateOf(3) }
                     val configuration = LocalConfiguration.current
                     val screenWidth = configuration.screenWidthDp.dp
                     val tabRowHorizontalScrollState by remember { mutableStateOf(ScrollState(0)) }
@@ -501,10 +501,10 @@ fun Dashboard(navController: NavController, context: Context) {
 
                     when (selectedTabIndex) {
                         0 -> AnnouncementItem(context)
-                        1 -> DocumentationItem()
+                        1 -> AttendanceItem()
                         2 -> TimetableItem(context)
                         3 -> AssignmentsItem()
-                        4 -> AttendanceItem()
+                        4 -> DocumentationItem()
                         5 -> ManageUsersItem()
                         else -> {}
                     }
@@ -858,7 +858,8 @@ fun TimetableItem(context: Context) {
                                 .padding(vertical = 8.dp),
                             elevation = CardDefaults.elevatedCardElevation(4.dp)
                         ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
+                            Column(modifier = Modifier
+                                .padding(16.dp)) {
                                 Text(
                                     text = timetableItem.unitName, // Assuming you have a unitName property
                                     style = CC.titleTextStyle(context)
@@ -929,6 +930,11 @@ fun TimetableItem(context: Context) {
 
             Column(
                 modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = GlobalColors.textColor,
+                        shape = RoundedCornerShape(10.dp)
+                    )
                     .verticalScroll(rememberScrollState())
                     .height(300.dp)
                     .fillMaxWidth(),
@@ -977,11 +983,11 @@ fun AssignmentsItem() {
 
 @Composable
 fun DocumentationItem() {
-    Column(modifier = Modifier
-        .background(GlobalColors.primaryColor)
-        .fillMaxSize()) {
-        WebViewScreen("https://github.com/mikesplore")
-    }
+//    Column(modifier = Modifier
+//        .background(GlobalColors.primaryColor)
+//        .fillMaxSize()) {
+//        WebViewScreen("https://github.com/mikesplore")
+//    }
 
 }
 
@@ -1024,7 +1030,7 @@ fun MyOutlinedTextField(
     context: Context,
     modifier: Modifier = Modifier
 ) {
-    OutlinedTextField(
+    TextField(
         label = { Text(label, style = CC.descriptionTextStyle(context)) },
         singleLine = true,
         value = value,
@@ -1035,8 +1041,8 @@ fun MyOutlinedTextField(
             .height(50.dp)
             .fillMaxWidth(0.8f),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = GlobalColors.primaryColor,
-            unfocusedContainerColor = GlobalColors.primaryColor,
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
             focusedIndicatorColor = GlobalColors.textColor,
             unfocusedLabelColor = GlobalColors.secondaryColor,
             focusedLabelColor = GlobalColors.textColor,
