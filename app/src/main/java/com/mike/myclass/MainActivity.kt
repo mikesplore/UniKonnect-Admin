@@ -64,14 +64,15 @@ class MainActivity : ComponentActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        GlobalColors.loadColorScheme(this)
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
 
-                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
                 return@OnCompleteListener
             }
-            // retrieve device token and send to database
+            // retrieve device token and send to database.
             val token = task.result
+            Toast.makeText(this, token, Toast.LENGTH_SHORT).show()
             MyDatabase.writeFcmToken(token = Fcm(token = token))
         })
         enableEdgeToEdge()
@@ -171,7 +172,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "login") {
+        NavHost(navController = navController, startDestination = "dashboard") {
             composable("login",
                 exitTransition = {
                     slideOutOfContainer(
