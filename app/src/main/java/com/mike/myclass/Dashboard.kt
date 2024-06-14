@@ -1217,11 +1217,11 @@ fun AssignmentsItem(context: Context) {
 
 @Composable
 fun DocumentationItem() {
-//    Column(modifier = Modifier
-//        .background(GlobalColors.primaryColor)
-//        .fillMaxSize()) {
-//        WebViewScreen("https://github.com/mikesplore")
-//    }
+    Column(modifier = Modifier
+        .background(GlobalColors.primaryColor)
+        .fillMaxSize()) {
+        WebViewScreen("https://github.com/mikesplore/My-Class")
+    }
 
 }
 
