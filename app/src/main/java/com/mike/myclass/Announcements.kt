@@ -79,12 +79,13 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
             isLoading = false
         }
     }
+    Details.totalAnnouncements.value = announcements.size
 
 
     var addAnnouncementDialog by remember { mutableStateOf(false) }
     var editAnnouncementDialog by remember { mutableStateOf(false) }
 
-    var showNotification  = remember { mutableStateOf(false)}
+    val showNotification  = remember { mutableStateOf(false)}
     val calendar = Calendar.getInstance()
     val day = calendar.get(Calendar.DAY_OF_MONTH)
     val month = calendar.get(Calendar.MONTH)
