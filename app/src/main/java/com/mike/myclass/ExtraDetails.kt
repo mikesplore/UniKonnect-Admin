@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.database.*
+import com.mike.myclass.MyDatabase.getAnnouncements
 import com.mike.myclass.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +41,50 @@ fun MoreDetails(context: Context, navController: NavController) {
             }
         })
     }
+
+    var mloading by remember { mutableStateOf(true) }
+    val subjects = remember { mutableStateListOf<Subjects>() }
+    val subjectId by remember { mutableStateOf("") }
+    val announcements = remember { mutableStateListOf<Announcement>() }
+    var assignments by remember { mutableStateOf<List<Assignment>?>(null) }
+    val timetables = remember { mutableStateListOf<Timetable>() }
+    val days = remember { mutableStateListOf<Day>() }
+
+    LaunchedEffect(mloading) {
+        getAnnouncements { fetchedAnnouncements ->
+            announcements.addAll(fetchedAnnouncements ?: emptyList())
+        }
+        MyDatabase.getAssignments(subjectId) { fetchedAssignments ->
+            assignments = fetchedAssignments
+        }
+        MyDatabase.getSubjects { fetchedSubjects ->
+            subjects.addAll(fetchedSubjects ?: emptyList())
+        }
+        MyDatabase.getUsers { fetchedUsers ->
+            users = fetchedUsers
+        }
+        MyDatabase.getDays { fetchedDays ->
+            days.clear()
+            days.addAll(fetchedDays ?: emptyList())
+        }
+        mloading = false
+        Details.totalAssignments.value = assignments?.size ?: 0
+        Details.totalusers.value = users?.size ?: 0
+
+    }
+    if(mloading){
+        BasicAlertDialog(onDismissRequest = {}) {
+            Column(modifier = Modifier.height(200.dp)) {
+                CircularProgressIndicator(
+                    color = GlobalColors.primaryColor,
+                    trackColor = GlobalColors.textColor
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                Text("Loading Data...Please wait", style = CC.descriptionTextStyle(LocalContext.current))
+            }
+        }
+    }
+
     var emailFound by remember { mutableStateOf(false) }
     var loading by remember {  mutableStateOf(true)}
     var addloading by remember { mutableStateOf(false) }
