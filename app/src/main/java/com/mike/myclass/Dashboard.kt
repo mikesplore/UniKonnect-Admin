@@ -1,6 +1,7 @@
 package com.mike.myclass
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.EaseInOut
@@ -39,6 +40,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Announcement
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AssignmentInd
+import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PendingActions
@@ -185,7 +187,10 @@ fun Dashboard(navController: NavController, context: Context) {
                             Text("Absent: $absent", style = CC.descriptionTextStyle(context))
                             Spacer(modifier = Modifier.height(10.dp))
                             Button(
-                                onClick = {},
+                                onClick = {
+                                    navController.navigate("attendance")
+                                    Toast.makeText(context,"Attendance screen has some bugs", Toast.LENGTH_SHORT).show()
+                                },
                                 modifier = Modifier
                                     .padding(start = 5.dp)
                                     .fillMaxWidth(),
@@ -275,11 +280,14 @@ fun Dashboard(navController: NavController, context: Context) {
                                                 // Handle the failure, e.g., display an error message
                                                 if (exception != null) {
                                                     Toast.makeText(context, "Error submitting feedback: ${exception.message}", Toast.LENGTH_SHORT).show()
+                                                    Log.e("Feedback", "Error submitting feedback: ${exception.message}")
                                                     loading = false
                                                     dialog = false
                                                 }
                                             }
-                                        )}
+                                        )}else{
+                                            Toast.makeText(context,"Empty field!", Toast.LENGTH_SHORT).show()
+                                        }
                                 },
                                     shape = RoundedCornerShape(10.dp),
                                     colors = ButtonDefaults.buttonColors(
@@ -502,7 +510,7 @@ fun Dashboard(navController: NavController, context: Context) {
                         DropdownMenuItem(text = {
                             Row {
                                 Icon(
-                                    Icons.Default.ManageAccounts,
+                                    Icons.Default.Colorize,
                                     contentDescription = "",
                                     tint = GlobalColors.textColor
                                 )
