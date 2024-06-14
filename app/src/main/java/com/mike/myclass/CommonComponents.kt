@@ -24,7 +24,12 @@ import androidx.compose.ui.unit.sp
 
 
 object CommonComponents {
-
+    private val calendar: Calendar = Calendar.getInstance()
+    private val day = calendar.get(Calendar.DAY_OF_MONTH)
+    private val currentday = calendar.get(Calendar.DAY_OF_WEEK)
+    private val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-indexed, so add 1
+    private val year = calendar.get(Calendar.YEAR)
+    val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
     @Composable
     fun PasswordTextField(
         modifier: Modifier = Modifier,
@@ -123,11 +128,33 @@ object CommonComponents {
 
     @Composable
     fun currentDate(): String {
-        val calendar = Calendar.getInstance()
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-        val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-indexed, so add 1
-        val year = calendar.get(Calendar.YEAR)
         return "$day/$month/$year"
+    }
+
+    fun currentDay(): String {
+        return when (dayOfWeek) {
+            Calendar.SUNDAY -> "Sunday"
+            Calendar.MONDAY -> "Monday"
+            Calendar.TUESDAY -> "Tuesday"
+            Calendar.WEDNESDAY -> "Wednesday"
+            Calendar.THURSDAY -> "Thursday"
+            Calendar.FRIDAY -> "Friday"
+            Calendar.SATURDAY -> "Saturday"
+            else -> "Invalid Day" // This should never happen
+        }
+    }
+
+    fun currentDayID(): Int {
+        return when (dayOfWeek) {
+            Calendar.SUNDAY -> 0
+            Calendar.MONDAY -> 1
+            Calendar.TUESDAY -> 2
+            Calendar.WEDNESDAY -> 3
+            Calendar.THURSDAY -> 4
+            Calendar.FRIDAY -> 5
+            Calendar.SATURDAY -> 6
+            else -> 0
+        }
     }
 
 
@@ -158,26 +185,3 @@ object CommonComponents {
         )
     }
 }
-/*
-Hello there, it me here with you altogether ckwqv    f
-  e ef
-  efv es]ewv  fn sdjv]fve
-  sdvswvsvewvwaa sdfsd sfd sfs fsf sfs we will be herer rfew fe ww
-  sdfhf
-  sfj
-  sf
-  ccxcxasa sdcs fs s fsfsdsfvfdsv fdsv
-  sfdv sfvs
-  fv fv f
-  f vs]vv svds
-  vsvsf v]sds ]s
-  sv sfvs
-  sfv fvs
-
-  sfvs vsww
-  fvfsvs
-  sve
-  eev
-  e
-and i will be with tou to getrfsvfv  d kev   d j d e
- */
