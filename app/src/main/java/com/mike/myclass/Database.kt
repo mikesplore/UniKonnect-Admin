@@ -1,15 +1,12 @@
 package com.mike.myclass
 
-import android.content.Context
 import android.util.Log
-import androidx.compose.ui.platform.LocalContext
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import java.util.Calendar
-
 
 
 open class User(
@@ -23,7 +20,7 @@ open class Admin(
 
     val password: String = ""
 
-): User()
+) : User()
 
 data class Timetable(
     val id: String = MyDatabase.generateTimetableID(),
@@ -40,17 +37,14 @@ data class Subjects(
     val name: String = "",
 
     )
-data class Student(
-    val id: String = MyDatabase.generateIndexNumber(),
-    val firstName: String)
 
-data class AttendanceRecord(
-    val studentId: String,
-    val dayOfWeek: String,
-    val isPresent: Boolean,
-    val lesson: String
+data class Student(
+    val id: String = MyDatabase.generateIndexNumber(), val firstName: String
 )
 
+data class AttendanceRecord(
+    val studentId: String, val dayOfWeek: String, val isPresent: Boolean, val lesson: String
+)
 
 
 data class Assignment(
@@ -62,8 +56,7 @@ data class Assignment(
 )
 
 data class Day(
-    val id: String = MyDatabase.generateDayID(),
-    val name: String = ""
+    val id: String = MyDatabase.generateDayID(), val name: String = ""
 )
 
 data class Announcement(
@@ -75,8 +68,7 @@ data class Announcement(
 )
 
 data class Fcm(
-    val id: String = MyDatabase.generateFcmID(),
-    val token: String = ""
+    val id: String = MyDatabase.generateFcmID(), val token: String = ""
 )
 
 object MyDatabase {
@@ -101,6 +93,7 @@ object MyDatabase {
         userID++
         return "CP$currentID$year"
     }
+
     fun generateFcmID(): String {
         val currentID = FcmID
         FcmID++
@@ -164,6 +157,7 @@ object MyDatabase {
             }
         })
     }
+
     //send the token to the database
     fun writeFcmToken(token: Fcm) {
         database.child("FCM").child(token.id).setValue(token)
@@ -192,6 +186,40 @@ object MyDatabase {
             })
     }
 
+    fun getCurrentDayTimetable(dayName: String, onTimetableFetched: (List<Timetable>?) -> Unit) {
+        // Step 1: Fetch the dayId from the Day node using the dayName
+        database.child("Days").orderByChild("name").equalTo(dayName)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val dayId = snapshot.children.firstOrNull()?.key
+
+                    if (dayId != null) {
+                        // Step 2: Use the fetched dayId to query the Timetable node
+                        database.child("Timetable").orderByChild("dayId").equalTo(dayId)
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    val timetable =
+                                        snapshot.children.mapNotNull { it.getValue(Timetable::class.java) }
+                                    onTimetableFetched(timetable)
+                                }
+
+                                override fun onCancelled(error: DatabaseError) {
+                                    onTimetableFetched(null)
+                                }
+                            })
+                    } else {
+                        // Day not found
+                        onTimetableFetched(null)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    onTimetableFetched(null)
+                }
+            })
+    }
+
+
     fun editTimetable(timetable: Timetable, onComplete: (Boolean) -> Unit) {
         database.child("Timetable").child(timetable.id).setValue(timetable)
             .addOnCompleteListener { task ->
@@ -200,10 +228,9 @@ object MyDatabase {
     }
 
     fun deleteTimetable(timetableId: String, onComplete: (Boolean) -> Unit) {
-        database.child("Timetable").child(timetableId).removeValue()
-            .addOnCompleteListener { task ->
-                onComplete(task.isSuccessful)
-            }
+        database.child("Timetable").child(timetableId).removeValue().addOnCompleteListener { task ->
+            onComplete(task.isSuccessful)
+        }
     }
 
     fun editSubject(subject: Subjects, onComplete: (Boolean) -> Unit) {
@@ -234,10 +261,9 @@ object MyDatabase {
     }
 
     fun writeDays(day: Day, onComplete: (Boolean) -> Unit) {
-        database.child("Days").child(day.id).setValue(day)
-            .addOnCompleteListener { task ->
-                onComplete(task.isSuccessful)
-            }
+        database.child("Days").child(day.id).setValue(day).addOnCompleteListener { task ->
+            onComplete(task.isSuccessful)
+        }
     }
 
     fun getDays(onSubjectsFetched: (List<Day>?) -> Unit) {
@@ -369,6 +395,21 @@ object MyDatabase {
 
                 override fun onCancelled(error: DatabaseError) {
                     onAttendanceRecordsLoaded(null)
+                }
+            })
+    }
+
+    //fetch the day id using the day name
+    fun getDayIdByName(dayName: String, onDayIdFetched: (String?) -> Unit) {
+        database.child("Days").orderByChild("name").equalTo(dayName)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val dayId = snapshot.children.firstOrNull()?.key
+                    onDayIdFetched(dayId)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    onDayIdFetched(null)
                 }
             })
     }
