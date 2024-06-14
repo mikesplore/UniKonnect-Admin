@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PendingActions
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -216,6 +217,97 @@ fun Dashboard(navController: NavController, context: Context) {
 
         @Composable
         fun SecondBox() {
+            var loading by remember { mutableStateOf(false) }
+            var dialog by remember { mutableStateOf(false) }
+            var message by remember { mutableStateOf("") }
+            if(dialog){
+                BasicAlertDialog(onDismissRequest = {loading = false}) {
+                    Column(modifier = Modifier
+                        .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp))
+                        .width(200.dp)) {
+                        Row(modifier = Modifier
+                            .padding(10.dp)
+                            .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center) {
+                            Text("Feedback", style = CC.titleTextStyle(context))
+                        }
+                        Column(modifier = Modifier
+
+                            .fillMaxWidth()) {
+                            OutlinedTextField(
+                                value = message,
+                                onValueChange = {message = it},
+                                label = { Text("Feedback", style = CC.descriptionTextStyle(context)) },
+                                modifier = Modifier
+                                    .padding(10.dp),
+                                colors = TextFieldDefaults.colors(
+                                    focusedIndicatorColor = GlobalColors.secondaryColor,
+                                    unfocusedIndicatorColor = GlobalColors.textColor,
+                                    focusedContainerColor = GlobalColors.primaryColor,
+                                    unfocusedContainerColor = GlobalColors.primaryColor,
+                                    focusedTextColor = GlobalColors.textColor,
+                                    unfocusedTextColor = GlobalColors.textColor,
+                                    focusedLabelColor = GlobalColors.secondaryColor,
+                                    unfocusedLabelColor = GlobalColors.textColor
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Row (modifier = Modifier
+                                .padding(bottom = 10.dp)
+                                .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceEvenly){
+                                Button(onClick = {
+                                    loading  = true
+                                    if(message.isNotEmpty()){
+                                        MyDatabase.writeFeedback(feedback = Feedback(
+                                            message = message,
+                                            sender = Details.name.value
+                                        
+                                        ),
+                                            onSuccess = {
+                                                // Show success message or perform other actions
+                                                Toast.makeText(context, "Feedback submitted successfully!", Toast.LENGTH_SHORT).show()
+                                                loading = false
+                                                dialog = false
+                                            },
+                                            onFailure = { exception ->
+                                                // Handle the failure, e.g., display an error message
+                                                if (exception != null) {
+                                                    Toast.makeText(context, "Error submitting feedback: ${exception.message}", Toast.LENGTH_SHORT).show()
+                                                    loading = false
+                                                    dialog = false
+                                                }
+                                            }
+                                        )}
+                                },
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = GlobalColors.primaryColor
+                                    )
+                                ) {
+                                    Text("Send", style = CC.descriptionTextStyle(context = context))
+                                }
+                                if(loading){
+                                    CircularProgressIndicator(
+                                        color = GlobalColors.textColor,
+                                        trackColor = GlobalColors.primaryColor
+                                    )
+                                }
+                                Button(onClick = {dialog = false},
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = GlobalColors.primaryColor
+                                    )
+                                ) {
+                                    Text("Cancel", style = CC.descriptionTextStyle(context = context))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             val brush = Brush.linearGradient(
                 listOf(
                     GlobalColors.secondaryColor,
@@ -223,19 +315,50 @@ fun Dashboard(navController: NavController, context: Context) {
                     GlobalColors.secondaryColor
                 )
             )
-            Box(
+            Column(
                 modifier = Modifier
                     .border(
                         width = 1.dp,
                         color = GlobalColors.textColor,
                         shape = RoundedCornerShape(10.dp)
                     )
+                    .background(CC.backbrush)
                     .fillMaxHeight()
                     .width(350.dp)
                     .background(brush, RoundedCornerShape(10.dp)),
-                contentAlignment = Alignment.Center
             ) {
-                Text("Second one", style = CC.descriptionTextStyle(context))
+                Row(modifier = Modifier
+                    .padding(5.dp)
+                    .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center) {
+                    Text(" End of Content", style = CC.titleTextStyle(context), fontSize = 18.sp)
+                }
+                Column(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(5.dp),
+                    verticalArrangement = Arrangement.SpaceEvenly,
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(" Nimeishiwa na content. The app is not yet complete", style = CC.descriptionTextStyle(context), textAlign = TextAlign.Center)
+                    Text("Take time and explore the app", style = CC.descriptionTextStyle(context))
+                    Text("Ukipata any Idea nitumie hapa", style = CC.descriptionTextStyle(context))
+                    Button(onClick = {
+                        dialog = true
+                    },
+                        modifier = Modifier.border(
+                            width = 1.dp,
+                            shape = RoundedCornerShape(10.dp),
+                            color = GlobalColors.textColor
+                        ),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = GlobalColors.primaryColor
+                        )
+                    ) {
+                        Text("Suggestions", style = CC.descriptionTextStyle(context))
+                    }
+
+                }
             }
         }
 
@@ -440,7 +563,7 @@ fun Dashboard(navController: NavController, context: Context) {
                         .fillMaxWidth()
                         .weight(1f),
                 ) {
-                    var selectedTabIndex by remember { mutableIntStateOf(3) }
+                    var selectedTabIndex by remember { mutableIntStateOf(0) }
                     val configuration = LocalConfiguration.current
                     val screenWidth = configuration.screenWidthDp.dp
                     val tabRowHorizontalScrollState by remember { mutableStateOf(ScrollState(0)) }
@@ -449,7 +572,7 @@ fun Dashboard(navController: NavController, context: Context) {
                         "Attendance",
                         "Timetable",
                         "Assignments",
-                        "Manage Students",
+                        "Manage Users",
                         "Documentation",
                     )
                     val indicator = @Composable { tabPositions: List<TabPosition> ->
@@ -503,18 +626,20 @@ fun Dashboard(navController: NavController, context: Context) {
                         0 -> AnnouncementItem(context)
                         1 -> AttendanceItem()
                         2 -> TimetableItem(context)
-                        3 -> AssignmentsItem()
-                        4 -> DocumentationItem()
-                        5 -> ManageUsersItem()
+                        3 -> AssignmentsItem(context)
+                        4 -> ManageUsersItem(context)
+                        5 -> DocumentationItem()
                         else -> {}
                     }
-
-
                 }
-                //the tabs column ends here
             }
         }
     }
+}
+
+@Composable
+fun AttendanceItem(){
+    Text("Attendance")
 }
 
 @Composable
@@ -780,11 +905,10 @@ fun QuickInput(
 
 }
 
-@Composable
-fun AttendanceItem() {
-    Text("Attendance")
-}
 
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimetableItem(context: Context) {
     var loading by remember { mutableStateOf(true) }
@@ -802,7 +926,8 @@ fun TimetableItem(context: Context) {
 
     Column(
         modifier = Modifier
-            .fillMaxHeight()
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         Row(
@@ -844,7 +969,8 @@ fun TimetableItem(context: Context) {
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .height(300.dp),
                     contentPadding = PaddingValues(16.dp)
                 ) {
                     items(timetable ?: emptyList()) { timetableItem ->
@@ -858,8 +984,10 @@ fun TimetableItem(context: Context) {
                                 .padding(vertical = 8.dp),
                             elevation = CardDefaults.elevatedCardElevation(4.dp)
                         ) {
-                            Column(modifier = Modifier
-                                .padding(16.dp)) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                            ) {
                                 Text(
                                     text = timetableItem.unitName, // Assuming you have a unitName property
                                     style = CC.titleTextStyle(context)
@@ -877,47 +1005,56 @@ fun TimetableItem(context: Context) {
                     }
                 }
             }
-            var dayId  =""
+            var dayId by remember { mutableStateOf("") }
             var venue by remember { mutableStateOf("") }
             var lecturer by remember { mutableStateOf("") }
             var startTime by remember { mutableStateOf("") }
             var endTime by remember { mutableStateOf("") }
             var unitName by remember { mutableStateOf("") }
-            MyDatabase.getDayIdByName(CC.currentDay()) { fetchedDayId ->
-                if (fetchedDayId != null) {
-                     dayId = fetchedDayId
+
+            LaunchedEffect(currentDay) {
+                MyDatabase.getDayIdByName(currentDay) { fetchedDayId ->
+                    if (fetchedDayId != null) {
+                        dayId = fetchedDayId
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(modifier = Modifier
-                .padding(start = 20.dp, end = 20.dp)
-                .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically) {
-                Text("Make quick timetable Item", style = CC.titleTextStyle(context))
-                Button(onClick = {
-                    if(lecturer.isNotEmpty() && venue.isNotEmpty()
-                        && startTime.isNotEmpty() && endTime.isNotEmpty() && unitName.isNotEmpty()){
-                        MyDatabase.writeTimetable(timetable = Timetable(
-                            dayId = dayId,
-                            unitName = unitName,
-                            lecturer = lecturer,
-                            venue = venue,
-                            startTime = startTime,
-                            endTime = endTime
-                        ), onComplete = {
-                            Toast.makeText(
-                                context, "Timetable item Added", Toast.LENGTH_SHORT
 
-                            ).show()
-                            showNotification(
-                                context,
-                                title = "New Timetable Item",
-                                message = "${Details.name.value} added an Event.  "
-                            )
-                        })
-                    }
-                },
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier
+                    .padding(bottom = 10.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Make quick Event", style = CC.titleTextStyle(context), fontSize = 18.sp)
+                Button(
+                    onClick = {
+                        if (lecturer.isNotEmpty() && venue.isNotEmpty()
+                            && startTime.isNotEmpty() && endTime.isNotEmpty() && unitName.isNotEmpty()
+                        ) {
+                            MyDatabase.writeTimetable(timetable = Timetable(
+                                dayId = dayId,
+                                unitName = unitName,
+                                lecturer = lecturer,
+                                venue = venue,
+                                startTime = startTime,
+                                endTime = endTime
+                            ), onComplete = {
+                                Toast.makeText(
+                                    context, "Timetable item Added", Toast.LENGTH_SHORT
+
+                                ).show()
+                                showNotification(
+                                    context,
+                                    title = "New Timetable Item",
+                                    message = "${Details.name.value} added an Event."
+                                )
+                            })
+                        }
+                    },
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = GlobalColors.secondaryColor
@@ -926,7 +1063,6 @@ fun TimetableItem(context: Context) {
                     Text("Post", style = CC.descriptionTextStyle(context))
                 }
             }
-            
 
             Column(
                 modifier = Modifier
@@ -935,38 +1071,37 @@ fun TimetableItem(context: Context) {
                         color = GlobalColors.textColor,
                         shape = RoundedCornerShape(10.dp)
                     )
-                    .verticalScroll(rememberScrollState())
-                    .height(300.dp)
+                    .padding(16.dp)
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 MyOutlinedTextField(
                     value = unitName,
-                    onValueChange = {unitName = it},
+                    onValueChange = { unitName = it },
                     label = "Unit Name",
                     context
                 )
                 MyOutlinedTextField(
                     value = startTime,
-                    onValueChange = {startTime = it},
+                    onValueChange = { startTime = it },
                     label = "Start time",
                     context
                 )
                 MyOutlinedTextField(
                     value = endTime,
-                    onValueChange = {endTime = it},
+                    onValueChange = { endTime = it },
                     label = "End time",
                     context
                 )
                 MyOutlinedTextField(
                     value = venue,
-                    onValueChange = {venue = it},
+                    onValueChange = { venue = it },
                     label = "Venue",
                     context
                 )
                 MyOutlinedTextField(
                     value = lecturer,
-                    onValueChange = {lecturer = it},
+                    onValueChange = { lecturer = it },
                     label = "Lecturer Name",
                     context
                 )
@@ -976,9 +1111,100 @@ fun TimetableItem(context: Context) {
 }
 
 
+
 @Composable
-fun AssignmentsItem() {
-    Text("Assignments")
+fun AssignmentsItem(context: Context) {
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    var loading by remember { mutableStateOf(true) }
+    val subjects = remember { mutableStateListOf<Subjects>() }
+    LaunchedEffect(Unit) {
+        MyDatabase.getSubjects { fetchedSubjects ->
+            subjects.clear()
+            subjects.addAll(fetchedSubjects ?: emptyList())
+            loading = false
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Row(modifier = Modifier
+            .padding(10.dp)
+            .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) { Text("Available Assignments", style = CC.titleTextStyle(context))
+        }
+        val indicator = @Composable { tabPositions: List<TabPosition> ->
+            Box(
+                modifier = Modifier
+                    .tabIndicatorOffset(tabPositions[selectedTabIndex])
+                    .height(4.dp)
+                    .width(screenWidth / (subjects.size.coerceAtLeast(1))) // Avoid division by zero
+                    .background(GlobalColors.secondaryColor, CircleShape)
+            )
+        }
+        val coroutineScope = rememberCoroutineScope()
+
+        if (loading) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CircularProgressIndicator(
+                    color = GlobalColors.secondaryColor,
+                    trackColor = GlobalColors.textColor
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text("Loading Units", style = CC.descriptionTextStyle(context))
+
+            }
+
+        } else {
+
+            ScrollableTabRow(
+                selectedTabIndex = selectedTabIndex,
+                modifier = Modifier.background(Color.LightGray),
+                contentColor = Color.Black,
+                indicator = indicator,
+                edgePadding = 0.dp,
+                containerColor = GlobalColors.primaryColor
+            ) {
+                subjects.forEachIndexed { index, subject ->
+
+                    Tab(selected = selectedTabIndex == index, onClick = {
+                        selectedTabIndex = index
+                        coroutineScope.launch {
+                            // Load assignments for the selected subject
+                        }
+                    }, text = {
+
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    if (selectedTabIndex == index) GlobalColors.secondaryColor else GlobalColors.primaryColor,
+                                    RoundedCornerShape(8.dp)
+                                )
+                                .padding(8.dp), contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = subject.name,
+                                color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
+                            )
+                        }
+                    }, modifier = Modifier.background(GlobalColors.primaryColor)
+                    )
+                }
+            }
+
+            when (selectedTabIndex) {
+                in subjects.indices -> {
+                    AssignmentsList(subjectId = subjects[selectedTabIndex].id, context)
+                }
+            }
+        }
+
+    }
 }
 
 @Composable
@@ -992,9 +1218,65 @@ fun DocumentationItem() {
 }
 
 @Composable
-fun ManageUsersItem() {
-    Text("Manage Users")
+fun ManageUsersItem(context: Context) {
+    var users by remember { mutableStateOf<List<User>?>(null) }
+    var loading by remember { mutableStateOf(true) }
 
+    LaunchedEffect(Unit) {
+        MyDatabase.getUsers { fetchedUsers ->
+            users = fetchedUsers
+            loading = false
+        }
+    }
+
+    if (loading) {
+        // Show a loading indicator
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            CircularProgressIndicator(
+                color = GlobalColors.textColor,
+                trackColor = GlobalColors.primaryColor,
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Loading users...", style = CC.descriptionTextStyle(context))
+        }
+    } else {
+        users?.let { userList ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                items(userList) { user ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = CardDefaults.cardColors(GlobalColors.secondaryColor),
+                        elevation = CardDefaults.elevatedCardElevation(4.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = user.name,
+                                style = CC.titleTextStyle(context)
+                            )
+                            Text(
+                                text = user.email,
+                                style = CC.descriptionTextStyle(context)
+                            )
+                        }
+                    }
+                }
+            }
+        } ?: run {
+            // Handle the case where users is null (e.g., no users found)
+            Text("No users found.", style = CC.descriptionTextStyle(context))
+        }
+    }
 }
 
 @Composable
@@ -1038,7 +1320,6 @@ fun MyOutlinedTextField(
         textStyle = CC.descriptionTextStyle(context),
         modifier = modifier
             .padding(top = 10.dp)
-            .height(50.dp)
             .fillMaxWidth(0.8f),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.Transparent,
