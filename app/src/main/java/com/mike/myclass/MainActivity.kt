@@ -22,17 +22,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,18 +54,23 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
+import com.mike.myclass.MyDatabase.getAnnouncements
 import com.mike.myclass.CommonComponents as CC
 
 object Details {
     var email: MutableState<String> = mutableStateOf("")
-    var name: MutableState<String> = mutableStateOf("Mike")
+    var name: MutableState<String> = mutableStateOf("")
     var showdialog: MutableState<Boolean> = mutableStateOf(true)
+    var totalusers: MutableState<Int> = mutableStateOf(0)
+    var totalAnnouncements: MutableState<Int> = mutableStateOf(0)
+    var totalAssignments: MutableState<Int> = mutableStateOf(0)
 }
 
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         GlobalColors.loadColorScheme(this)
@@ -78,6 +87,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
         setContent {
+            //we will load all the data from the database upon app start
 
             NavigationMap()
         }
@@ -172,7 +182,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "dashboard") {
+        NavHost(navController = navController, startDestination = "login") {
             composable("login",
                 exitTransition = {
                     slideOutOfContainer(
