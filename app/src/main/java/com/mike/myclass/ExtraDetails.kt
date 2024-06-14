@@ -40,22 +40,34 @@ fun MoreDetails(context: Context, navController: NavController) {
             }
         })
     }
+    var emailFound by remember { mutableStateOf(false) }
     var loading by remember {  mutableStateOf(true)}
     var addloading by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         MyDatabase.getUsers { fetchedUsers ->
             users = fetchedUsers
-        }
 
-        checkEmailExists(Details.email.value) { exists ->
-            if (exists) {
-                loading = false
-                Toast.makeText(context, "Your data already exists", Toast.LENGTH_SHORT).show()
-                navController.navigate("dashboard")
-            } else {
-                loading = false
-                Toast.makeText(context, "Email does not exist", Toast.LENGTH_SHORT).show()
+            checkEmailExists(Details.email.value) { exists ->
+                if (exists) {
+                    // Find the user with the matching email
+                    val existingUser = fetchedUsers?.find { it.email == Details.email.value }
+
+                    if (existingUser != null) {
+                        Details.name.value = existingUser.name
+                        val userName = existingUser.name // Assuming your User class has a 'name' property
+                        loading = false
+                        Toast.makeText(context, "Welcome back, $userName!", Toast.LENGTH_SHORT).show()
+                        navController.navigate("dashboard")
+                    } else {
+                        // Handle the case where the user is not found (shouldn't happen if email exists)
+                        loading = false
+                        Toast.makeText(context, "Unexpected error: User not found", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    loading = false
+                    Toast.makeText(context, "Email does not exist", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -103,10 +115,15 @@ fun MoreDetails(context: Context, navController: NavController) {
                 ) {
                     CC.SingleLinedTextField(
                         value = Details.name.value,
-                        onValueChange = { Details.name.value = it },
+                        onValueChange = {
+                            if (!emailFound) { // Only update if email is not found
+                                Details.name.value = it
+                            }
+                        },
                         label = "First name",
                         context = context,
-                        singleLine = true
+                        singleLine = true,
+                        enabled = !emailFound // Disable the field if email is found
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))

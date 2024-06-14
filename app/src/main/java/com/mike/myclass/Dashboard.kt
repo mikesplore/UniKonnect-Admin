@@ -11,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,11 +27,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Announcement
@@ -42,12 +45,15 @@ import androidx.compose.material.icons.filled.PendingActions
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
@@ -140,9 +146,7 @@ fun Dashboard(navController: NavController, context: Context) {
                         shape = RoundedCornerShape(10.dp)
                     )
                     .shadow(
-                        elevation = 5.dp,
-                        shape = RoundedCornerShape(10.dp),
-                        clip = true
+                        elevation = 5.dp, shape = RoundedCornerShape(10.dp), clip = true
                     )
                     .fillMaxHeight()
                     .width(350.dp)
@@ -150,8 +154,7 @@ fun Dashboard(navController: NavController, context: Context) {
                 contentAlignment = Alignment.Center
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     Row(
                         modifier = Modifier
@@ -199,12 +202,10 @@ fun Dashboard(navController: NavController, context: Context) {
 
                         }
                         Column(
-                            modifier = Modifier
-                                .fillMaxSize(),
+                            modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.Top,
                             horizontalAlignment = Alignment.CenterHorizontally
-                        )
-                        {
+                        ) {
                             AttendanceProgressIndicator(percentage, context)
                         }
                     }
@@ -242,8 +243,7 @@ fun Dashboard(navController: NavController, context: Context) {
         fun ThirdBox() {
             val brush = Brush.linearGradient(
                 listOf(
-                    GlobalColors.primaryColor,
-                    GlobalColors.secondaryColor
+                    GlobalColors.primaryColor, GlobalColors.secondaryColor
                 )
             )
             Box(
@@ -272,10 +272,8 @@ fun Dashboard(navController: NavController, context: Context) {
                 for (i in 0 until boxCount) {
                     val targetScrollPosition = i * (horizontalScrollState.maxValue / (boxCount - 1))
                     horizontalScrollState.animateScrollTo(
-                        targetScrollPosition,
-                        animationSpec = tween(
-                            durationMillis = boxScrollDuration,
-                            easing = EaseInOut
+                        targetScrollPosition, animationSpec = tween(
+                            durationMillis = boxScrollDuration, easing = EaseInOut
                         )
                     )
                     delay(delayDuration)
@@ -286,156 +284,130 @@ fun Dashboard(navController: NavController, context: Context) {
 
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            "${getGreetingMessage()}, ${Details.name.value}",
-                            style = CC.descriptionTextStyle(context),
-                            fontSize = 20.sp
-                        )
-                    },
-                    actions = {
-                        IconButton(onClick = { expanded = !expanded }) {
-                            Icon(
-                                imageVector = Icons.Filled.Menu,
-                                contentDescription = "Menu",
-                                tint = GlobalColors.textColor
-                            )
-                        }
-                        DropdownMenu(
-                            expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.background(GlobalColors.primaryColor)
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Row {
-                                        Icon(
-                                            Icons.Default.ManageAccounts,
-                                            contentDescription = "",
-                                            tint = GlobalColors.textColor
-                                        )
-                                        Text(" Users", style = CC.descriptionTextStyle(context))
-                                    }
-                                },
-                                onClick = {
-                                    navController.navigate("students")
-                                    expanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Row {
-                                        Icon(
-                                            Icons.Default.AssignmentInd,
-                                            contentDescription = "",
-                                            tint = GlobalColors.textColor
-                                        )
-                                        Text(
-                                            " Assignments",
-                                            style = CC.descriptionTextStyle(context)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    navController.navigate("assignments")
-                                    expanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Row {
-                                        Icon(
-                                            Icons.Default.PendingActions,
-                                            contentDescription = "",
-                                            tint = GlobalColors.textColor
-                                        )
-                                        Text(
-                                            " Attendance",
-                                            style = CC.descriptionTextStyle(context)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    navController.navigate("attendance")
-                                    expanded = false
-                                }
-                            )
-
-                            DropdownMenuItem(
-                                text = {
-                                    Row {
-                                        Icon(
-                                            Icons.AutoMirrored.Filled.Announcement,
-                                            contentDescription = "",
-                                            tint = GlobalColors.textColor
-                                        )
-                                        Text(
-                                            " Announcements",
-                                            style = CC.descriptionTextStyle(context)
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    navController.navigate("announcements")
-                                    expanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Row {
-                                        Icon(
-                                            Icons.Default.Schedule,
-                                            contentDescription = "",
-                                            tint = GlobalColors.textColor
-                                        )
-                                        Text(" Timetable", style = CC.descriptionTextStyle(context))
-                                    }
-                                },
-                                onClick = {
-                                    navController.navigate("timetable")
-                                    expanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Row {
-                                        Icon(
-                                            Icons.Default.ManageAccounts,
-                                            contentDescription = "",
-                                            tint = GlobalColors.textColor
-                                        )
-                                        Text(" Colors", style = CC.descriptionTextStyle(context))
-                                    }
-                                },
-                                onClick = {
-                                    navController.navigate("colors")
-                                    expanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = {
-                                    Row {
-                                        Icon(
-                                            Icons.AutoMirrored.Filled.ExitToApp,
-                                            contentDescription = "",
-                                            tint = GlobalColors.textColor
-                                        )
-                                        Text(" Logout", style = CC.descriptionTextStyle(context))
-                                    }
-                                },
-                                onClick = {
-                                    FirebaseAuth.getInstance().signOut()
-                                    navController.navigate("login")
-                                    expanded = false
-                                }
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = GlobalColors.primaryColor,
-                        titleContentColor = GlobalColors.textColor
+                TopAppBar(title = {
+                    Text(
+                        "${getGreetingMessage()}, ${Details.name.value}",
+                        style = CC.descriptionTextStyle(context),
+                        fontSize = 20.sp
                     )
+                }, actions = {
+                    IconButton(onClick = { expanded = !expanded }) {
+                        Icon(
+                            imageVector = Icons.Filled.Menu,
+                            contentDescription = "Menu",
+                            tint = GlobalColors.textColor
+                        )
+                    }
+                    DropdownMenu(
+                        expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(GlobalColors.primaryColor)
+                    ) {
+                        DropdownMenuItem(text = {
+                            Row {
+                                Icon(
+                                    Icons.Default.ManageAccounts,
+                                    contentDescription = "",
+                                    tint = GlobalColors.textColor
+                                )
+                                Text(" Users", style = CC.descriptionTextStyle(context))
+                            }
+                        }, onClick = {
+                            navController.navigate("students")
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = {
+                            Row {
+                                Icon(
+                                    Icons.Default.AssignmentInd,
+                                    contentDescription = "",
+                                    tint = GlobalColors.textColor
+                                )
+                                Text(
+                                    " Assignments", style = CC.descriptionTextStyle(context)
+                                )
+                            }
+                        }, onClick = {
+                            navController.navigate("assignments")
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = {
+                            Row {
+                                Icon(
+                                    Icons.Default.PendingActions,
+                                    contentDescription = "",
+                                    tint = GlobalColors.textColor
+                                )
+                                Text(
+                                    " Attendance", style = CC.descriptionTextStyle(context)
+                                )
+                            }
+                        }, onClick = {
+                            navController.navigate("attendance")
+                            expanded = false
+                        })
+
+                        DropdownMenuItem(text = {
+                            Row {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.Announcement,
+                                    contentDescription = "",
+                                    tint = GlobalColors.textColor
+                                )
+                                Text(
+                                    " Announcements",
+                                    style = CC.descriptionTextStyle(context)
+                                )
+                            }
+                        }, onClick = {
+                            navController.navigate("announcements")
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = {
+                            Row {
+                                Icon(
+                                    Icons.Default.Schedule,
+                                    contentDescription = "",
+                                    tint = GlobalColors.textColor
+                                )
+                                Text(" Timetable", style = CC.descriptionTextStyle(context))
+                            }
+                        }, onClick = {
+                            navController.navigate("timetable")
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = {
+                            Row {
+                                Icon(
+                                    Icons.Default.ManageAccounts,
+                                    contentDescription = "",
+                                    tint = GlobalColors.textColor
+                                )
+                                Text(" Colors", style = CC.descriptionTextStyle(context))
+                            }
+                        }, onClick = {
+                            navController.navigate("colors")
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = {
+                            Row {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ExitToApp,
+                                    contentDescription = "",
+                                    tint = GlobalColors.textColor
+                                )
+                                Text(" Logout", style = CC.descriptionTextStyle(context))
+                            }
+                        }, onClick = {
+                            FirebaseAuth.getInstance().signOut()
+                            navController.navigate("login")
+                            expanded = false
+                        })
+                    }
+                }, colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = GlobalColors.primaryColor,
+                    titleContentColor = GlobalColors.textColor
+                )
                 )
             },
             containerColor = GlobalColors.primaryColor,
@@ -468,7 +440,7 @@ fun Dashboard(navController: NavController, context: Context) {
                         .fillMaxWidth()
                         .weight(1f),
                 ) {
-                    var selectedTabIndex by remember { mutableIntStateOf(0) }
+                    var selectedTabIndex by remember { mutableIntStateOf(1) }
                     val configuration = LocalConfiguration.current
                     val screenWidth = configuration.screenWidthDp.dp
                     val tabRowHorizontalScrollState by remember { mutableStateOf(ScrollState(0)) }
@@ -529,10 +501,10 @@ fun Dashboard(navController: NavController, context: Context) {
 
                     when (selectedTabIndex) {
                         0 -> AnnouncementItem(context)
-                        1 -> AttendanceItem()
-                        2 -> TimetableItem()
+                        1 -> DocumentationItem()
+                        2 -> TimetableItem(context)
                         3 -> AssignmentsItem()
-                        4 -> DocumentationItem()
+                        4 -> AttendanceItem()
                         5 -> ManageUsersItem()
                         else -> {}
                     }
@@ -563,9 +535,7 @@ fun AnnouncementItem(context: Context) {
 
 
     Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             "Latest Announcement",
@@ -579,9 +549,7 @@ fun AnnouncementItem(context: Context) {
                 .fillMaxWidth(0.9f)
                 .height(200.dp)
                 .border(
-                    width = 1.dp,
-                    color = GlobalColors.textColor,
-                    shape = RoundedCornerShape(10.dp)
+                    width = 1.dp, color = GlobalColors.textColor, shape = RoundedCornerShape(10.dp)
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -594,8 +562,7 @@ fun AnnouncementItem(context: Context) {
                     verticalArrangement = Arrangement.Center
                 ) {
                     CircularProgressIndicator(
-                        color = GlobalColors.secondaryColor,
-                        trackColor = GlobalColors.textColor
+                        color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Fetching data...", style = CC.descriptionTextStyle(context))
@@ -685,8 +652,7 @@ fun AnnouncementItem(context: Context) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "No announcements available",
-                        style = CC.descriptionTextStyle(context)
+                        "No announcements available", style = CC.descriptionTextStyle(context)
                     ) // Handle the case of an empty list
                 }
 
@@ -702,15 +668,7 @@ fun AnnouncementItem(context: Context) {
 
 
         Box(modifier = Modifier.fillMaxHeight(1f)) {
-            Image(
-                painter = painterResource(R.drawable.write),
-                contentDescription = "Write Icon", // Provide a meaningful content description
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(10.dp))
-                    .padding(10.dp), // Add padding around the image
-                contentScale = ContentScale.Crop
-            )
+
             Column(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -721,21 +679,15 @@ fun AnnouncementItem(context: Context) {
                         width = 1.dp,
                         color = GlobalColors.textColor,
                         shape = RoundedCornerShape(10.dp)
-                    ),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    ), horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Image now inside the Column
 
 
                 Spacer(modifier = Modifier.height(10.dp))
-                QuickInput(
-                    value = title,
-                    label = "Title",
-                    singleLine = true,
-                    onValueChange = {
-                        title = it
-                    }
-                )
+                QuickInput(value = title, label = "Title", singleLine = true, onValueChange = {
+                    title = it
+                })
                 Spacer(modifier = Modifier.height(10.dp))
                 QuickInput(
                     value = description,
@@ -772,9 +724,7 @@ fun AnnouncementItem(context: Context) {
 
                                 MyDatabase.writeAnnouncement(newAnnouncement)
                                 showNotification(
-                                    context,
-                                    title = title,
-                                    message = description
+                                    context, title = title, message = description
                                 )
                                 title = ""
                                 description = ""
@@ -787,14 +737,12 @@ fun AnnouncementItem(context: Context) {
                                 }
                                 loading = false
                             }
-                        },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
+                        }, shape = RoundedCornerShape(10.dp), colors = ButtonDefaults.buttonColors(
                             containerColor = GlobalColors.primaryColor,
                             contentColor = GlobalColors.textColor
                         )
                     ) {
-                        Text("Post & Refresh")
+                        Text("Post", style = CC.descriptionTextStyle(context))
                     }
                 }
             }
@@ -805,21 +753,20 @@ fun AnnouncementItem(context: Context) {
 
 @Composable
 fun QuickInput(
-    value: String,
-    label: String,
-    singleLine: Boolean,
-    onValueChange: (String) -> Unit
+    value: String, label: String, singleLine: Boolean, onValueChange: (String) -> Unit
 
 ) {
     TextField(
-        value = value, onValueChange = onValueChange,
-        label = { Text(label) },
+        value = value,
+        textStyle = CC.descriptionTextStyle(context = LocalContext.current),
+        onValueChange = onValueChange,
+        label = { Text(label, style = CC.descriptionTextStyle(context = LocalContext.current)) },
         modifier = Modifier
             .padding(10.dp)
             .width(250.dp),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = GlobalColors.primaryColor,
-            unfocusedLabelColor = GlobalColors.primaryColor,
+            unfocusedLabelColor = GlobalColors.tertiaryColor,
             focusedIndicatorColor = GlobalColors.textColor,
             unfocusedContainerColor = Color.Transparent,
             unfocusedTextColor = GlobalColors.textColor,
@@ -839,9 +786,189 @@ fun AttendanceItem() {
 }
 
 @Composable
-fun TimetableItem() {
-    Text("Timetable")
+fun TimetableItem(context: Context) {
+    var loading by remember { mutableStateOf(true) }
+    val currentDay = CC.currentDay()
+    var timetable by remember { mutableStateOf<List<Timetable>?>(null) }
+
+    LaunchedEffect(loading) {
+        if (loading) {
+            MyDatabase.getCurrentDayTimetable(currentDay) { fetchedTimetable ->
+                timetable = fetchedTimetable
+                loading = false
+            }
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .clickable { loading = true } // for triggering refresh
+                .height(50.dp)
+                .padding(top = 10.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Events Today : $currentDay", style = CC.titleTextStyle(context))
+        }
+
+        if (loading) {
+            // Show a loading indicator while fetching data
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator(
+                    color = GlobalColors.textColor,
+                    trackColor = GlobalColors.primaryColor,
+                    modifier = Modifier
+                        .padding(16.dp)
+                )
+                Text(
+                    "Loading activity for $currentDay",
+                    style = CC.descriptionTextStyle(context)
+                )
+            }
+        } else {
+            if (timetable.isNullOrEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text("No events planned for today", style = CC.descriptionTextStyle(context))
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(16.dp)
+                ) {
+                    items(timetable ?: emptyList()) { timetableItem ->
+                        // Display each timetable item here
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                GlobalColors.secondaryColor
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            elevation = CardDefaults.elevatedCardElevation(4.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = timetableItem.unitName, // Assuming you have a unitName property
+                                    style = CC.titleTextStyle(context)
+                                )
+                                Text(
+                                    text = "Time: ${timetableItem.startTime} - ${timetableItem.endTime}", // Assuming startTime and endTime properties
+                                    style = CC.descriptionTextStyle(context)
+                                )
+                                Text(
+                                    text = "Location: ${timetableItem.venue}", // Assuming venue property
+                                    style = CC.descriptionTextStyle(context)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            var dayId  =""
+            var venue by remember { mutableStateOf("") }
+            var lecturer by remember { mutableStateOf("") }
+            var startTime by remember { mutableStateOf("") }
+            var endTime by remember { mutableStateOf("") }
+            var unitName by remember { mutableStateOf("") }
+            MyDatabase.getDayIdByName(CC.currentDay()) { fetchedDayId ->
+                if (fetchedDayId != null) {
+                     dayId = fetchedDayId
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(modifier = Modifier
+                .padding(start = 20.dp, end = 20.dp)
+                .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
+                Text("Make quick timetable Item", style = CC.titleTextStyle(context))
+                Button(onClick = {
+                    if(lecturer.isNotEmpty() && venue.isNotEmpty()
+                        && startTime.isNotEmpty() && endTime.isNotEmpty() && unitName.isNotEmpty()){
+                        MyDatabase.writeTimetable(timetable = Timetable(
+                            dayId = dayId,
+                            unitName = unitName,
+                            lecturer = lecturer,
+                            venue = venue,
+                            startTime = startTime,
+                            endTime = endTime
+                        ), onComplete = {
+                            Toast.makeText(
+                                context, "Timetable item Added", Toast.LENGTH_SHORT
+
+                            ).show()
+                            showNotification(
+                                context,
+                                title = "New Timetable Item",
+                                message = "${Details.name.value} added an Event.  "
+                            )
+                        })
+                    }
+                },
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = GlobalColors.secondaryColor
+                    )
+                ) {
+                    Text("Post", style = CC.descriptionTextStyle(context))
+                }
+            }
+            
+
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .height(300.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                MyOutlinedTextField(
+                    value = unitName,
+                    onValueChange = {unitName = it},
+                    label = "Unit Name",
+                    context
+                )
+                MyOutlinedTextField(
+                    value = startTime,
+                    onValueChange = {startTime = it},
+                    label = "Start time",
+                    context
+                )
+                MyOutlinedTextField(
+                    value = endTime,
+                    onValueChange = {endTime = it},
+                    label = "End time",
+                    context
+                )
+                MyOutlinedTextField(
+                    value = venue,
+                    onValueChange = {venue = it},
+                    label = "Venue",
+                    context
+                )
+                MyOutlinedTextField(
+                    value = lecturer,
+                    onValueChange = {lecturer = it},
+                    label = "Lecturer Name",
+                    context
+                )
+            }
+        }
+    }
 }
+
 
 @Composable
 fun AssignmentsItem() {
@@ -850,7 +977,12 @@ fun AssignmentsItem() {
 
 @Composable
 fun DocumentationItem() {
-    Text("Documentation")
+    Column(modifier = Modifier
+        .background(GlobalColors.primaryColor)
+        .fillMaxSize()) {
+        WebViewScreen("https://github.com/mikesplore")
+    }
+
 }
 
 @Composable
@@ -879,10 +1011,39 @@ fun AttendanceProgressIndicator(progress: Float, context: Context) {
             strokeCap = StrokeCap.Round
         )
         Text(
-            text = "${progress.toInt()}%",
-            style = CC.titleTextStyle(context)
+            text = "${progress.toInt()}%", style = CC.titleTextStyle(context)
         )
     }
+}
+
+@Composable
+fun MyOutlinedTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    context: Context,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        label = { Text(label, style = CC.descriptionTextStyle(context)) },
+        singleLine = true,
+        value = value,
+        onValueChange = onValueChange,
+        textStyle = CC.descriptionTextStyle(context),
+        modifier = modifier
+            .padding(top = 10.dp)
+            .height(50.dp)
+            .fillMaxWidth(0.8f),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = GlobalColors.primaryColor,
+            unfocusedContainerColor = GlobalColors.primaryColor,
+            focusedIndicatorColor = GlobalColors.textColor,
+            unfocusedLabelColor = GlobalColors.secondaryColor,
+            focusedLabelColor = GlobalColors.textColor,
+            unfocusedTextColor = GlobalColors.secondaryColor,
+            unfocusedIndicatorColor = GlobalColors.secondaryColor
+        )
+    )
 }
 
 
