@@ -81,7 +81,6 @@ class MainActivity : ComponentActivity() {
             }
             // retrieve device token and send to database.
             val token = task.result
-            Toast.makeText(this, token, Toast.LENGTH_SHORT).show()
             MyDatabase.writeFcmToken(token = Fcm(token = token))
         })
         enableEdgeToEdge()
