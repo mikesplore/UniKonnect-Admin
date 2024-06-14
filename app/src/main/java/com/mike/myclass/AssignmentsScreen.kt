@@ -60,16 +60,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
     var expanded by remember { mutableStateOf(false) }
 
 
-    var visible by remember { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
-        visible = true
-    }
-    AnimatedVisibility(
-        visible = visible,
-        enter = slideInHorizontally(initialOffsetX = { it }), // Slide in from right
-        exit = slideOutHorizontally(targetOffsetX = { -it }) // Slide out to left
-    ) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Assignments", style = CC.titleTextStyle(context)) }, navigationIcon = {
@@ -402,7 +393,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
             }
         }
     }
-}}
+}
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
