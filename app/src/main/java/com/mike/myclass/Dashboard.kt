@@ -131,7 +131,7 @@ fun Dashboard(navController: NavController, context: Context) {
         @Composable
         fun FirstBox() {
             val present by remember { mutableIntStateOf(10) }
-            val absent by remember { mutableStateOf(1) }
+            val absent by remember { mutableIntStateOf(1) }
             val total by remember { derivedStateOf { present + absent } } // Calculate total efficiently
             val percentage by remember { derivedStateOf { (present.toFloat() / total) * 100 } }
             val brush = Brush.linearGradient(
