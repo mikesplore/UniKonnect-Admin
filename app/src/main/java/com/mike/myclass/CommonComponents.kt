@@ -16,11 +16,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.LocalTime
 
 
 object CommonComponents {
@@ -71,6 +73,17 @@ object CommonComponents {
                     elevation = 10.dp, shape = RoundedCornerShape(20.dp)
                 )
         )
+    }
+
+    @Composable
+    fun getGreetingMessage(): String {
+        val currentTime = LocalTime.now()
+        return when (currentTime.hour) {
+            in 5..11 -> "Good Morning"
+            in 12..17 -> "Good Afternoon"
+            in 18..21 -> "Good Evening"
+            else -> "Good Night"
+        }
     }
 
     @Composable
@@ -131,6 +144,7 @@ object CommonComponents {
         return "$day/$month/$year"
     }
 
+
     fun currentDay(): String {
         return when (dayOfWeek) {
             Calendar.SUNDAY -> "Sunday"
@@ -156,6 +170,7 @@ object CommonComponents {
             else -> 0
         }
     }
+    val buttonColors = Color(0xff5AB2FF)
 
 
     @Composable
