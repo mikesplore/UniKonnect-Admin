@@ -1,19 +1,22 @@
 package com.mike.myclass
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -24,12 +27,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.style.TextOverflow
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import com.mike.myclass.MyDatabase.deleteItem
 import com.mike.myclass.MyDatabase.readItems
 import com.mike.myclass.MyDatabase.writeItem
 import com.mike.myclass.CommonComponents as CC
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +43,7 @@ fun CourseScreen(courseCode: String, context: Context) {
     val pastPapers = remember { mutableStateListOf<GridItem>() }
     val resources = remember { mutableStateListOf<GridItem>() }
     var isLoading by remember { mutableStateOf(true) }
-    var showAddDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(true) }
     var addItemToSection by remember { mutableStateOf<Section?>(null) }
 
     LaunchedEffect(courseCode) {
@@ -65,11 +70,6 @@ fun CourseScreen(courseCode: String, context: Context) {
                     titleContentColor = GlobalColors.textColor)
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { showAddDialog = true }) {
-                Icon(painterResource(id = android.R.drawable.ic_input_add), contentDescription = "Add Item")
-            }
-        },
         containerColor = GlobalColors.primaryColor
     ) {
         if (isLoading) {
@@ -93,21 +93,21 @@ fun CourseScreen(courseCode: String, context: Context) {
                     items = notes,
                     onAddClick = { addItemToSection = Section.NOTES; showAddDialog = true },
                     onDelete = { notes.remove(it); deleteItem(courseCode, Section.NOTES, it) },
-                    context
+                    context = context
                 )
                 Section(
                     title = "Past Papers",
                     items = pastPapers,
                     onAddClick = { addItemToSection = Section.PAST_PAPERS; showAddDialog = true },
                     onDelete = { pastPapers.remove(it); deleteItem(courseCode, Section.PAST_PAPERS, it) },
-                    context
+                    context = context
                 )
                 Section(
                     title = "Additional Resources",
                     items = resources,
                     onAddClick = { addItemToSection = Section.RESOURCES; showAddDialog = true },
                     onDelete = { resources.remove(it); deleteItem(courseCode, Section.RESOURCES, it) },
-                    context
+                    context = context
                 )
             }
         }
@@ -116,8 +116,8 @@ fun CourseScreen(courseCode: String, context: Context) {
     if (showAddDialog) {
         AddItemDialog(
             onDismiss = { showAddDialog = false },
-            onAddItem = { title, description, thumbnail, link ->
-                val newItem = GridItem(title, description, thumbnail, link)
+            onAddItem = { title, description, fileType, link ->
+                val newItem = GridItem(title = title, description = description, link = link, fileType = fileType)
                 when (addItemToSection) {
                     Section.NOTES -> {
                         notes.add(newItem)
@@ -134,14 +134,11 @@ fun CourseScreen(courseCode: String, context: Context) {
                     null -> { /* Do nothing */ }
                 }
                 showAddDialog = false
-            }
+            },
+            context
         )
     }
 }
-
-
-
-
 
 @Composable
 fun Section(
@@ -153,7 +150,8 @@ fun Section(
 ) {
     Text(
         text = title,
-        style = CC.titleTextStyle(context)
+        style = CC.titleTextStyle(context),
+        modifier = Modifier.padding(start = 15.dp)
     )
 
     Spacer(modifier = Modifier.height(10.dp))
@@ -161,12 +159,13 @@ fun Section(
     if (items.isEmpty()) {
         Text(
             text = "No items available",
-            style = CC.descriptionTextStyle(context)
+            style = CC.descriptionTextStyle(context),
+            modifier = Modifier.padding(start = 15.dp)
         )
     } else {
         LazyRow {
             items(items) { item ->
-                GridItemCard(item = item, onDelete = onDelete)
+                GridItemCard(item = item, onDelete = onDelete, context = context)
             }
         }
     }
@@ -178,7 +177,8 @@ fun Section(
             containerColor = Color(0xFF007BFF),
             contentColor = Color.White
         ),
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(10.dp),
+        modifier = Modifier.padding(start = 15.dp)
     ) {
         Text("Add Item", style = CC.descriptionTextStyle(context = context))
     }
@@ -186,124 +186,137 @@ fun Section(
     Spacer(modifier = Modifier.height(20.dp))
 }
 
-
 @Composable
-fun GridItemCard(item: GridItem, onDelete: (GridItem) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
+fun GridItemCard(item: GridItem, onDelete: (GridItem) -> Unit, context: Context) {
     val uriHandler = LocalUriHandler.current
+    val thumbnail = when (item.fileType) {
+        "pdf" -> R.drawable.pdf
+        "word" -> R.drawable.word
+        "excel" -> R.drawable.excel
+        else -> item.thumbnail // Assuming thumbnail is a URL for image file types
+    }
 
     Surface(
         modifier = Modifier
             .width(200.dp)
-            .padding(5.dp),
+            .padding(start = 15.dp),
         shape = RoundedCornerShape(8.dp),
-        color = Color.White,
+        color = GlobalColors.secondaryColor,
         shadowElevation = 4.dp
     ) {
         Column(
             modifier = Modifier.padding(10.dp)
         ) {
             Image(
-                painter = rememberAsyncImagePainter(model = item.thumbnail),
+                painter = rememberAsyncImagePainter(model = thumbnail),
                 contentDescription = item.title,
                 modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
                     .fillMaxWidth()
-                    .height(150.dp)
+                    .height(120.dp)
                     .background(Color.LightGray, RoundedCornerShape(4.dp)),
                 contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = item.title,
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                color = Color(0xFF333333)
+                style = CC.titleTextStyle(context),
+                fontSize = 20.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = item.description,
-                fontSize = 12.sp,
-                color = Color(0xFF666666),
-                maxLines = 2
+                style = CC.descriptionTextStyle(context),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = "View Document",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF007BFF), RoundedCornerShape(4.dp))
-                    .padding(8.dp)
-                    .clickable { uriHandler.openUri(item.link) },
-                color = Color.White,
-                fontWeight = FontWeight.Bold,
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            IconButton(onClick = { expanded = true }) {
-                Icon(Icons.Filled.MoreVert, contentDescription = "More Options")
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    DropdownMenuItem(text = { Text("Delete") }, onClick = {
-                        onDelete(item)
-                        expanded = false
-                    })
-                }
+            Button(
+                onClick = { uriHandler.openUri(item.link) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007BFF)),
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                Text("Open", style = CC.descriptionTextStyle(context))
+            }
+            IconButton(
+                onClick = { onDelete(item) },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = Color.Red)
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddItemDialog(onDismiss: () -> Unit, onAddItem: (String, String, String, String) -> Unit) {
+fun AddItemDialog(onDismiss: () -> Unit, onAddItem: (String, String, String, String) -> Unit, context: Context) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var thumbnail by remember { mutableStateOf("") }
     var link by remember { mutableStateOf("") }
+    var fileType by remember { mutableStateOf("image") } // Default to image type
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            Button(onClick = {
-                onAddItem(title, description, thumbnail, link)
-            }) {
-                Text("Add")
+    val fileTypes = listOf("image", "pdf", "word", "excel")
+
+    BasicAlertDialog(onDismissRequest = { onDismiss() }) {
+        Column(
+            modifier = Modifier
+                .border(
+                    width = 1.dp,
+                    color = Color.Gray,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
+                .width(270.dp)
+        ) {
+            Row(modifier = Modifier
+                .padding(10.dp)
+                .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+                ) {
+                Text("Add New Item", style = CC.titleTextStyle(context))
             }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Cancel")
+            Column(
+                modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+            ) {
+                Spacer(modifier = Modifier.height(10.dp))
+                InputDialogTextField(title, { title = it }, "Title", context)
+                Spacer(modifier = Modifier.height(10.dp))
+                InputDialogTextField(description, { description = it }, "Description", context)
+                Spacer(modifier = Modifier.height(10.dp))
+                InputDialogTextField(link, { link = it }, "Link", context)
             }
-        },
-        title = {
-            Text("Add New Item")
-        },
-        text = {
-            Column {
-                TextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Title") }
-                )
-                TextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text("Description") }
-                )
-                TextField(
-                    value = thumbnail,
-                    onValueChange = { thumbnail = it },
-                    label = { Text("Thumbnail URL") }
-                )
-                TextField(
-                    value = link,
-                    onValueChange = { link = it },
-                    label = { Text("Document Link") }
-                )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "Select File Type:",
+                style = CC.descriptionTextStyle(context),
+                modifier = Modifier.padding(start = 10.dp)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                fileTypes.forEach { type ->
+                    Box(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(if (fileType == type) Color.Gray else Color.LightGray)
+                            .clickable { fileType = type },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(type.capitalize(), fontSize = 12.sp)
+                    }
+                }
             }
+
         }
-    )
+    }
 }
-
-
 
 @Preview(showBackground = true)
 @Composable
@@ -311,5 +324,26 @@ fun CourseScreenPreview() {
     CourseScreen(
         courseCode = "CP123456",
         context = LocalContext.current
+    )
+}
+@Composable
+fun InputDialogTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    context: Context
+
+){
+    TextField(value = value,
+        onValueChange =  onValueChange,
+        label = { Text(label, style = CC.descriptionTextStyle(context)) },
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = GlobalColors.tertiaryColor,
+            unfocusedIndicatorColor = GlobalColors.secondaryColor,
+            focusedTextColor = GlobalColors.textColor,
+            unfocusedTextColor = GlobalColors.textColor,
+            focusedContainerColor = GlobalColors.secondaryColor,
+            unfocusedContainerColor = GlobalColors.secondaryColor
+        )
     )
 }
