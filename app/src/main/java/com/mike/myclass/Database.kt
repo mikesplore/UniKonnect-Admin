@@ -6,6 +6,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.getValue
 import java.util.Calendar
 
 
@@ -16,11 +17,17 @@ open class User(
 
     )
 
-open class Admin(
+data class GridItem(
+    val title: String = "",
+    val description: String = "",
+    val thumbnail: String = "",
+    val link: String = ""
+)
 
-    val password: String = ""
 
-) : User()
+enum class Section {
+    NOTES, PAST_PAPERS, RESOURCES
+}
 
 data class Timetable(
     val id: String = MyDatabase.generateTimetableID(),
@@ -149,6 +156,70 @@ object MyDatabase {
         dayID++
         return "DY$currentID$year"
     }
+
+    fun fetchCourses(onCoursesFetched: (List<Course>) -> Unit) {
+        database.child("Courses").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val courseList = snapshot.children.mapNotNull { it.getValue(Course::class.java) }
+                onCoursesFetched(courseList) // Call the callback with the fetched courses
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle the error, maybe pass an empty list or an error state to the callback
+                onCoursesFetched(emptyList())
+            }
+        })
+    }
+
+    fun writeItem(courseId: String, section: Section, item: GridItem) {
+        database.child("Courses").child(courseId).child(section.name).push().setValue(item)
+            .addOnSuccessListener {
+                // Data successfully written
+            }
+            .addOnFailureListener { exception ->
+                // Handle the write error
+            }
+    }
+
+    fun readItems(courseId: String, section: Section, onItemsRead: (List<GridItem>) -> Unit) {
+        database.child("Courses").child(courseId).child(section.name).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val items = snapshot.children.mapNotNull { it.getValue(GridItem::class.java) }
+                onItemsRead(items)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                onItemsRead(emptyList())
+            }
+        })
+    }
+
+    fun deleteItem(courseId: String, section: Section, item: GridItem) {
+        val itemsRef = database.child("Courses").child(courseId).child(section.name)
+        itemsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (child in snapshot.children) {
+                    if (child.getValue(GridItem::class.java) == item) {
+                        child.ref.removeValue()
+                            .addOnSuccessListener {
+                                // Item successfully deleted
+                            }
+                            .addOnFailureListener { exception ->
+                                // Handle the deletion error
+                            }
+                        break
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle the read error
+            }
+        })
+    }
+
+
+
 
     fun writeStudent(student: Student) {
         database.child("Students").child(student.id).setValue(student)
