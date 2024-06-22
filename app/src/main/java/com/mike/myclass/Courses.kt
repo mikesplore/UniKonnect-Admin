@@ -51,10 +51,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.database.database
 import com.mike.myclass.CommonComponents as CC
 
-data class Course(
-    val courseCode: String = "", val courseName: String = ""
 
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -156,8 +153,8 @@ fun CoursesScreen(navController: NavController, context: Context) {
 
     if (showAddDialog) {
         AddCourseDialog(onDismiss = { showAddDialog = false },
-            onAddCourse = { courseCode, courseName ->
-                val newCourse = Course(courseCode, courseName)
+            onAddCourse = { courseCode, courseName, lastDate ->
+                val newCourse = Course(courseCode, courseName, lastDate)
                 val database = Firebase.database.reference.child("Courses").child(courseCode)
                 database.setValue(newCourse).addOnSuccessListener {
                         courses.add(newCourse)
@@ -177,11 +174,12 @@ fun CoursesScreen(navController: NavController, context: Context) {
 @Composable
 fun AddCourseDialog(
     onDismiss: () -> Unit,
-    onAddCourse: (String, String) -> Unit,
+    onAddCourse: (String, String, String) -> Unit,
     context: Context
 ) {
     var courseCode by remember { mutableStateOf("") }
     var courseName by remember { mutableStateOf("") }
+    val lastDate = CC.lastDate
 
     BasicAlertDialog(
         onDismissRequest = onDismiss, modifier = Modifier.width(300.dp) // Set width for the dialog
@@ -223,7 +221,7 @@ fun AddCourseDialog(
                     Text("Cancel", style = CC.descriptionTextStyle(LocalContext.current))
                 }
                 Button(
-                    onClick = { onAddCourse(courseCode, courseName) },
+                    onClick = { onAddCourse(courseCode, courseName, lastDate) },
                     shape = RoundedCornerShape(5.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = CC.buttonColors)
                 ) {
