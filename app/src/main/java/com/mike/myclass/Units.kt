@@ -9,7 +9,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
@@ -32,6 +34,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.mike.myclass.MyDatabase.deleteItem
 import com.mike.myclass.MyDatabase.readItems
 import com.mike.myclass.MyDatabase.writeItem
+import java.util.Locale
 import com.mike.myclass.CommonComponents as CC
 
 
@@ -84,6 +87,7 @@ fun CourseScreen(courseCode: String, context: Context) {
         } else {
             Column(
                 modifier = Modifier
+                    .verticalScroll(rememberScrollState())
                     .fillMaxSize()
                     .background(GlobalColors.primaryColor)
                     .padding(it)
@@ -303,18 +307,51 @@ fun AddItemDialog(onDismiss: () -> Unit, onAddItem: (String, String, String, Str
                 fileTypes.forEach { type ->
                     Box(
                         modifier = Modifier
+                            .border(
+                                width = 1.dp,
+                                color = Color.Gray,
+                                shape = RoundedCornerShape(4.dp)
+                            )
                             .size(50.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .background(if (fileType == type) Color.Gray else Color.LightGray)
+                            .background(if (fileType == type) GlobalColors.secondaryColor else GlobalColors.primaryColor)
                             .clickable { fileType = type },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(type.capitalize(), fontSize = 12.sp)
+                        Text(type.capitalize(Locale.ROOT), style = CC.descriptionTextStyle(context), fontSize = 12.sp)
                     }
                 }
             }
-
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(onClick = onDismiss,
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = CC.buttonColors
+                        )
+                    ) {
+                    Text("Cancel", style = CC.descriptionTextStyle(context))
+                }
+                Button(onClick = {
+                    if (title.isNotEmpty() && description.isNotEmpty() && link.isNotEmpty()) {
+                        onAddItem(title, description, fileType, link)
+                    } else {
+                        Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CC.buttonColors
+                    )) {
+                    Text("Add", style = CC.descriptionTextStyle(context))
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
         }
+
     }
 }
 
