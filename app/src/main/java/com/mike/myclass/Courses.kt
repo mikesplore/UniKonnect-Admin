@@ -60,7 +60,7 @@ data class Course(
 @Composable
 fun CoursesScreen(navController: NavController, context: Context) {
     val courses = remember { mutableStateListOf<Course>() }
-    var showAddDialog by remember { mutableStateOf(true) }
+    var showAddDialog by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
 
     LaunchedEffect(loading) {
@@ -92,8 +92,10 @@ fun CoursesScreen(navController: NavController, context: Context) {
         )
 
     }, floatingActionButton = {
-        FloatingActionButton(onClick = { showAddDialog = true }) {
-            Icon(Icons.Default.Add, contentDescription = "Add Course")
+        FloatingActionButton(onClick = { showAddDialog = true },
+            containerColor = GlobalColors.secondaryColor) {
+            Icon(Icons.Default.Add, contentDescription = "Add Course",
+                tint = GlobalColors.textColor)
         }
     }, containerColor = GlobalColors.primaryColor
     ) {
