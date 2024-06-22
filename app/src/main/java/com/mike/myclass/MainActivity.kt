@@ -78,7 +78,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             //we will load all the data from the database upon app start
 
-            NavigationMap()
+           // NavigationMap()
+            CourseScreen("AMA141", this)
 
         }
         createNotificationChannel(this)
@@ -169,7 +170,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "courses") {
+        NavHost(navController = navController, startDestination = "course/AMA142") {
             composable("login", exitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Left,
