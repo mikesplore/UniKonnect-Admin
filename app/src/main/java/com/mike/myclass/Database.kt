@@ -21,7 +21,8 @@ data class GridItem(
     val title: String = "",
     val description: String = "",
     val thumbnail: String = "",
-    val link: String = ""
+    val link: String = "",
+    var fileType: String = "image"
 )
 
 
