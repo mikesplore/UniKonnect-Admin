@@ -14,8 +14,7 @@ open class User(
     val id: String = MyDatabase.generateIndexNumber(),
     val name: String = "",
     val email: String = "",
-
-    )
+)
 
 data class GridItem(
     val title: String = "",
@@ -84,11 +83,16 @@ data class Fcm(
     val id: String = MyDatabase.generateFcmID(), val token: String = ""
 )
 
+data class Course(
+    val courseCode: String = "",
+    val courseName: String = "",
+    val lastDate: String = ""
+
+)
 
 
 object MyDatabase {
     val database: DatabaseReference = FirebaseDatabase.getInstance().reference
-
     //initialize the Unique id of the items
     private var userID = 0
     private var announcementID = 0
@@ -515,7 +519,8 @@ object MyDatabase {
                 override fun onCancelled(error: DatabaseError) {
                     onAttendanceRecordsLoaded(null)
                 }
-            })
+            }
+        )
     }
 
     //fetch the day id using the day name
@@ -530,7 +535,8 @@ object MyDatabase {
                 override fun onCancelled(error: DatabaseError) {
                     onDayIdFetched(null)
                 }
-            })
+            }
+        )
     }
 
     fun saveAttendanceRecords(records: List<AttendanceRecord>, onComplete: (Boolean) -> Unit) {
@@ -540,6 +546,4 @@ object MyDatabase {
             batch.child(key).setValue(record)
         }
     }
-
-
 }
