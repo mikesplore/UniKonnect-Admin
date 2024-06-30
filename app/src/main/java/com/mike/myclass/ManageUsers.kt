@@ -107,7 +107,7 @@ fun ManageUsers(navController: NavController) {
         ) { paddingValues ->
             Column(
                 modifier = Modifier
-                    .background(CC.backbrush)
+                    .background(GlobalColors.primaryColor)
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
@@ -167,7 +167,7 @@ fun UserCard(user: User, context: Context) {
     if(isediting){
         BasicAlertDialog(onDismissRequest = {isediting  = false}) {
             Column(modifier = Modifier
-                .background(CC.backbrush, RoundedCornerShape(10.dp))
+                .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
                 .width(300.dp)
                 .height(200.dp),
                 verticalArrangement = Arrangement.SpaceEvenly,
