@@ -32,6 +32,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -57,6 +58,12 @@ object Details {
     var totalAssignments: MutableState<Int> = mutableIntStateOf(0)
 }
 
+object Global {
+    val showAlert: MutableState<Boolean> = mutableStateOf(false)
+    val edgeToEdge: MutableState<Boolean> = mutableStateOf(true)
+    var loading: MutableState<Boolean> = mutableStateOf(true)
+}
+
 
 class MainActivity : ComponentActivity() {
 
@@ -64,6 +71,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         GlobalColors.loadColorScheme(this)
+
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
 
@@ -76,7 +84,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
         setContent {
-            //we will load all the data from the database upon app start
 
            NavigationMap()
 
@@ -169,7 +176,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "courses") {
+        NavHost(navController = navController, startDestination = "dashboard") {
             composable("login", exitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Left,
@@ -185,6 +192,10 @@ class MainActivity : ComponentActivity() {
 
             ) {
                 LoginScreen(navController, context)
+            }
+
+            composable("splashscreen"){
+                SplashScreen(navController, context)
             }
             composable("announcements",
 
@@ -220,7 +231,8 @@ class MainActivity : ComponentActivity() {
                     AnimatedContentTransitionScope.SlideDirection.Right,
                     animationSpec = tween(1000)
                 )
-            }, enterTransition = {
+            },
+                enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Left,
                     animationSpec = tween(1000)
@@ -228,12 +240,22 @@ class MainActivity : ComponentActivity() {
             }) {
                 Dashboard(navController, context)
             }
-            composable("moredetails", exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(1000)
-                )
-            }, enterTransition = {
+
+            composable("appearance"){
+                Appearance(navController, context)
+            }
+
+            composable(
+                "chat/{userId}",
+                arguments = listOf(navArgument("userId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                UserChatScreen(navController, LocalContext.current, backStackEntry.arguments?.getString("userId") ?: "")
+            }
+
+            composable("settings"){
+                SettingsScreen(navController, context)
+            }
+            composable("moredetails",  enterTransition = {
                 slideIntoContainer(
                     AnimatedContentTransitionScope.SlideDirection.Left,
                     animationSpec = tween(1000)
@@ -293,18 +315,9 @@ class MainActivity : ComponentActivity() {
             }) {
                 TimetableScreen(navController, context)
             }
-            composable("colors", exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(1000)
-                )
-            }, enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(1000)
-                )
-            }) {
-                ColorSettings(navController, context)
+
+            composable("discussion"){
+                ChatScreen(navController, context)
             }
             composable("attendance", exitTransition = {
                 slideOutOfContainer(
@@ -317,7 +330,7 @@ class MainActivity : ComponentActivity() {
                     animationSpec = tween(1000)
                 )
             }) {
-                RecordAttendanceScreen(navController, context)
+                //record attendance
             }
             composable("students", exitTransition = {
                 slideOutOfContainer(
