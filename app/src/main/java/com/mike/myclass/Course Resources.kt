@@ -64,7 +64,7 @@ fun CourseScreen(courseCode: String, context: Context) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Course Screen") },
+            TopAppBar(title = { Text(CourseName.name.value, style = CC.titleTextStyle(context), fontSize = 20.sp) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = GlobalColors.primaryColor,
                     titleContentColor = GlobalColors.textColor)
@@ -327,7 +327,7 @@ fun AddItemDialog(onDismiss: () -> Unit, onAddItem: (String, String, String, Str
                 Button(onClick = onDismiss,
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = CC.buttonColors
+                            containerColor = GlobalColors.primaryColor
                         )
                     ) {
                     Text("Cancel", style = CC.descriptionTextStyle(context))
@@ -341,7 +341,7 @@ fun AddItemDialog(onDismiss: () -> Unit, onAddItem: (String, String, String, Str
                 },
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = CC.buttonColors
+                        containerColor = GlobalColors.primaryColor
                     )) {
                     Text("Add", style = CC.descriptionTextStyle(context))
                 }
