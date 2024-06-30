@@ -38,13 +38,17 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Announcement
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AssignmentInd
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PendingActions
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -330,7 +334,7 @@ fun Dashboard(navController: NavController, context: Context) {
                         color = GlobalColors.textColor,
                         shape = RoundedCornerShape(10.dp)
                     )
-                    .background(CC.backbrush)
+                    .background(GlobalColors.primaryColor)
                     .fillMaxHeight()
                     .width(350.dp)
                     .background(brush, RoundedCornerShape(10.dp)),
@@ -462,6 +466,7 @@ fun Dashboard(navController: NavController, context: Context) {
                             navController.navigate("assignments")
                             expanded = false
                         })
+
                         DropdownMenuItem(text = {
                             Row {
                                 Icon(
@@ -497,6 +502,22 @@ fun Dashboard(navController: NavController, context: Context) {
                         DropdownMenuItem(text = {
                             Row {
                                 Icon(
+                                    Icons.Filled.Book,
+                                    contentDescription = "",
+                                    tint = GlobalColors.textColor
+                                )
+                                Text(
+                                    " Courses",
+                                    style = CC.descriptionTextStyle(context)
+                                )
+                            }
+                        }, onClick = {
+                            navController.navigate("courses")
+                            expanded = false
+                        })
+                        DropdownMenuItem(text = {
+                            Row {
+                                Icon(
                                     Icons.Default.Schedule,
                                     contentDescription = "",
                                     tint = GlobalColors.textColor
@@ -510,14 +531,30 @@ fun Dashboard(navController: NavController, context: Context) {
                         DropdownMenuItem(text = {
                             Row {
                                 Icon(
-                                    Icons.Default.Colorize,
+                                    Icons.AutoMirrored.Filled.Chat,
                                     contentDescription = "",
                                     tint = GlobalColors.textColor
                                 )
-                                Text(" Colors", style = CC.descriptionTextStyle(context))
+                                Text(" Discussion", style = CC.descriptionTextStyle(context))
                             }
                         }, onClick = {
-                            navController.navigate("colors")
+                            navController.navigate("discussion")
+                            expanded = false
+                        })
+
+                        DropdownMenuItem(text = {
+                            Row {
+                                Icon(
+                                    Icons.Default.Settings,
+                                    contentDescription = "",
+                                    tint = GlobalColors.textColor
+                                )
+                                Text(
+                                    " Settings", style = CC.descriptionTextStyle(context)
+                                )
+                            }
+                        }, onClick = {
+                            navController.navigate("settings")
                             expanded = false
                         })
                         DropdownMenuItem(text = {
@@ -547,7 +584,7 @@ fun Dashboard(navController: NavController, context: Context) {
                 modifier = Modifier
                     .padding(it)
                     .fillMaxSize()
-                    .background(CC.backbrush)
+                    .background(GlobalColors.primaryColor)
             ) {
                 Row(
                     modifier = Modifier
@@ -582,6 +619,7 @@ fun Dashboard(navController: NavController, context: Context) {
                         "Assignments",
                         "Manage Users",
                         "Documentation",
+
                     )
                     val indicator = @Composable { tabPositions: List<TabPosition> ->
                         Box(
@@ -625,14 +663,14 @@ fun Dashboard(navController: NavController, context: Context) {
                                         color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
                                     )
                                 }
-                            }, modifier = Modifier.background(CC.backbrush)
+                            }, modifier = Modifier.background(GlobalColors.primaryColor)
                             )
                         }
                     }
 
                     when (selectedTabIndex) {
                         0 -> AnnouncementItem(context)
-                        1 -> AttendanceItem()
+                        1 -> ManageAttendanceScreen(navController, context)
                         2 -> TimetableItem(context)
                         3 -> AssignmentsItem(context)
                         4 -> ManageUsersItem(context)
@@ -645,15 +683,12 @@ fun Dashboard(navController: NavController, context: Context) {
     }
 }
 
-@Composable
-fun AttendanceItem(){
-    Text("Attendance")
-}
+
 
 @Composable
 fun AnnouncementItem(context: Context) {
     var title by remember { mutableStateOf("") }
-    val date = CC.currentDate()
+    val date = CC.lastDate
     var description by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(true) }
     val announcements = remember { mutableStateListOf<Announcement>() }
@@ -815,8 +850,6 @@ fun AnnouncementItem(context: Context) {
                     ), horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Image now inside the Column
-
-
                 Spacer(modifier = Modifier.height(10.dp))
                 QuickInput(value = title, label = "Title", singleLine = true, onValueChange = {
                     title = it
@@ -924,6 +957,7 @@ fun TimetableItem(context: Context) {
     var timetable by remember { mutableStateOf<List<Timetable>?>(null) }
 
     LaunchedEffect(loading) {
+
         if (loading) {
             MyDatabase.getCurrentDayTimetable(currentDay) { fetchedTimetable ->
                 timetable = fetchedTimetable
@@ -1126,11 +1160,11 @@ fun AssignmentsItem(context: Context) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     var loading by remember { mutableStateOf(true) }
-    val subjects = remember { mutableStateListOf<Subjects>() }
+    val courses = remember { mutableStateListOf<Course>() }
     LaunchedEffect(Unit) {
-        MyDatabase.getSubjects { fetchedSubjects ->
-            subjects.clear()
-            subjects.addAll(fetchedSubjects ?: emptyList())
+        MyDatabase.fetchCourses { fetchedCourses ->
+            courses.clear()
+            courses.addAll(fetchedCourses ?: emptyList())
             loading = false
         }
     }
@@ -1147,7 +1181,7 @@ fun AssignmentsItem(context: Context) {
                 modifier = Modifier
                     .tabIndicatorOffset(tabPositions[selectedTabIndex])
                     .height(4.dp)
-                    .width(screenWidth / (subjects.size.coerceAtLeast(1))) // Avoid division by zero
+                    .width(screenWidth / (courses.size.coerceAtLeast(1))) // Avoid division by zero
                     .background(GlobalColors.secondaryColor, CircleShape)
             )
         }
@@ -1178,7 +1212,7 @@ fun AssignmentsItem(context: Context) {
                 edgePadding = 0.dp,
                 containerColor = GlobalColors.primaryColor
             ) {
-                subjects.forEachIndexed { index, subject ->
+                courses.forEachIndexed { index, subject ->
 
                     Tab(selected = selectedTabIndex == index, onClick = {
                         selectedTabIndex = index
@@ -1196,7 +1230,7 @@ fun AssignmentsItem(context: Context) {
                                 .padding(8.dp), contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = subject.name,
+                                text = subject.courseName,
                                 color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
                             )
                         }
@@ -1206,8 +1240,8 @@ fun AssignmentsItem(context: Context) {
             }
 
             when (selectedTabIndex) {
-                in subjects.indices -> {
-                    AssignmentsList(subjectId = subjects[selectedTabIndex].id, context)
+                in courses.indices -> {
+                    AssignmentsList(subjectId = courses[selectedTabIndex].courseCode, context)
                 }
             }
         }
