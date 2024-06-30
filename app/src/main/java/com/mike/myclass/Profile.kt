@@ -116,7 +116,7 @@ fun ProfileScreen(navController: NavController, context: Context) {
                         .height(200.dp)
                         .offset(y = 145.dp)
                         .background(
-                            brush = CC.backbrush, shape = RoundedCornerShape(10.dp)
+                             GlobalColors.primaryColor, shape = RoundedCornerShape(10.dp)
                         )
                         .fillMaxWidth(0.9f)
                 ) {
