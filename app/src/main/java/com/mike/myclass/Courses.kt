@@ -33,6 +33,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,7 +53,9 @@ import com.google.firebase.Firebase
 import com.google.firebase.database.database
 import com.mike.myclass.CommonComponents as CC
 
-
+object CourseName{
+    var name: MutableState<String> = mutableStateOf("Course Name")
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,31 +125,42 @@ fun CoursesScreen(navController: NavController, context: Context) {
             courses.forEach { course ->
                 Row(
                     modifier = Modifier
+                        .background(GlobalColors.secondaryColor, RoundedCornerShape(16.dp))
                         .border(
-                            width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(10.dp)
+                            width = 1.dp, color = GlobalColors.secondaryColor, shape = RoundedCornerShape(10.dp)
                         )
                         .fillMaxWidth()
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = course.courseCode, color = Color.White, fontSize = 18.sp
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = course.courseName, color = Color.White, fontSize = 18.sp
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = course.courseCode,
+                            style = CC.descriptionTextStyle(context),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = course.courseName,
+                            style = CC.descriptionTextStyle(context),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                     IconButton(onClick = {
+                        course.lastDate = CC.lastDate
+                        CourseName.name.value = course.courseName
                         navController.navigate("course/${course.courseCode}")
                     }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowForwardIos,
                             contentDescription = "View Course",
-                            tint = Color.White
+                            tint = GlobalColors.textColor
                         )
                     }
-
                 }
             }
         }
@@ -216,14 +231,14 @@ fun AddCourseDialog(
                 Button(
                     onClick = onDismiss,
                     shape = RoundedCornerShape(5.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CC.buttonColors)
+                    colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.extraColor1)
                 ) {
                     Text("Cancel", style = CC.descriptionTextStyle(LocalContext.current))
                 }
                 Button(
                     onClick = { onAddCourse(courseCode, courseName, lastDate) },
                     shape = RoundedCornerShape(5.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CC.buttonColors)
+                    colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.extraColor2)
                 ) {
                     Text("Add", style = CC.descriptionTextStyle(LocalContext.current))
                 }
