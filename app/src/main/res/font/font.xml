@@ -2,12 +2,12 @@
 <font-family xmlns:android="http://schemas.android.com/apk/res/android">
     <font
         android:fontStyle="normal"
-        android:fontWeight="400"
-        android:font="@font/segoe" />
+        android:fontWeight="300"
+        android:font="@font/indieflower" />
     <font
         android:fontStyle="normal"
         android:fontWeight="400"
-        android:font="@font/amatic" />
+        android:font="@font/shadowintolight" />
     <font
         android:fontStyle="normal"
         android:fontWeight="400"
@@ -20,7 +20,4 @@
         android:fontStyle="normal"
         android:fontWeight="400"
         android:font="@font/zeyada" />
-
-
-
 </font-family>
