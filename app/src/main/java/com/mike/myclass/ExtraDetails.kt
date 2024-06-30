@@ -43,7 +43,7 @@ fun MoreDetails(context: Context, navController: NavController) {
     }
 
     var mloading by remember { mutableStateOf(true) }
-    val subjects = remember { mutableStateListOf<Subjects>() }
+    val subjects = remember { mutableStateListOf<Course>() }
     val subjectId by remember { mutableStateOf("") }
     val announcements = remember { mutableStateListOf<Announcement>() }
     var assignments by remember { mutableStateOf<List<Assignment>?>(null) }
@@ -57,8 +57,8 @@ fun MoreDetails(context: Context, navController: NavController) {
         MyDatabase.getAssignments(subjectId) { fetchedAssignments ->
             assignments = fetchedAssignments
         }
-        MyDatabase.getSubjects { fetchedSubjects ->
-            subjects.addAll(fetchedSubjects ?: emptyList())
+        MyDatabase.fetchCourses { fetchedCourses ->
+            subjects.addAll(fetchedCourses ?: emptyList())
         }
         MyDatabase.getUsers { fetchedUsers ->
             users = fetchedUsers
@@ -137,7 +137,7 @@ fun MoreDetails(context: Context, navController: NavController) {
     }) { innerPadding ->
         Column(
             modifier = Modifier
-                .background(CC.backbrush)
+                .background(GlobalColors.primaryColor)
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
@@ -145,7 +145,7 @@ fun MoreDetails(context: Context, navController: NavController) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(CC.backbrush)
+                    .background(GlobalColors.primaryColor)
                     .padding(16.dp),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -195,7 +195,7 @@ fun MoreDetails(context: Context, navController: NavController) {
                         modifier = Modifier
                             .width(275.dp)
                             .background(
-                                CC.backbrush, RoundedCornerShape(10.dp)
+                                GlobalColors.primaryColor, RoundedCornerShape(10.dp)
                             ), // Background moved to outer Modifier
                         colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
