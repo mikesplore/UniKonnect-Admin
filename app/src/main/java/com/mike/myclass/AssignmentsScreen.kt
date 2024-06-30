@@ -87,7 +87,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     var loading by remember { mutableStateOf(true) }
-    val subjects = remember { mutableStateListOf<Subjects>() }
+    val courses = remember { mutableStateListOf<Course>() }
     var assignmentDialog by remember { mutableStateOf(false) }
     var showaddSubject by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
@@ -105,9 +105,9 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                 actions = {
                     IconButton(onClick = {
                         loading = true
-                        MyDatabase.getSubjects { fetchedSubjects ->
-                            subjects.clear()
-                            subjects.addAll(fetchedSubjects ?: emptyList())
+                        MyDatabase.fetchCourses { fetchedCourses ->
+                            courses.clear()
+                            courses.addAll(fetchedCourses ?: emptyList())
                             loading = false
                         }
                     }) {
@@ -128,34 +128,14 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             .background(GlobalColors.primaryColor)
                     ) {
                         DropdownMenuItem(text = {
-                            Row(
-                                modifier = Modifier
-                                    .height(30.dp)
-                                    .fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Icon(
-                                    Icons.Default.AddCircleOutline,
-                                    "Add unit",
-                                    tint = GlobalColors.textColor
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text("Add Unit", style = CC.descriptionTextStyle(context))
-
-                            }
-                        }, onClick = {
-                            showaddSubject = true
-                            expanded = false
-                        })
-                        DropdownMenuItem(text = {
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 Icon(
                                     Icons.Default.AddCircleOutline,
-                                    "Add subject",
+                                    "Add Assignment",
                                     tint = GlobalColors.textColor
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
-                                Text("Add Subject", style = CC.descriptionTextStyle(context))
+                                Text("Add Assignment", style = CC.descriptionTextStyle(context))
 
                             }
                         }, onClick = {
@@ -182,9 +162,9 @@ fun AssignmentScreen(navController: NavController, context: Context) {
         ) {
 
             LaunchedEffect(Unit) {
-                MyDatabase.getSubjects { fetchedSubjects ->
-                    subjects.clear()
-                    subjects.addAll(fetchedSubjects ?: emptyList())
+                MyDatabase.fetchCourses { fetchedCourses ->
+                    courses.clear()
+                    courses.addAll(fetchedCourses ?: emptyList())
                     loading = false
                 }
             }
@@ -195,7 +175,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     modifier = Modifier
                         .tabIndicatorOffset(tabPositions[selectedTabIndex])
                         .height(4.dp)
-                        .width(screenWidth / (subjects.size.coerceAtLeast(1))) // Avoid division by zero
+                        .width(screenWidth / (courses.size.coerceAtLeast(1))) // Avoid division by zero
                         .background(GlobalColors.secondaryColor, CircleShape)
                 )
             }
@@ -216,6 +196,12 @@ fun AssignmentScreen(navController: NavController, context: Context) {
 
                 }
 
+            } else if (courses.isEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+                ) {
+                    Text("No units found", style = CC.descriptionTextStyle(context))
+                }
             } else {
 
                 ScrollableTabRow(
@@ -226,7 +212,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     edgePadding = 0.dp,
                     containerColor = GlobalColors.primaryColor
                 ) {
-                    subjects.forEachIndexed { index, subject ->
+                    courses.forEachIndexed { index, course ->
 
                         Tab(selected = selectedTabIndex == index, onClick = {
                             selectedTabIndex = index
@@ -244,7 +230,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                                     .padding(8.dp), contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = subject.name,
+                                    text = course.courseName,
                                     color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
                                 )
                             }
@@ -254,90 +240,11 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                 }
 
                 when (selectedTabIndex) {
-                    in subjects.indices -> {
-                        AssignmentsList(subjectId = subjects[selectedTabIndex].id, context)
+                    in courses.indices -> {
+                        AssignmentsList(subjectId = courses[selectedTabIndex].courseCode, context)
                     }
                 }
             }
-
-            if (showaddSubject) {
-                BasicAlertDialog(onDismissRequest = { showaddSubject = false }) {
-                    Column(
-                        modifier = Modifier
-                            .width(250.dp)
-                            .background(
-                                color = GlobalColors.primaryColor, shape = RoundedCornerShape(16.dp)
-                            )
-                            .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Add Subject",
-                            style = CC.titleTextStyle(context),
-                            color = GlobalColors.textColor
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        OutlinedTextField(value = subjectName,
-                            onValueChange = { subjectName = it },
-                            label = { Text("Subject Name", color = GlobalColors.tertiaryColor) },
-                            colors = TextFieldDefaults.colors(
-                                unfocusedIndicatorColor = GlobalColors.tertiaryColor,
-                                focusedTextColor = GlobalColors.textColor,
-                                unfocusedTextColor = GlobalColors.textColor,
-                                focusedContainerColor = GlobalColors.primaryColor,
-                                unfocusedContainerColor = GlobalColors.primaryColor
-                            )
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            Button(
-                                onClick = { showaddSubject = false },
-                                shape = RoundedCornerShape(8.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.secondaryColor,
-                                    contentColor = GlobalColors.primaryColor
-                                ),
-                                modifier = Modifier.padding(horizontal = 8.dp)
-                            ) {
-                                Text(
-                                    "Cancel",
-                                    style = CC.descriptionTextStyle(context),
-                                    color = GlobalColors.primaryColor
-                                )
-                            }
-                            Button(
-                                onClick = {
-                                    MyDatabase.writeSubject(subject = Subjects(
-                                        name = subjectName
-                                    ), onComplete = {
-                                        Toast.makeText(
-                                            context, "Subject Added", Toast.LENGTH_SHORT
-                                        ).show()
-                                        showaddSubject = false
-                                    })
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.secondaryColor,
-                                    contentColor = GlobalColors.primaryColor
-                                ),
-                                modifier = Modifier.padding(horizontal = 8.dp)
-                            ) {
-                                Text(
-                                    "Add",
-                                    style = CC.descriptionTextStyle(context),
-                                    color = GlobalColors.primaryColor
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-
-
             if (assignmentDialog) {
                 BasicAlertDialog(onDismissRequest = { assignmentDialog = false }) {
                     Column(
@@ -400,7 +307,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             Button(
                                 onClick = {
                                     MyDatabase.writeAssignment(assignment = Assignment(
-                                        subjectId = subjects[selectedTabIndex].id,
+                                        courseCode = courses[selectedTabIndex].courseCode,
                                         name = title,
                                         description = description
                                     ), onComplete = {
