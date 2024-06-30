@@ -80,7 +80,7 @@ fun LoginScreen(navController: NavController, context: Context) {
             Column(
                 modifier = Modifier
                     .padding(it)
-                    .background(CC.backbrush)
+                    .background(GlobalColors.secondaryColor)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -93,7 +93,7 @@ fun LoginScreen(navController: NavController, context: Context) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = if (isSigningUp) "Sign up with one of the following options" else "Sign in with one of the following options",
+                        text = "Continue with one of the following options",
                         style = CC.descriptionTextStyle(context)
                     )
 
