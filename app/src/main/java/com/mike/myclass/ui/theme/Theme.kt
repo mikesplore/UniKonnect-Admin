@@ -35,17 +35,17 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
-val Segoe = FontFamily(
-    Font(R.font.segoe, FontWeight.Normal),
+val IndieFlower = FontFamily(
+    Font(R.font.indieflower, FontWeight.Normal),
 
-)
+    )
 
 val Lora = FontFamily(
     Font(R.font.lora, FontWeight.Normal)
 )
 
-val Amatic = FontFamily(
-    Font(R.font.amatic, FontWeight.Normal)
+val ShadowIntoLight = FontFamily(
+    Font(R.font.shadowintolight, FontWeight.Normal)
 )
 
 val Crimson = FontFamily(
