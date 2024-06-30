@@ -2,4 +2,7 @@
 <resources>
 
     <style name="Theme.MyClass" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Other styles -->
+
+
 </resources>
