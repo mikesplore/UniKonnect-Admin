@@ -29,7 +29,6 @@ android {
             )
         }
     }
-//this signingConfig is depreciated. how can i update it to gradle 9.0
     signingConfigs {
         create("release") {
             keyAlias = "release"
@@ -60,7 +59,8 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.fragment.ktx) // Or a newer version
+    implementation(libs.androidx.foundation)
+    implementation(libs.androidx.fragment.ktx)
     implementation(libs.coil.kt.coil.compose)
     implementation (libs.accompanist.pager)
     implementation (libs.accompanist.pager.indicators)
@@ -79,6 +79,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
     implementation(libs.firebase.messaging.ktx)
+    implementation(libs.androidx.constraintlayout.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
