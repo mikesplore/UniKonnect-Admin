@@ -4,6 +4,8 @@ accompanistPagerIndicators = "0.28.0"
 agp = "8.6.0-alpha04"
 coilCompose = "2.4.0"
 coilComposeVersion = "2.4.0"
+constraintlayoutCompose = "1.0.1"
+foundation = "1.6.8"
 fragmentKtx = "1.8.0"
 gson = "2.10.1"
 kotlin = "1.9.0"
@@ -20,11 +22,14 @@ firebaseDatabase = "21.0.0"
 materialIconsExtendedAndroid = "1.6.7"
 navigationCompose = "2.7.7"
 firebaseMessagingKtx = "24.0.0"
+constraintlayout = "2.1.4"
 
 [libraries]
 accompanist-pager-indicators = { module = "com.google.accompanist:accompanist-pager-indicators", version.ref = "accompanistPagerIndicators" }
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version.ref = "accompanistPager" }
+androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "foundation" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentKtx" }
 androidx-material = { module = "androidx.compose.material:material", version.ref = "materialIconsExtendedAndroid" }
 androidx-material-icons-extended-android = { module = "androidx.compose.material:material-icons-extended-android", version.ref = "materialIconsExtendedAndroid" }
@@ -49,6 +54,7 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 firebase-messaging-ktx = { group = "com.google.firebase", name = "firebase-messaging-ktx", version.ref = "firebaseMessagingKtx" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
