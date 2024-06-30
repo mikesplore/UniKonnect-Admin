@@ -6,13 +6,21 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -29,9 +37,36 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.*
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabPosition
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,7 +77,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import com.mike.myclass.CommonComponents as CC
 
@@ -56,7 +90,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
     var venue by remember { mutableStateOf("") }
     var lecturer by remember { mutableStateOf("") }
     var unitName by remember { mutableStateOf("") }
-    var selectedTabIndex by remember { mutableIntStateOf(CC.currentDayID() - 1) }
+    var selectedTabIndex by remember { mutableIntStateOf(CC.currentDayID()) }
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     var loading by remember { mutableStateOf(true) }
@@ -67,68 +101,78 @@ fun TimetableScreen(navController: NavController, context: Context) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Timetable", style = CC.titleTextStyle(context)) }, navigationIcon = {
-                IconButton(onClick = {navController.navigate("dashboard")}) {
-                    Icon(Icons.Default.ArrowBackIosNew, "Back", tint = GlobalColors.textColor)
-                }
-            }, actions = {
-                IconButton(onClick = {
-                    loading = true
-                    MyDatabase.getDays { fetchedDays ->
-                        days.clear()
-                        days.addAll(fetchedDays ?: emptyList())
-                        loading = false
+            TopAppBar(title = { Text("Timetable", style = CC.titleTextStyle(context)) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigate("dashboard") }) {
+                        Icon(Icons.Default.ArrowBackIosNew, "Back", tint = GlobalColors.textColor)
                     }
-                }) {
-                    Icon(Icons.Default.Refresh, "Refresh", tint = GlobalColors.textColor)
-                }
-                IconButton(onClick = { expanded = !expanded }) {
-                    Icon(Icons.Default.MoreVert, "Add", tint = GlobalColors.textColor)
-                }
-                DropdownMenu(
-                    onDismissRequest = { expanded = false },
-                    expanded = expanded,
-                    modifier = Modifier
-                        .border(
-                            width = 1.dp,
-                            color = GlobalColors.textColor,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .background(GlobalColors.primaryColor)
-                ) {
-                    DropdownMenuItem(text = {
-                        Row(modifier = Modifier
-                            .height(30.dp)
-                            .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(Icons.Default.AddCircleOutline,"Add Day",
-                                tint = GlobalColors.textColor)
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text("Add day", style = CC.descriptionTextStyle(context))
+                },
+                actions = {
+                    IconButton(onClick = {
+                        loading = true
+                        MyDatabase.getDays { fetchedDays ->
+                            days.clear()
+                            days.addAll(fetchedDays ?: emptyList())
+                            loading = false
+                        }
+                    }) {
+                        Icon(Icons.Default.Refresh, "Refresh", tint = GlobalColors.textColor)
+                    }
+                    IconButton(onClick = { expanded = !expanded }) {
+                        Icon(Icons.Default.MoreVert, "Add", tint = GlobalColors.textColor)
+                    }
+                    DropdownMenu(
+                        onDismissRequest = { expanded = false },
+                        expanded = expanded,
+                        modifier = Modifier
+                            .border(
+                                width = 1.dp,
+                                color = GlobalColors.textColor,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .background(GlobalColors.primaryColor)
+                    ) {
+                        DropdownMenuItem(text = {
+                            Row(
+                                modifier = Modifier
+                                    .height(30.dp)
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    Icons.Default.AddCircleOutline,
+                                    "Add Day",
+                                    tint = GlobalColors.textColor
+                                )
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Text("Add day", style = CC.descriptionTextStyle(context))
 
-                        }},
-                        onClick = {
+                            }
+                        }, onClick = {
                             showaddDay = true
                             expanded = false
                         })
-                    DropdownMenuItem(text = {
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Icon(Icons.Default.AddCircleOutline,"Add timetable",
-                                tint = GlobalColors.textColor)
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text("Add Timetable", style = CC.descriptionTextStyle(context))
+                        DropdownMenuItem(text = {
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Icon(
+                                    Icons.Default.AddCircleOutline,
+                                    "Add timetable",
+                                    tint = GlobalColors.textColor
+                                )
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Text("Add Timetable", style = CC.descriptionTextStyle(context))
 
-                        }
-                    }, onClick = {
-                        timetableDialog = true
-                        expanded = false
-                    })
-                }
-            }, colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = GlobalColors.primaryColor,
-                titleContentColor = GlobalColors.textColor,
-            )
+                            }
+                        }, onClick = {
+                            timetableDialog = true
+                            expanded = false
+                        })
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = GlobalColors.primaryColor,
+                    titleContentColor = GlobalColors.textColor,
+                )
 
             )
 
@@ -170,16 +214,22 @@ fun TimetableScreen(navController: NavController, context: Context) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CircularProgressIndicator(
-                        color = GlobalColors.secondaryColor,
-                        trackColor = GlobalColors.textColor
+                        color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text("Loading Days...Please wait", style = CC.descriptionTextStyle(context))
 
                 }
 
-            } else {
+            } else if (days.isEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+                ) {
+                    Text("No days found", style = CC.descriptionTextStyle(context))
 
+                }
+
+            } else {
                 ScrollableTabRow(
                     selectedTabIndex = selectedTabIndex,
                     modifier = Modifier.background(GlobalColors.primaryColor),
@@ -238,10 +288,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                             color = GlobalColors.textColor
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        CustomOutlinedTextField(
-                            value = day,
-                            onValueChange = {day = it}
-                        )
+                        CustomOutlinedTextField(value = day, onValueChange = { day = it })
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -418,11 +465,14 @@ fun DayList(dayid: String, context: Context) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             CircularProgressIndicator(
-                color = GlobalColors.secondaryColor,
-                trackColor = GlobalColors.textColor
+                color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
             )
             Text("Loading Events...Please wait", style = CC.descriptionTextStyle(context))
-            Text("If this takes longer, please check your internet connection", style = CC.descriptionTextStyle(context), textAlign = TextAlign.Center)
+            Text(
+                "If this takes longer, please check your internet connection",
+                style = CC.descriptionTextStyle(context),
+                textAlign = TextAlign.Center
+            )
         }
     } else {
         LazyColumn {
@@ -439,11 +489,9 @@ fun DayList(dayid: String, context: Context) {
             }
             items(timetables!!) { timetable ->
                 AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
+                    visible = true, enter = fadeIn(animationSpec = tween(500)) + slideInVertically(
                         animationSpec = tween(500)
-                    ),
-                    exit = fadeOut(animationSpec = tween(500)) + slideOutVertically(
+                    ), exit = fadeOut(animationSpec = tween(500)) + slideOutVertically(
                         animationSpec = tween(500)
                     )
                 ) {
@@ -499,20 +547,14 @@ fun TimetableCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = GlobalColors.secondaryColor,
-            contentColor = GlobalColors.textColor
-        ),
-        elevation = CardDefaults.elevatedCardElevation(),
-        shape = RoundedCornerShape(8.dp)
+            .padding(8.dp), colors = CardDefaults.cardColors(
+            containerColor = GlobalColors.secondaryColor, contentColor = GlobalColors.textColor
+        ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(8.dp)
     ) {
         Column(
             modifier = Modifier
                 .border(
-                    width = 1.dp,
-                    color = GlobalColors.textColor,
-                    shape = RoundedCornerShape(8.dp)
+                    width = 1.dp, color = GlobalColors.textColor, shape = RoundedCornerShape(8.dp)
                 )
                 .padding(16.dp)
         ) {
@@ -558,8 +600,7 @@ fun TimetableCard(
                             } else {
                                 isEditing = true
                             }
-                        },
-                        modifier = Modifier.size(32.dp)
+                        }, modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             imageVector = if (isEditing) Icons.Default.Check else Icons.Default.Edit,
@@ -578,8 +619,7 @@ fun TimetableCard(
 
                                 isEditing = false
                                 errorMessage = null
-                            },
-                            modifier = Modifier.size(32.dp)
+                            }, modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
@@ -589,8 +629,7 @@ fun TimetableCard(
                         }
                     } else {
                         IconButton(
-                            onClick = { onDelete(timetable.id) },
-                            modifier = Modifier.size(32.dp)
+                            onClick = { onDelete(timetable.id) }, modifier = Modifier.size(32.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
@@ -605,45 +644,57 @@ fun TimetableCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             if (isEditing) {
-                CustomOutlinedTextField(
-                    value = editedVenue,
+                CustomOutlinedTextField(value = editedVenue,
                     label = "Venue",
                     onValueChange = { editedVenue = it },
                     leadingIcon = {
-                        Icon(Icons.Default.LocationOn, contentDescription = "Venue", tint = GlobalColors.textColor)
-                    }
-                )
+                        Icon(
+                            Icons.Default.LocationOn,
+                            contentDescription = "Venue",
+                            tint = GlobalColors.textColor
+                        )
+                    })
                 Spacer(modifier = Modifier.height(8.dp))
-                CustomOutlinedTextField(
-                    value = editedLecturer,
+                CustomOutlinedTextField(value = editedLecturer,
                     label = "Lecturer",
                     onValueChange = { editedLecturer = it },
                     leadingIcon = {
-                        Icon(Icons.Default.Person, contentDescription = "Lecturer", tint = GlobalColors.textColor)
-                    }
-                )
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = "Lecturer",
+                            tint = GlobalColors.textColor
+                        )
+                    })
                 Spacer(modifier = Modifier.height(8.dp))
-                CustomOutlinedTextField(
-                    value = editedStartTime,
+                CustomOutlinedTextField(value = editedStartTime,
                     label = "Start Time",
                     onValueChange = { editedStartTime = it },
                     leadingIcon = {
-                        Icon(Icons.Default.Schedule, contentDescription = "Start Time", tint = GlobalColors.textColor)
-                    }
-                )
+                        Icon(
+                            Icons.Default.Schedule,
+                            contentDescription = "Start Time",
+                            tint = GlobalColors.textColor
+                        )
+                    })
                 Spacer(modifier = Modifier.height(8.dp))
-                CustomOutlinedTextField(
-                    value = editedEndTime,
+                CustomOutlinedTextField(value = editedEndTime,
                     label = "End Time",
                     onValueChange = { editedEndTime = it },
                     leadingIcon = {
-                        Icon(Icons.Default.Schedule, contentDescription = "End Time", tint = GlobalColors.textColor)
-                    }
-                )
+                        Icon(
+                            Icons.Default.Schedule,
+                            contentDescription = "End Time",
+                            tint = GlobalColors.textColor
+                        )
+                    })
             } else {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.LocationOn, contentDescription = "Venue", tint = GlobalColors.textColor)
+                        Icon(
+                            Icons.Default.LocationOn,
+                            contentDescription = "Venue",
+                            tint = GlobalColors.textColor
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = timetable.venue,
@@ -653,7 +704,11 @@ fun TimetableCard(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Person, contentDescription = "Lecturer", tint = GlobalColors.textColor)
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = "Lecturer",
+                            tint = GlobalColors.textColor
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = timetable.lecturer,
@@ -663,7 +718,11 @@ fun TimetableCard(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Schedule, contentDescription = "Time", tint = GlobalColors.textColor)
+                        Icon(
+                            Icons.Default.Schedule,
+                            contentDescription = "Time",
+                            tint = GlobalColors.textColor
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "${timetable.startTime} - ${timetable.endTime}",
@@ -726,13 +785,9 @@ fun CustomOutlinedTextField(
 @Composable
 fun TimetableScreenPreview() {
     //TimetableScreen(rememberNavController(), LocalContext.current)
-    TimetableCard(
-        timetable = Timetable(
-            lecturer = "Michael",
-            startTime = "11:30",
-            endTime = "12:30",
-            venue = "Here"),
-        {},{},LocalContext.current
-        )
+    TimetableCard(timetable = Timetable(
+        lecturer = "Michael", startTime = "11:30", endTime = "12:30", venue = "Here"
+    ), {}, {}, LocalContext.current
+    )
 
 }
