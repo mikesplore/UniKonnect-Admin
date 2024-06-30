@@ -145,7 +145,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
     ) {
         Column(
             modifier = Modifier
-                .background(CC.backbrush)
+                .background(GlobalColors.primaryColor)
                 .fillMaxSize()
                 .padding(it)
         ) {
