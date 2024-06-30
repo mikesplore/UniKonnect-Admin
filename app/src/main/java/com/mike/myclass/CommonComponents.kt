@@ -22,15 +22,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
+import java.text.SimpleDateFormat
 import java.time.LocalTime
+import java.util.Date
+import java.util.Locale
 
 
 object CommonComponents {
     private val calendar: Calendar = Calendar.getInstance()
-    private val day = calendar.get(Calendar.DAY_OF_MONTH)
-    private val currentday = calendar.get(Calendar.DAY_OF_WEEK)
-    private val month = calendar.get(Calendar.MONTH) + 1 // Month is 0-indexed, so add 1
-    private val year = calendar.get(Calendar.YEAR)
     val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
     @Composable
     fun PasswordTextField(
@@ -131,21 +131,7 @@ object CommonComponents {
         )
     }
 
-
-    val backbrush = Brush.verticalGradient(
-        listOf(
-            GlobalColors.primaryColor,
-            GlobalColors.secondaryColor,
-        )
-    )
-
-    @Composable
-    fun currentDate(): String {
-        return "$day/$month/$year"
-    }
-
-    val lastDate = calendar.time.toString()
-
+    val lastDate: String = SimpleDateFormat("EEE dd-yyyy", Locale.getDefault()).format(Date())
     fun currentDay(): String {
         return when (dayOfWeek) {
             Calendar.SUNDAY -> "Sunday"
@@ -157,6 +143,11 @@ object CommonComponents {
             Calendar.SATURDAY -> "Saturday"
             else -> "Invalid Day" // This should never happen
         }
+    }
+
+    fun getCurrentUser(): String {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        return currentUser?.email ?: "" // Return email if available, otherwise an empty string
     }
 
     fun currentDayID(): Int {
@@ -171,7 +162,6 @@ object CommonComponents {
             else -> 0
         }
     }
-    val buttonColors = Color(0xff5AB2FF)
 
 
     @Composable
@@ -192,7 +182,7 @@ object CommonComponents {
             focusedContainerColor = GlobalColors.primaryColor,
             unfocusedContainerColor = GlobalColors.primaryColor,
             focusedIndicatorColor = GlobalColors.tertiaryColor,
-            unfocusedIndicatorColor = GlobalColors.primaryColor,
+            unfocusedIndicatorColor = GlobalColors.secondaryColor,
             focusedLabelColor = GlobalColors.textColor,
             cursorColor = GlobalColors.textColor,
             unfocusedLabelColor = GlobalColors.textColor,
