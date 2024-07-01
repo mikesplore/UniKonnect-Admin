@@ -19,8 +19,10 @@ import java.util.UUID
 
 open class User(
     val id: String = "",
-    val name: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
     val email: String = "",
+    val phoneNumber: String = "",
     var isAdmin: Boolean = true
 )
 
@@ -145,6 +147,7 @@ object MyDatabase {
         }
     }
 
+
     fun generateChatID(onIndexNumberGenerated: (String) -> Unit) {
         updateAndGetCode { newCode ->
             val indexNumber = "CH$newCode$year"
@@ -173,28 +176,28 @@ object MyDatabase {
         }
     }
 
-    private fun generateAnnouncementID(onIndexNumberGenerated: (String) -> Unit) {
+     fun generateAnnouncementID(onIndexNumberGenerated: (String) -> Unit) {
         updateAndGetCode { newCode ->
             val indexNumber = "AN$newCode$year"
             onIndexNumberGenerated(indexNumber) 
         }
     }
 
-    private fun generateTimetableID(onIndexNumberGenerated: (String) -> Unit) {
+     fun generateTimetableID(onIndexNumberGenerated: (String) -> Unit) {
         updateAndGetCode { newCode ->
             val indexNumber = "TT$newCode$year"
             onIndexNumberGenerated(indexNumber) 
         }
     }
 
-    private fun generateAssignmentID(onIndexNumberGenerated: (String) -> Unit) {
+     fun generateAssignmentID(onIndexNumberGenerated: (String) -> Unit) {
         updateAndGetCode { newCode ->
             val indexNumber = "AS$newCode$year"
             onIndexNumberGenerated(indexNumber) 
         }
     }
 
-    private fun generateDayID(onIndexNumberGenerated: (String) -> Unit) {
+     fun generateDayID(onIndexNumberGenerated: (String) -> Unit) {
         updateAndGetCode { newCode ->
             val indexNumber = "DY$newCode$year"
             onIndexNumberGenerated(indexNumber) 
@@ -264,6 +267,7 @@ object MyDatabase {
         })
     }
 
+
     fun fetchUserDataByAdmissionNumber(admissionNumber: String, callback: (User?) -> Unit) {
         database.child("Users").orderByChild("id").equalTo(admissionNumber)
             .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -272,8 +276,35 @@ object MyDatabase {
                         val userId = userSnapshot.child("id").getValue(String::class.java)
                         if (userId == admissionNumber) {
                             val userEmail = userSnapshot.child("Email").getValue(String::class.java) ?: ""
-                            val userName = userSnapshot.child("name").getValue(String::class.java) ?: ""
-                            callback(User(id = userId, name = userName, email = userEmail))
+                            val firstName = userSnapshot.child("firstName").getValue(String::class.java) ?: ""
+                            val lastName = userSnapshot.child("lastName").getValue(String::class.java) ?: ""
+                            val phoneNumber = userSnapshot.child("phoneNumber").getValue(String::class.java) ?: ""
+                            callback(User(id = userId, firstName = firstName, lastName  =lastName, phoneNumber = phoneNumber, email = userEmail))
+                            return
+                        }
+                    }
+                    callback(null)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    callback(null) // Handle or log the error as needed
+                }
+            }
+            )
+    }
+
+    fun fetchUserDataByEmail(email: String, callback: (User?) -> Unit) {
+        database.child("Users").orderByChild("email").equalTo(email)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (userSnapshot in snapshot.children) {
+                        val userEmail = userSnapshot.child("email").getValue(String::class.java)
+                        if (userEmail == email) {
+                            val userId = userSnapshot.child("id").getValue(String::class.java) ?: ""
+                            val firstName = userSnapshot.child("firstName").getValue(String::class.java) ?: ""
+                            val lastName = userSnapshot.child("lastName").getValue(String::class.java) ?: ""
+                            val phoneNumber = userSnapshot.child("phoneNumber").getValue(String::class.java) ?: ""
+                            callback(User(id = userId, firstName = firstName,lastName = lastName,phoneNumber = phoneNumber, email = userEmail))
                             return
                         }
                     }
@@ -285,6 +316,8 @@ object MyDatabase {
                 }
             })
     }
+
+
 
     fun fetchCourses(onCoursesFetched: (List<Course>) -> Unit) {
         database.child("Courses").addListenerForSingleValueEvent(object : ValueEventListener {
@@ -375,39 +408,11 @@ object MyDatabase {
         }
     }
 
-    fun fetchUserDataByEmail(email: String, callback: (User?) -> Unit) {
-        database.child("Users").orderByChild("email").equalTo(email)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    for (userSnapshot in snapshot.children) {
-                        val userEmail = userSnapshot.child("email").getValue(String::class.java)
-                        if (userEmail == email) {
-                            val userId = userSnapshot.child("id").getValue(String::class.java) ?: ""
-                            val userName =
-                                userSnapshot.child("name").getValue(String::class.java) ?: ""
-                            callback(User(id = userId, name = userName, email = userEmail))
-                            return
-                        }
-                    }
-                    callback(null)
-                }
 
-                override fun onCancelled(error: DatabaseError) {
-                    callback(null) // Handle or log the error as needed
-                }
-            })
-    }
-
-    fun writeStudent(student: Student) {
-        database.child("Students").child(student.id).setValue(student)
-    }
-
-    fun updateUser(userId: String, newName: String, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
+    fun updateUser(userId: String, newFirstName: String, newLastName: String, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
         val userRef = database.child("Users").child(userId)
-        val updates = hashMapOf<String, Any>(
-            "name" to newName // Update only the "name" property
-        )
-        userRef.updateChildren(updates)
+        val updatedUser = User(firstName = newFirstName, lastName = newLastName )
+        userRef.setValue(updatedUser)
             .addOnSuccessListener {
                 onSuccess() // Callback on successful update
             }
@@ -415,6 +420,7 @@ object MyDatabase {
                 onFailure(exception) // Callback on failure with exception
             }
     }
+
     fun deleteUser(userId: String, onSuccess: () -> Unit, onFailure: (Exception?) -> Unit) {
         database.child("Users").child(userId).removeValue()
             .addOnSuccessListener {
@@ -425,8 +431,14 @@ object MyDatabase {
             }
     }
 
-    fun writeUsers(user: User) {
+    fun writeUsers(user:User, onComplete: (Boolean) -> Unit) {
         database.child("Users").child(user.id).setValue(user)
+            .addOnSuccessListener {
+                onComplete(true) // Success: invoke callback with 'true'
+            }
+            .addOnFailureListener {
+                onComplete(false) // Failure: invoke callback with 'false'
+            }
     }
 
     fun getUsers(onUsersFetched: (List<User>?) -> Unit) {
