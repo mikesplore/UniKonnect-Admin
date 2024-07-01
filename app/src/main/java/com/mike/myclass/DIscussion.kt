@@ -2,12 +2,10 @@ package com.mike.myclass
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,7 +20,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -30,9 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,7 +44,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -58,7 +53,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -78,19 +72,16 @@ import java.util.Locale
 import com.mike.myclass.CommonComponents as CC
 
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
-    navController: NavController,
-    context: Context
+    navController: NavController, context: Context
 ) {
     var user by remember { mutableStateOf(User()) }
     var message by remember { mutableStateOf("") }
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     var isSearchVisible by remember { mutableStateOf(false) }
     var previousChatSize by remember { mutableIntStateOf(0) }
-    var showdialog by remember { mutableStateOf(true) }
     var chats by remember { mutableStateOf(emptyList<Chat>()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -109,12 +100,11 @@ fun ChatScreen(
             fetchUserDataByEmail(email) { fetchedUser ->
                 fetchedUser?.let {
                     user = it
-                    currentName = it.name
+                    currentName = it.firstName
                     currentEmail = it.email
                     currentAdmissionNumber = it.id
                 }
             }
-            showdialog = false
         }
     }
 
@@ -149,7 +139,10 @@ fun ChatScreen(
     }
     fun formatDate(dateString: String): String {
         val today = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
-        val yesterday = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000)) // Yesterday's date
+        val yesterday = SimpleDateFormat(
+            "dd-MM-yyyy",
+            Locale.getDefault()
+        ).format(Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000)) // Yesterday's date
 
         return when (dateString) {
             today -> "Today"
@@ -160,22 +153,24 @@ fun ChatScreen(
 
     fun sendMessage(message: String) {
         try {
-            val newChat = Chat(
-                message = message,
-                senderName = currentName,
-                senderID = currentAdmissionNumber,
-                time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
-                date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
-            )
-            MyDatabase.sendMessage(newChat) { success ->
-                if (success) {
-                    fetchChats()
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Failed to send message")
+            MyDatabase.generateChatID {  chatId ->
+                val newChat = Chat(
+                    id = chatId,
+                    message = message,
+                    senderName = currentName,
+                    senderID = currentAdmissionNumber,
+                    time = SimpleDateFormat("hh:mm A", Locale.getDefault()).format(Date()),
+                    date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
+                )
+                MyDatabase.sendMessage(newChat) { success ->
+                    if (success) {
+                        fetchChats()
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Failed to send message")
+                        }
                     }
-                }
-            }
+                }}
         } catch (e: Exception) {
             errorMessage = e.message
             scope.launch {
@@ -184,217 +179,171 @@ fun ChatScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Discussions", style = CC.titleTextStyle(context)) },
-                actions = {
-                    IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
-                        Icon(
-                            Icons.Filled.Search,
-                            contentDescription = "Search",
-                            tint = GlobalColors.textColor
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            Icons.Default.ArrowBackIosNew,
-                            contentDescription = "Back",
-                            tint = GlobalColors.textColor
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        content = { paddingValues ->
-            Box(modifier = Modifier.fillMaxSize()) {
-                Background(context)
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(8.dp)
+    Scaffold(topBar = {
+        TopAppBar(
+            title = { Text("Group Discussions", style = CC.titleTextStyle(context)) },
+            actions = {
+                IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = "Search",
+                        tint = GlobalColors.textColor
+                    )
+                }
+                IconButton(onClick = {navController.navigate("users")}) {
+                    Icon(Icons.Filled.Person, "Participants",
+                        tint = GlobalColors.textColor)
+                }
+            },
+
+            navigationIcon = {
+                IconButton(onClick = { navController.navigate("dashboard") }) {
+                    Icon(
+                        Icons.Default.ArrowBackIosNew,
+                        contentDescription = "Back",
+                        tint = GlobalColors.textColor
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
+        )
+    }, snackbarHost = { SnackbarHost(snackbarHostState) }, content = { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            Background(context)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(8.dp)
+            ) {
+                AnimatedVisibility(
+                    visible = isSearchVisible, enter = fadeIn(), exit = fadeOut()
                 ) {
-
-                    if (showdialog) {
-                        BasicAlertDialog(
-                            onDismissRequest = { showdialog = false },
-                            modifier = Modifier.border(1.dp, GlobalColors.textColor, RoundedCornerShape(10.dp))
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .width(200.dp)
-                                    .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp))
-                                    .padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "Silent Conversation",
-                                    style = CC.titleTextStyle(context)
-                                        .copy(fontSize = 20.sp, textAlign = TextAlign.Center),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                Text(
-                                    text = "The discussions are silent. You will not receive any notifications of incoming messages. " +
-                                            "The messages will only load while you are on this screen.",
-                                    style = CC.descriptionTextStyle(context)
-                                        .copy(fontSize = 16.sp, textAlign = TextAlign.Center),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-
-                                Button(
-                                    onClick = { showdialog = false },
-                                    modifier = Modifier
-                                        .width(100.dp)
-                                        .padding(top = 16.dp),
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = ButtonDefaults.buttonColors(GlobalColors.extraColor2)
-                                ) {
-                                    Text("Ok")
-                                }
-                            }
-                        }
-                    }
-
-                    AnimatedVisibility(
-                        visible = isSearchVisible, enter = fadeIn(), exit = fadeOut()
-                    ) {
-                        TextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            label = { Text("Search Chats") },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp),
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = GlobalColors.primaryColor,
-                                unfocusedIndicatorColor = GlobalColors.textColor,
-                                focusedIndicatorColor = GlobalColors.secondaryColor,
-                                unfocusedContainerColor = GlobalColors.primaryColor,
-                                focusedTextColor = GlobalColors.textColor,
-                                unfocusedTextColor = GlobalColors.textColor,
-                                focusedLabelColor = GlobalColors.secondaryColor,
-                                unfocusedLabelColor = GlobalColors.textColor
-                            ),
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                    }
-
-                    LazyColumn(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        val groupedChats = chats.groupBy { it.date }
-
-                        groupedChats.forEach { (date, chatsForDate) ->
-                            item {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .background(
-                                                GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
-                                            )
-                                            .clip(RoundedCornerShape(10.dp)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = formatDate(date),
-                                            modifier = Modifier.padding(5.dp),
-                                            style = CC.descriptionTextStyle(context),
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .background(
-                                                GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
-                                            )
-                                            .clip(RoundedCornerShape(10.dp)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = "The messages are not end to end encrypted. Only the admin can edit or delete the chats.",
-                                            modifier = Modifier.padding(5.dp),
-                                            style = CC.descriptionTextStyle(context),
-                                            textAlign = TextAlign.Center,
-                                            color = GlobalColors.textColor
-                                        )
-                                    }
-                                }
-                            }
-
-                            items(chatsForDate.filter {
-                                it.message.contains(searchQuery.text, ignoreCase = true)
-                            }) { chat ->
-                                ChatBubble(
-                                    chat = chat,
-                                    isUser = chat.senderID == currentAdmissionNumber,
-                                    context = context,
-                                    navController = navController
-                                )
-                            }
-                        }
-                    }
-
-                    Row(
+                    TextField(value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        label = { Text("Search Chats") },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        CC.SingleLinedTextField(
-                            value = message,
-                            onValueChange = { message = it },
-                            label = "Message",
-                            enabled = true,
-                            singleLine = true,
-                            context = context
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(
-                            onClick = {
-                                if (message.isNotBlank() && user.name.isNotBlank()) {
-                                    sendMessage(message)
-                                    message = ""
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = GlobalColors.primaryColor,
+                            unfocusedIndicatorColor = GlobalColors.textColor,
+                            focusedIndicatorColor = GlobalColors.secondaryColor,
+                            unfocusedContainerColor = GlobalColors.primaryColor,
+                            focusedTextColor = GlobalColors.textColor,
+                            unfocusedTextColor = GlobalColors.textColor,
+                            focusedLabelColor = GlobalColors.secondaryColor,
+                            unfocusedLabelColor = GlobalColors.textColor
+                        ),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                }
+
+                LazyColumn(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    val groupedChats = chats.groupBy { it.date }
+
+                    groupedChats.forEach { (date, chatsForDate) ->
+                        item {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                                        )
+                                        .clip(RoundedCornerShape(10.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = formatDate(date),
+                                        modifier = Modifier.padding(5.dp),
+                                        style = CC.descriptionTextStyle(context),
+                                        fontSize = 13.sp,
+                                        textAlign = TextAlign.Center
+                                    )
                                 }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.extraColor2),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Icon(Icons.AutoMirrored.Filled.Send, "Send")
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                                        )
+                                        .clip(RoundedCornerShape(10.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "To maintain a positive learning environment, group chats are moderated by admins",
+                                        modifier = Modifier.padding(5.dp),
+                                        style = CC.descriptionTextStyle(context),
+                                        textAlign = TextAlign.Center,
+                                        color = GlobalColors.textColor
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(10.dp))
                         }
+
+                        items(chatsForDate.filter {
+                            it.message.contains(searchQuery.text, ignoreCase = true)
+                        }) { chat ->
+                            ChatBubble(
+                                chat = chat,
+                                isUser = chat.senderID == currentAdmissionNumber,
+                                context = context,
+                                navController = navController
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CC.SingleLinedTextField(
+                        value = message,
+                        onValueChange = { message = it },
+                        label = "Message",
+                        enabled = true,
+                        singleLine = true,
+                        context = context
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            if (message.isNotBlank() && user.firstName.isNotBlank()) {
+                                sendMessage(message)
+                                message = ""
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.extraColor2),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.Send, "Send")
                     }
                 }
             }
         }
-    )
+    })
 }
 
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun ChatBubble(
-    chat: Chat,
-    isUser: Boolean,
-    context: Context,
-    navController: NavController
+    chat: Chat, isUser: Boolean, context: Context, navController: NavController
 ) {
     val alignment = if (isUser) Alignment.TopEnd else Alignment.TopStart
     val backgroundColor = if (isUser) GlobalColors.extraColor1 else GlobalColors.extraColor2
@@ -420,7 +369,8 @@ fun ChatBubble(
             Column {
                 if (!isUser) {
                     Row(
-                        horizontalArrangement = Arrangement.Start) {
+                        horizontalArrangement = Arrangement.Start
+                    ) {
                         Text(
                             text = chat.senderName,
                             style = CC.descriptionTextStyle(context),
@@ -430,8 +380,7 @@ fun ChatBubble(
                     }
                 }
                 Text(
-                    text = chat.message,
-                    style = CC.descriptionTextStyle(context)
+                    text = chat.message, style = CC.descriptionTextStyle(context)
                 )
                 Text(
                     text = chat.time,
@@ -446,16 +395,15 @@ fun ChatBubble(
         }
         if (!isUser) {
             // Icon with first letter of sender's name, positioned outside the bubble
-            Box(
-                modifier = Modifier
-                    .clickable {
-                        navController.navigate("chat/${chat.senderID}") }
-                    .offset(x = (-16).dp, y = (-16).dp)
-                    .size(24.dp)
-                    .background(GlobalColors.primaryColor, CircleShape)
-                    .padding(4.dp),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier
+                .clickable {
+                    navController.navigate("chat/${chat.senderID}")
+                }
+                .offset(x = (-16).dp, y = (-16).dp)
+                .size(24.dp)
+                .background(GlobalColors.primaryColor, CircleShape)
+                .padding(4.dp),
+                contentAlignment = Alignment.Center) {
 
                 Text(
                     text = chat.senderName.first().toString(),
@@ -470,7 +418,6 @@ fun ChatBubble(
 }
 
 
-
 @Preview
 @Composable
 fun PreviewMyScreen() {
@@ -478,6 +425,6 @@ fun PreviewMyScreen() {
     ChatBubble(
         chat = Chat(
             senderName = "Michael", message = "Hello there", time = "10:00", date = "2023-08-01"
-        ), isUser = true,  context = LocalContext.current, rememberNavController()
+        ), isUser = true, context = LocalContext.current, rememberNavController()
     )
 }
