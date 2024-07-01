@@ -80,7 +80,7 @@ fun LoginScreen(navController: NavController, context: Context) {
             Column(
                 modifier = Modifier
                     .padding(it)
-                    .background(GlobalColors.secondaryColor)
+                    .background(GlobalColors.primaryColor)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally
