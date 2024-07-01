@@ -3,16 +3,22 @@ package com.mike.myclass
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -20,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.myclass.MyDatabase.fetchUserDataByAdmissionNumber
 import com.mike.myclass.MyDatabase.fetchUserDataByEmail
 import com.mike.myclass.MyDatabase.fetchUserToUserMessages
 import com.mike.myclass.MyDatabase.sendUserToUserMessage
@@ -28,24 +35,32 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.math.log
 import com.mike.myclass.CommonComponents as CC
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserChatScreen(navController: NavController, context: Context, targetUserId: String) {
     var user by remember { mutableStateOf(User()) }
+    var user2 by remember { mutableStateOf(User()) }
+    var name by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     var messages by remember { mutableStateOf(emptyList<Message>()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var currentName by remember { mutableStateOf("") }
-    var currentEmail by remember { mutableStateOf("") }
     var currentAdmissionNumber by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
-    var retrievedadmission by remember { mutableStateOf("Empty") }
+    val fileName = "user_chat_${targetUserId}.json"
+
+
+
+    // Search functionality
+    var isSearchVisible by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
 
     // Fetch user data when the composable is launched
     LaunchedEffect(currentUser?.email) {
@@ -54,46 +69,62 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                 fetchedUser?.let {
                     user = it
                     currentName = it.name
-                    currentEmail = it.email
                     currentAdmissionNumber = it.id
-                    retrievedadmission = currentAdmissionNumber
-                    Log.e("ProfileCard", "Fetched user: $currentAdmissionNumber")
-                    Log.e("ProfileCard", "Fetched user: $currentName")
-                    Log.e("ProfileCard", "Fetched user: $currentEmail")
-                    //Debugging ain't easy my friend😂
-
                 }
             }
         }
     }
 
+    LaunchedEffect(targetUserId) {
+        fetchUserDataByAdmissionNumber(targetUserId) { fetchedUser ->
+            fetchedUser?.let {
+                user2 = it
+                name = user2.name
+
+            }
+        }
+    }
+
+    // Load old messages from file
+    LaunchedEffect(Unit) {
+        messages = loadMessagesFromFile(context, fileName)
+    }
+
     // Generate a unique conversation ID for the current user and the target user
     val conversationId = "Direct Messages/${generateConversationId(currentAdmissionNumber, targetUserId)}"
-    Log.e("ProfileCard", "Admission ID: $currentAdmissionNumber")
-    Log.e("ProfileCard", "Conversation ID: $conversationId")
-
 
     fun fetchMessages(conversationId: String) {
         try {
             fetchUserToUserMessages(conversationId) { fetchedMessages ->
                 messages = fetchedMessages
+                // Save the new messages to file
+                saveMessagesToFile(context, fetchedMessages, fileName)
             }
         } catch (e: Exception) {
             errorMessage = e.message
             scope.launch {
                 snackbarHostState.showSnackbar("Failed to fetch messages: ${e.message}")
-                Log.e("UserChatScreen", "Failed to fetch messages from $conversationId: ${e.message}", e) // Log the exception as well
+                Log.e("UserChatScreen", "Failed to fetch messages from $conversationId: ${e.message}", e)
             }
         }
     }
 
+    // Periodically fetch messages
     LaunchedEffect(conversationId) {
         while (true) {
             fetchMessages(conversationId)
-            if(messages.isEmpty()){
-                Log.e("UserChatScreen", "No messages were found! in the path $conversationId")
-            }
             delay(10) // Adjust the delay as needed
+        }
+    }
+    // Format the date string
+    fun formatDate(dateString: String): String {
+        val today = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
+        val yesterday = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000)) // Yesterday's date
+
+        return when (dateString) {
+            today -> "Today"
+            yesterday -> "Yesterday"
+            else -> dateString
         }
     }
 
@@ -127,29 +158,107 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(targetUserId, style = CC.titleTextStyle(context)) },
+                title = { Text(name, style = CC.titleTextStyle(context)) },
+                actions = {
+                    IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = Color.White
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
             )
         },
         content = { paddingValues ->
-            Box {
+            Box(
+
+            ) {
                 Background(context)
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
-                        .padding(8.dp)
                 ) {
+                    if (isSearchVisible) {
+                        TextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            label = { Text("Search Chats") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = GlobalColors.primaryColor,
+                                unfocusedIndicatorColor = GlobalColors.textColor,
+                                focusedIndicatorColor = GlobalColors.secondaryColor,
+                                unfocusedContainerColor = GlobalColors.primaryColor,
+                                focusedTextColor = GlobalColors.textColor,
+                                unfocusedTextColor = GlobalColors.textColor,
+                                focusedLabelColor = GlobalColors.secondaryColor,
+                                unfocusedLabelColor = GlobalColors.textColor
+                            ),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                    }
+
                     LazyColumn(
                         modifier = Modifier.weight(1f)
                     ) {
-                        items(messages) { message ->
-                            MessageBubble(
-                                message = message,
-                                isUser = message.senderID == user.id,
-                                context = context,
-                                isAdmin = user.isAdmin
-                            )
+                        val groupedMessages = messages.groupBy { it.date }
+
+                        groupedMessages.forEach { (date, chatsForDate) ->
+                            item {
+                                // Display date header
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp))
+                                            .padding(vertical = 8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = formatDate(date),
+                                            style = CC.descriptionTextStyle(context),
+                                            modifier = Modifier.padding(5.dp)
+                                        )
+                                    }}
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .background(
+                                                GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                                            )
+                                            .clip(RoundedCornerShape(10.dp)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "Chats are end to end encrypted.",
+                                            modifier = Modifier.padding(5.dp),
+                                            style = CC.descriptionTextStyle(context),
+                                            textAlign = TextAlign.Center,
+                                            color = GlobalColors.textColor
+                                        )
+                                    }
+                                }
+                            }
+
+                            items(chatsForDate.filter {
+                                it.message.contains(searchQuery, ignoreCase = true)
+                            }) { chat ->
+                                MessageBubble(
+                                    message = chat,
+                                    isUser = chat.senderID == currentAdmissionNumber,
+                                    context = context
+                                )
+                            }
                         }
                     }
 
@@ -167,6 +276,8 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                             colors = TextFieldDefaults.textFieldColors(
                                 containerColor = GlobalColors.primaryColor,
                                 cursorColor = GlobalColors.textColor,
+                                focusedTextColor = GlobalColors.textColor,
+                                unfocusedTextColor = GlobalColors.textColor,
                                 focusedLabelColor = GlobalColors.textColor,
                                 unfocusedLabelColor = GlobalColors.textColor,
                                 focusedIndicatorColor = Color.Transparent,
@@ -194,6 +305,9 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
     )
 }
 
+// Other functions and components remain unchanged
+
+
 fun generateConversationId(userId1: String, userId2: String): String {
     return if (userId1 < userId2) {
         "$userId1$userId2"
@@ -207,7 +321,6 @@ fun generateConversationId(userId1: String, userId2: String): String {
 fun MessageBubble(
     message: Message,
     isUser: Boolean,
-    isAdmin: Boolean,
     context: Context,
 ) {
     val alignment = if (isUser) Alignment.TopEnd else Alignment.TopStart
@@ -232,18 +345,6 @@ fun MessageBubble(
                 .align(alignment)
         ) {
             Column {
-                if (!isUser) {
-                    Row(
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Text(
-                            text = if (isAdmin) "${message.senderName} (Admin)" else message.senderName,
-                            style = CC.descriptionTextStyle(context),
-                            fontWeight = FontWeight.Bold,
-                            color = GlobalColors.primaryColor
-                        )
-                    }
-                }
                 Text(
                     text = message.message,
                     style = CC.descriptionTextStyle(context)
@@ -259,22 +360,6 @@ fun MessageBubble(
                 )
             }
         }
-        if (!isUser) {
-            // Icon with first letter of sender's name, positioned outside the bubble
-            Box(
-                modifier = Modifier
-                    .offset(x = (-16).dp, y = (-16).dp)
-                    .size(24.dp)
-                    .background(GlobalColors.primaryColor, CircleShape)
-                    .padding(4.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = message.senderName.first().toString(),
-                    style = CC.descriptionTextStyle(context),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
     }
 }
+
