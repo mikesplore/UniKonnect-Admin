@@ -90,6 +90,7 @@ fun ChatScreen(
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     var isSearchVisible by remember { mutableStateOf(false) }
     var previousChatSize by remember { mutableIntStateOf(0) }
+    var showdialog by remember { mutableStateOf(true) }
     var chats by remember { mutableStateOf(emptyList<Chat>()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -113,6 +114,7 @@ fun ChatScreen(
                     currentAdmissionNumber = it.id
                 }
             }
+            showdialog = false
         }
     }
 
@@ -217,6 +219,51 @@ fun ChatScreen(
                         .padding(paddingValues)
                         .padding(8.dp)
                 ) {
+
+                    if (showdialog) {
+                        BasicAlertDialog(
+                            onDismissRequest = { showdialog = false },
+                            modifier = Modifier.border(1.dp, GlobalColors.textColor, RoundedCornerShape(10.dp))
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .width(200.dp)
+                                    .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp))
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Silent Conversation",
+                                    style = CC.titleTextStyle(context)
+                                        .copy(fontSize = 20.sp, textAlign = TextAlign.Center),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                Text(
+                                    text = "The discussions are silent. You will not receive any notifications of incoming messages. " +
+                                            "The messages will only load while you are on this screen.",
+                                    style = CC.descriptionTextStyle(context)
+                                        .copy(fontSize = 16.sp, textAlign = TextAlign.Center),
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+
+                                Button(
+                                    onClick = { showdialog = false },
+                                    modifier = Modifier
+                                        .width(100.dp)
+                                        .padding(top = 16.dp),
+                                    shape = RoundedCornerShape(10.dp),
+                                    colors = ButtonDefaults.buttonColors(GlobalColors.extraColor2)
+                                ) {
+                                    Text("Ok")
+                                }
+                            }
+                        }
+                    }
+
                     AnimatedVisibility(
                         visible = isSearchVisible, enter = fadeIn(), exit = fadeOut()
                     ) {
@@ -283,8 +330,7 @@ fun ChatScreen(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            text = "Admins review group chats to ensure they remain relevant and respectful." +
-                                                    " Off-topic chats may be deleted.",
+                                            text = "The messages are not end to end encrypted. Only the admin can edit or delete the chats.",
                                             modifier = Modifier.padding(5.dp),
                                             style = CC.descriptionTextStyle(context),
                                             textAlign = TextAlign.Center,
@@ -374,10 +420,6 @@ fun ChatBubble(
             Column {
                 if (!isUser) {
                     Row(
-                        modifier = Modifier
-                            .clickable {
-                                navController.navigate("chat/${chat.senderID}")
-                            },
                         horizontalArrangement = Arrangement.Start) {
                         Text(
                             text = chat.senderName,
