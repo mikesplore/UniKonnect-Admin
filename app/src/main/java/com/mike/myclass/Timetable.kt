@@ -311,14 +311,17 @@ fun TimetableScreen(navController: NavController, context: Context) {
                             }
                             Button(
                                 onClick = {
-                                    MyDatabase.writeDays(day = Day(
-                                        name = day
-                                    ), onComplete = {
+                                    MyDatabase.generateDayID {  dayId ->
+                                        val newDay = Day(
+                                            id = dayId,
+                                            name = day
+                                        )
+                                    MyDatabase.writeDays(newDay, onComplete = {
                                         Toast.makeText(
                                             context, "Day Added", Toast.LENGTH_SHORT
                                         ).show()
                                         showaddDay = false
-                                    })
+                                    })}
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
@@ -407,14 +410,17 @@ fun TimetableScreen(navController: NavController, context: Context) {
                             }
                             Button(
                                 onClick = {
-                                    MyDatabase.writeTimetable(timetable = Timetable(
-                                        dayId = days[selectedTabIndex].id,
-                                        unitName = unitName,
-                                        lecturer = lecturer,
-                                        venue = venue,
-                                        startTime = startTime,
-                                        endTime = endTime
-                                    ), onComplete = {
+                                    MyDatabase.generateTimetableID { timetableID ->
+                                        val timetable = Timetable(
+                                            id = timetableID,
+                                            dayId = days[selectedTabIndex].id,
+                                            unitName = unitName,
+                                            lecturer = lecturer,
+                                            venue = venue,
+                                            startTime = startTime,
+                                            endTime = endTime
+                                        )
+                                    MyDatabase.writeTimetable(timetable, onComplete = {
                                         Toast.makeText(
                                             context, "Timetable item Added", Toast.LENGTH_SHORT
 
@@ -423,9 +429,9 @@ fun TimetableScreen(navController: NavController, context: Context) {
                                         showNotification(
                                             context,
                                             title = "New Timetable Item",
-                                            message = "${Details.name.value} added an Event.  "
+                                            message = "${Details.firstName.value} added an Event.  "
                                         )
-                                    })
+                                    })}
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
