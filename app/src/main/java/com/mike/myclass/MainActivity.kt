@@ -176,7 +176,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "discussion") {
+        NavHost(navController = navController, startDestination = "dashboard") {
             composable("login", exitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Left,
