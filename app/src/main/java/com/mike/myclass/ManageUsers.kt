@@ -162,7 +162,8 @@ fun ManageUsers(navController: NavController) {
 @Composable
 fun UserCard(user: User, context: Context) {
     var expanded by remember { mutableStateOf(false) }
-    var name by remember { mutableStateOf(user.name) }
+    var firstName by remember { mutableStateOf(user.firstName) }
+    var lastName by remember { mutableStateOf(user.lastName) }
     var isediting by remember { mutableStateOf(false) }
     if(isediting){
         BasicAlertDialog(onDismissRequest = {isediting  = false}) {
@@ -180,9 +181,30 @@ fun UserCard(user: User, context: Context) {
                         modifier = Modifier.padding(top = 10.dp))
                 }
                 OutlinedTextField(
-                    value = name,
+                    value = firstName,
                     textStyle = CC.descriptionTextStyle(context = LocalContext.current),
-                    onValueChange = {name = it},
+                    onValueChange = {firstName = it},
+                    label = { Text("Name", style = CC.descriptionTextStyle(context = LocalContext.current)) },
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxWidth(0.9f),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = GlobalColors.primaryColor,
+                        unfocusedLabelColor = GlobalColors.tertiaryColor,
+                        focusedIndicatorColor = GlobalColors.textColor,
+                        unfocusedContainerColor = Color.Transparent,
+                        unfocusedTextColor = GlobalColors.textColor,
+                        focusedTextColor = GlobalColors.textColor,
+                        focusedLabelColor = GlobalColors.primaryColor,
+                        unfocusedIndicatorColor = GlobalColors.textColor
+                    ),
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = lastName,
+                    textStyle = CC.descriptionTextStyle(context = LocalContext.current),
+                    onValueChange = {lastName = it},
                     label = { Text("Name", style = CC.descriptionTextStyle(context = LocalContext.current)) },
                     modifier = Modifier
                         .padding(10.dp)
@@ -204,19 +226,16 @@ fun UserCard(user: User, context: Context) {
                     horizontalArrangement = Arrangement.SpaceAround) {
                     Button(onClick = {
 
-                        MyDatabase.updateUser(user.id, name,
-                            onSuccess = {
-                                // Show success message or perform other actions
-                                Toast.makeText(context, "User name updated successfully!", Toast.LENGTH_SHORT).show()
-                                isediting = false
-                            },
-                            onFailure = { exception ->
-                                // Handle the failure, e.g., display an error message
-                                if (exception != null) {
-                                    Toast.makeText(context, "Error updating user name: ${exception.message}", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        )
+                       MyDatabase.updateUser(user.id, firstName, lastName
+                           , onSuccess = {
+                               isediting = false
+                               Toast.makeText(context, "User updated successfully!", Toast.LENGTH_SHORT).show()
+                           },
+                           onFailure = {
+                               isediting= false
+                               Toast.makeText(context, "Error updating user: ${it?.message}", Toast.LENGTH_SHORT).show()
+                           }
+                       )
 
                     },
                         shape = RoundedCornerShape(10.dp),
@@ -258,7 +277,7 @@ fun UserCard(user: User, context: Context) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(user.name, style = CC.descriptionTextStyle(context))
+                Text(user.firstName + ""+ user.lastName, style = CC.descriptionTextStyle(context))
                 Text(user.email, style = CC.descriptionTextStyle(context))
                 Row {
                     IconButton(onClick = {isediting= true}) {
