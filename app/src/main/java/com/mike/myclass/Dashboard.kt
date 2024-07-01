@@ -134,267 +134,18 @@ fun Dashboard(navController: NavController, context: Context) {
 
         @Composable
         fun FirstBox() {
-            val present by remember { mutableIntStateOf(10) }
-            val absent by remember { mutableIntStateOf(1) }
-            val total by remember { derivedStateOf { present + absent } } // Calculate total efficiently
-            val percentage by remember { derivedStateOf { (present.toFloat() / total) * 100 } }
-            val brush = Brush.linearGradient(
-                listOf(
-                    GlobalColors.primaryColor,
-                    GlobalColors.secondaryColor,
-                    GlobalColors.primaryColor
-                )
-            )
-            Box(
-                modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = GlobalColors.textColor,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .shadow(
-                        elevation = 5.dp, shape = RoundedCornerShape(10.dp), clip = true
-                    )
-                    .fillMaxHeight()
-                    .width(350.dp)
-                    .background(brush, RoundedCornerShape(10.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            "Attendance Summary",
-                            style = CC.titleTextStyle(context),
-                            fontSize = 20.sp
-                        )
-                    }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxHeight(1f)
-                            .fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .fillMaxWidth(0.5f),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            Text("Present: $present", style = CC.descriptionTextStyle(context))
-                            Text("Absent: $absent", style = CC.descriptionTextStyle(context))
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Button(
-                                onClick = {
-                                    navController.navigate("attendance")
-                                    Toast.makeText(context,"Attendance screen has some bugs", Toast.LENGTH_SHORT).show()
-                                },
-                                modifier = Modifier
-                                    .padding(start = 5.dp)
-                                    .fillMaxWidth(),
-                                shape = RoundedCornerShape(10.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.primaryColor
-                                )
-                            ) {
-                                Text(
-                                    "Sign Attendance",
-                                    style = CC.descriptionTextStyle(context),
-                                    fontSize = 13.sp
-                                )
-                            }
 
-                        }
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Top,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            AttendanceProgressIndicator(percentage, context)
-                        }
-                    }
-
-                }
-            }
         }
 
         @Composable
         fun SecondBox() {
-            var loading by remember { mutableStateOf(false) }
-            var dialog by remember { mutableStateOf(false) }
-            var message by remember { mutableStateOf("") }
-            if(dialog){
-                BasicAlertDialog(onDismissRequest = {loading = false}) {
-                    Column(modifier = Modifier
-                        .background(GlobalColors.secondaryColor, RoundedCornerShape(10.dp))
-                        .width(200.dp)) {
-                        Row(modifier = Modifier
-                            .padding(10.dp)
-                            .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center) {
-                            Text("Feedback", style = CC.titleTextStyle(context))
-                        }
-                        Column(modifier = Modifier
 
-                            .fillMaxWidth()) {
-                            OutlinedTextField(
-                                value = message,
-                                onValueChange = {message = it},
-                                label = { Text("Feedback", style = CC.descriptionTextStyle(context)) },
-                                modifier = Modifier
-                                    .padding(10.dp),
-                                colors = TextFieldDefaults.colors(
-                                    focusedIndicatorColor = GlobalColors.secondaryColor,
-                                    unfocusedIndicatorColor = GlobalColors.textColor,
-                                    focusedContainerColor = GlobalColors.primaryColor,
-                                    unfocusedContainerColor = GlobalColors.primaryColor,
-                                    focusedTextColor = GlobalColors.textColor,
-                                    unfocusedTextColor = GlobalColors.textColor,
-                                    focusedLabelColor = GlobalColors.secondaryColor,
-                                    unfocusedLabelColor = GlobalColors.textColor
-                                )
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
-                            Row (modifier = Modifier
-                                .padding(bottom = 10.dp)
-                                .fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceEvenly){
-                                Button(onClick = {
-                                    loading  = true
-                                    if(message.isNotEmpty()){
-                                        MyDatabase.writeFeedback(feedback = Feedback(
-                                            message = message,
-                                            sender = Details.name.value
-                                        
-                                        ),
-                                            onSuccess = {
-                                                // Show success message or perform other actions
-                                                Toast.makeText(context, "Feedback submitted successfully!", Toast.LENGTH_SHORT).show()
-                                                loading = false
-                                                dialog = false
-                                            },
-                                            onFailure = { exception ->
-                                                // Handle the failure, e.g., display an error message
-                                                if (exception != null) {
-                                                    Toast.makeText(context, "Error submitting feedback: ${exception.message}", Toast.LENGTH_SHORT).show()
-                                                    Log.e("Feedback", "Error submitting feedback: ${exception.message}")
-                                                    loading = false
-                                                    dialog = false
-                                                }
-                                            }
-                                        )}else{
-                                            Toast.makeText(context,"Empty field!", Toast.LENGTH_SHORT).show()
-                                        }
-                                },
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = GlobalColors.primaryColor
-                                    )
-                                ) {
-                                    Text("Send", style = CC.descriptionTextStyle(context = context))
-                                }
-                                if(loading){
-                                    CircularProgressIndicator(
-                                        color = GlobalColors.textColor,
-                                        trackColor = GlobalColors.primaryColor
-                                    )
-                                }
-                                Button(onClick = {dialog = false},
-                                    shape = RoundedCornerShape(10.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = GlobalColors.primaryColor
-                                    )
-                                ) {
-                                    Text("Cancel", style = CC.descriptionTextStyle(context = context))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 
-            val brush = Brush.linearGradient(
-                listOf(
-                    GlobalColors.secondaryColor,
-                    GlobalColors.primaryColor,
-                    GlobalColors.secondaryColor
-                )
-            )
-            Column(
-                modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = GlobalColors.textColor,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .background(GlobalColors.primaryColor)
-                    .fillMaxHeight()
-                    .width(350.dp)
-                    .background(brush, RoundedCornerShape(10.dp)),
-            ) {
-                Row(modifier = Modifier
-                    .padding(5.dp)
-                    .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center) {
-                    Text(" End of Content", style = CC.titleTextStyle(context), fontSize = 18.sp)
-                }
-                Column(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(5.dp),
-                    verticalArrangement = Arrangement.SpaceEvenly,
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(" Nimeishiwa na content. The app is not yet complete", style = CC.descriptionTextStyle(context), textAlign = TextAlign.Center)
-                    Text("Take time and explore the app", style = CC.descriptionTextStyle(context))
-                    Text("Ukipata any Idea nitumie hapa", style = CC.descriptionTextStyle(context))
-                    Button(onClick = {
-                        dialog = true
-                    },
-                        modifier = Modifier.border(
-                            width = 1.dp,
-                            shape = RoundedCornerShape(10.dp),
-                            color = GlobalColors.textColor
-                        ),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = GlobalColors.primaryColor
-                        )
-                    ) {
-                        Text("Suggestions", style = CC.descriptionTextStyle(context))
-                    }
-
-                }
-            }
         }
 
         @Composable
         fun ThirdBox() {
-            val brush = Brush.linearGradient(
-                listOf(
-                    GlobalColors.primaryColor, GlobalColors.secondaryColor
-                )
-            )
-            Box(
-                modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = GlobalColors.textColor,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .fillMaxHeight()
-                    .width(350.dp)
-                    .background(brush, RoundedCornerShape(10.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Third one", style = CC.descriptionTextStyle(context))
-            }
+
         }
 
         val totalDuration = 10000
@@ -880,15 +631,17 @@ fun AnnouncementItem(context: Context) {
                             } else {
 
 
-                                val newAnnouncement = Announcement(
-                                    author = Details.name.value,
-                                    date = date,
-                                    title = title,
-                                    description = description,
 
-                                    )
+                                MyDatabase.generateAnnouncementID { announcementID ->
+                                    val newAnnouncement = Announcement(
+                                        id = announcementID,
+                                        author = Details.name.value,
+                                        date = date,
+                                        title = title,
+                                        description = description,
 
-                                MyDatabase.writeAnnouncement(newAnnouncement)
+                                        )
+                                MyDatabase.writeAnnouncement(newAnnouncement)}
                                 showNotification(
                                     context, title = title, message = description
                                 )
@@ -1077,14 +830,18 @@ fun TimetableItem(context: Context) {
                         if (lecturer.isNotEmpty() && venue.isNotEmpty()
                             && startTime.isNotEmpty() && endTime.isNotEmpty() && unitName.isNotEmpty()
                         ) {
-                            MyDatabase.writeTimetable(timetable = Timetable(
+                            MyDatabase.generateTimetableID { timetableID ->
+
+                            val newtimetable = Timetable(
+                                id = timetableID,
                                 dayId = dayId,
                                 unitName = unitName,
                                 lecturer = lecturer,
                                 venue = venue,
                                 startTime = startTime,
                                 endTime = endTime
-                            ), onComplete = {
+                            )
+                            MyDatabase.writeTimetable(newtimetable, onComplete = {
                                 Toast.makeText(
                                     context, "Timetable item Added", Toast.LENGTH_SHORT
 
@@ -1094,7 +851,7 @@ fun TimetableItem(context: Context) {
                                     title = "New Timetable Item",
                                     message = "${Details.name.value} added an Event."
                                 )
-                            })
+                            })}
                         }
                     },
                     shape = RoundedCornerShape(10.dp),
@@ -1303,7 +1060,7 @@ fun ManageUsersItem(context: Context) {
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                text = user.name,
+                                text = user.firstName +" "+ user.lastName,
                                 style = CC.titleTextStyle(context)
                             )
                             Text(
