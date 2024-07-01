@@ -51,11 +51,11 @@ import com.mike.myclass.CommonComponents as CC
 
 object Details {
     var email: MutableState<String> = mutableStateOf("")
-    var name: MutableState<String> = mutableStateOf("Mike")
+    var firstName: MutableState<String> = mutableStateOf("null")
+    var lastName: MutableState<String> = mutableStateOf("null")
     var showdialog: MutableState<Boolean> = mutableStateOf(true)
-    var totalusers: MutableState<Int> = mutableIntStateOf(0)
     var totalAnnouncements: MutableState<Int> = mutableIntStateOf(0)
-    var totalAssignments: MutableState<Int> = mutableIntStateOf(0)
+
 }
 
 object Global {
