@@ -313,7 +313,7 @@ fun ProfileCard(
         fetchUserDataByEmail(CC.getCurrentUser()) { fetchedUser ->
             fetchedUser?.let {
                 user = it
-                currentName = it.name
+                currentName = it.firstName + " "+ it.lastName
                 currentEmail = it.email
                 currentAdmissionNumber = it.id
             }
@@ -698,12 +698,15 @@ fun RatingAndFeedbackScreen(context: Context) {
                 Button(
                     onClick = {
                         loading = true
-                        MyDatabase.writeFeedback(Feedback(
-                            rating = currentRating,
-                            sender = user.name,
-                            message = feedbackText,
-                            admissionNumber = user.id
-                        ), onSuccess = {
+                        MyDatabase.generateFeedbackID {  feedbackID ->
+                            val feedback = Feedback(
+                                id = feedbackID,
+                                rating = currentRating,
+                                sender = user.firstName + user.lastName,
+                                message = feedbackText,
+                                admissionNumber = user.id
+                            )
+                        MyDatabase.writeFeedback(feedback, onSuccess = {
                             loading = false
                             Toast.makeText(
                                 context, "Thanks for your feedback", Toast.LENGTH_SHORT
@@ -721,7 +724,7 @@ fun RatingAndFeedbackScreen(context: Context) {
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
-                        )
+                        )}
                     },
                     modifier = Modifier
                         .fillMaxWidth()
