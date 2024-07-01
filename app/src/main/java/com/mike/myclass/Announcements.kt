@@ -179,14 +179,17 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                         Button(
                             onClick = {
                                 showNotification.value = true
-                                val newAnnouncement = Announcement(
-                                    author = Details.name.value,
-                                    date = date,
-                                    title = title,
-                                    description = description,
 
-                                )
-                                MyDatabase.writeAnnouncement(newAnnouncement)
+                                MyDatabase.generateAnnouncementID { announcementID ->
+                                    val newAnnouncement = Announcement(
+                                        id = announcementID,
+                                        author = Details.name.value,
+                                        date = date,
+                                        title = title,
+                                        description = description,
+
+                                        )
+                                MyDatabase.writeAnnouncement(newAnnouncement)}
                                 addAnnouncementDialog = false
                                 showNotification(
                                     context,
