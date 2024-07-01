@@ -42,51 +42,8 @@ fun MoreDetails(context: Context, navController: NavController) {
         })
     }
 
-    var mloading by remember { mutableStateOf(true) }
-    val subjects = remember { mutableStateListOf<Course>() }
-    val subjectId by remember { mutableStateOf("") }
-    val announcements = remember { mutableStateListOf<Announcement>() }
-    var assignments by remember { mutableStateOf<List<Assignment>?>(null) }
-    val timetables = remember { mutableStateListOf<Timetable>() }
-    val days = remember { mutableStateListOf<Day>() }
-
-    LaunchedEffect(mloading) {
-        getAnnouncements { fetchedAnnouncements ->
-            announcements.addAll(fetchedAnnouncements ?: emptyList())
-        }
-        MyDatabase.getAssignments(subjectId) { fetchedAssignments ->
-            assignments = fetchedAssignments
-        }
-        MyDatabase.fetchCourses { fetchedCourses ->
-            subjects.addAll(fetchedCourses ?: emptyList())
-        }
-        MyDatabase.getUsers { fetchedUsers ->
-            users = fetchedUsers
-        }
-        MyDatabase.getDays { fetchedDays ->
-            days.clear()
-            days.addAll(fetchedDays ?: emptyList())
-        }
-        mloading = false
-        Details.totalAssignments.value = assignments?.size ?: 0
-        Details.totalusers.value = users?.size ?: 0
-
-    }
-    if(mloading){
-        BasicAlertDialog(onDismissRequest = {}) {
-            Column(modifier = Modifier.height(200.dp)) {
-                CircularProgressIndicator(
-                    color = GlobalColors.primaryColor,
-                    trackColor = GlobalColors.textColor
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-                Text("Loading Data...Please wait", style = CC.descriptionTextStyle(LocalContext.current))
-            }
-        }
-    }
-
     var emailFound by remember { mutableStateOf(false) }
-    var loading by remember {  mutableStateOf(true)}
+    var loading by remember { mutableStateOf(true) }
     var addloading by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -99,15 +56,22 @@ fun MoreDetails(context: Context, navController: NavController) {
                     val existingUser = fetchedUsers?.find { it.email == Details.email.value }
 
                     if (existingUser != null) {
-                        Details.name.value = existingUser.name
-                        val userName = existingUser.name // Assuming your User class has a 'name' property
+                        Details.firstName.value = existingUser.firstName
+                        Details.lastName.value = existingUser.lastName
+                        val userName =
+                            existingUser.firstName+" "+ existingUser.lastName // Assuming your User class has a 'name' property
                         loading = false
-                        Toast.makeText(context, "Welcome back, $userName!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Welcome back, ${userName.substringBefore(' ')}!", Toast.LENGTH_SHORT)
+                            .show()
                         navController.navigate("dashboard")
                     } else {
                         // Handle the case where the user is not found (shouldn't happen if email exists)
                         loading = false
-                        Toast.makeText(context, "Unexpected error: User not found", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Unexpected error: User not found",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 } else {
                     loading = false
@@ -159,10 +123,10 @@ fun MoreDetails(context: Context, navController: NavController) {
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
                     CC.SingleLinedTextField(
-                        value = Details.name.value,
+                        value = Details.firstName.value,
                         onValueChange = {
                             if (!emailFound) { // Only update if email is not found
-                                Details.name.value = it
+                                Details.firstName.value = it
                             }
                         },
                         label = "First name",
@@ -172,36 +136,47 @@ fun MoreDetails(context: Context, navController: NavController) {
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
+                    CC.SingleLinedTextField(
+                        value = Details.lastName.value,
+                        onValueChange = {
+                            if (!emailFound) { // Only update if email is not found
+                                Details.lastName.value = it
+                            }
+                        },
+                        label = "Last name",
+                        context = context,
+                        singleLine = true,
+                        enabled = !emailFound // Disable the field if email is found
+                    )
 
+                    Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
-                                    addloading = true
-                                    database.push().setValue(
-                                        User(
-                                            email = Details.email.value,
-                                            name = Details.name.value
-                                        )
-                                    ).addOnSuccessListener {
-                                        addloading = false
-                                        Toast.makeText(context, "Success data added!", Toast.LENGTH_SHORT).show()
+                            addloading = true
+                            MyDatabase.generateIndexNumber { indexNumber ->
+                                val user = User(id = indexNumber, firstName = Details.firstName.value, lastName = Details.lastName.value, phoneNumber = "", email = Details.email.value)
+                                MyDatabase.writeUsers(user) { success ->
+                                    if (success) {
+                                        Toast.makeText(context, "Added successfully", Toast.LENGTH_SHORT).show()
                                         navController.navigate("dashboard")
-                                    }.addOnFailureListener {
-                                        addloading = false
-                                        Toast.makeText(context, "Failed to add user", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(context,"Failed to write user to database",Toast.LENGTH_SHORT).show()
                                     }
+                                }
+                            }
 
 
-                        },
-                        modifier = Modifier
+                        }, modifier = Modifier
                             .width(275.dp)
                             .background(
                                 GlobalColors.primaryColor, RoundedCornerShape(10.dp)
                             ), // Background moved to outer Modifier
                         colors = ButtonDefaults.buttonColors(Color.Transparent)
                     ) {
-                        Row(modifier = Modifier,
-                            verticalAlignment = Alignment.CenterVertically) {
-                            if(loading || addloading){
+                        Row(
+                            modifier = Modifier, verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (loading || addloading) {
                                 CircularProgressIndicator(
                                     color = GlobalColors.primaryColor,
                                     trackColor = GlobalColors.textColor,
@@ -209,10 +184,13 @@ fun MoreDetails(context: Context, navController: NavController) {
                                 )
                                 Spacer(modifier = Modifier.width(20.dp))
                             }
-                            if(loading){
+                            if (loading) {
                                 Text("Checking Database", style = CC.descriptionTextStyle(context))
-                            }else{
-                                Text(if(addloading)"Adding" else "Add", style = CC.descriptionTextStyle(context))
+                            } else {
+                                Text(
+                                    if (addloading) "Adding" else "Add",
+                                    style = CC.descriptionTextStyle(context)
+                                )
                             }
                         }
                     }
