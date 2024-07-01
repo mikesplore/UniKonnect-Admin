@@ -306,11 +306,15 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             }
                             Button(
                                 onClick = {
-                                    MyDatabase.writeAssignment(assignment = Assignment(
-                                        courseCode = courses[selectedTabIndex].courseCode,
-                                        name = title,
-                                        description = description
-                                    ), onComplete = {
+                                    MyDatabase.generateAssignmentID { assignmentID ->
+                                        val assignment = Assignment(
+                                            id = assignmentID,
+                                            courseCode = courses[selectedTabIndex].courseCode,
+                                            name = title,
+                                            description = description
+
+                                        )
+                                    MyDatabase.writeAssignment(assignment, onComplete = {
                                         Toast.makeText(
                                             context, "Assignment Added", Toast.LENGTH_SHORT
 
@@ -321,7 +325,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                                             title = "New Assignment",
                                             message = "${Details.name.value} added an assignment.  "
                                         )
-                                    })
+                                    })}
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
