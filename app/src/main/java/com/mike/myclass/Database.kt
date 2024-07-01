@@ -1,5 +1,6 @@
 package com.mike.myclass
 
+import android.content.Context
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -8,6 +9,9 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.getValue
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.io.File
 import java.util.Calendar
 import java.util.Locale
 
@@ -224,6 +228,28 @@ object MyDatabase {
                 // Handle error
             }
         })
+    }
+
+    fun fetchUserDataByAdmissionNumber(admissionNumber: String, callback: (User?) -> Unit) {
+        database.child("Users").orderByChild("id").equalTo(admissionNumber)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (userSnapshot in snapshot.children) {
+                        val userId = userSnapshot.child("id").getValue(String::class.java)
+                        if (userId == admissionNumber) {
+                            val userEmail = userSnapshot.child("Email").getValue(String::class.java) ?: ""
+                            val userName = userSnapshot.child("name").getValue(String::class.java) ?: ""
+                            callback(User(id = userId, name = userName, email = userEmail))
+                            return
+                        }
+                    }
+                    callback(null)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    callback(null) // Handle or log the error as needed
+                }
+            })
     }
 
     fun fetchCourses(onCoursesFetched: (List<Course>) -> Unit) {
@@ -655,3 +681,39 @@ object MyDatabase {
         }
     }
 }
+
+// Function to save messages to a file
+fun saveMessagesToFile(context: Context, messages: List<Message>, fileName: String) {
+    val gson = Gson()
+    val jsonString = gson.toJson(messages)
+    val file = File(context.filesDir, fileName)
+    file.writeText(jsonString)
+}
+
+// Function to load messages from a file
+fun loadMessagesFromFile(context: Context, fileName: String): List<Message> {
+    val file = File(context.filesDir, fileName)
+    if (!file.exists()) return emptyList()
+    val jsonString = file.readText()
+    val gson = Gson()
+    val type = object : TypeToken<List<Message>>() {}.type
+    return gson.fromJson(jsonString, type)
+}
+
+fun saveChatsToFile(context: Context, chats: List<Chat>, fileName: String) {
+    val gson = Gson()
+    val jsonString = gson.toJson(chats)
+    val file = File(context.filesDir, fileName)
+    file.writeText(jsonString)
+}
+
+// Function to load messages from a file
+fun loadChatsFromFile(context: Context, fileName: String): List<Chat> {
+    val file = File(context.filesDir, fileName)
+    if (!file.exists()) return emptyList()
+    val jsonString = file.readText()
+    val gson = Gson()
+    val type = object : TypeToken<List<Chat>>() {}.type
+    return gson.fromJson(jsonString, type)
+}
+
