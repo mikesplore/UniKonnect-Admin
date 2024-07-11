@@ -84,10 +84,10 @@ fun WebViewScreen(link: String,) {
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier
-                    .background(GlobalColors.primaryColor)
+                    .background(CC.primary())
                     .fillMaxWidth()
                     .height(4.dp),
-                color = GlobalColors.primaryColor,
+                color = CC.primary(),
             )
         }
 
