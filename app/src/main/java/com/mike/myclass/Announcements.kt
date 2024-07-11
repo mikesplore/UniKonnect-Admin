@@ -110,17 +110,17 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                 title = { Text("Announcements", style = CC.titleTextStyle(context)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate("dashboard") }) {
-                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back", tint = GlobalColors.textColor)
+                        Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back", tint = CC.textColor())
                     }
                 },
                 actions = {
                     IconButton(onClick = { addAnnouncementDialog = !addAnnouncementDialog }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add", tint = GlobalColors.textColor)
+                        Icon(Icons.Default.Add, contentDescription = "Add", tint = CC.textColor())
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor,
-                    titleContentColor = GlobalColors.textColor,
+                    containerColor = CC.primary(),
+                    titleContentColor = CC.textColor(),
                 )
             )
         },
@@ -135,8 +135,8 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                         isLoading = false
                     }
                 },
-                containerColor = GlobalColors.tertiaryColor,
-                contentColor = GlobalColors.primaryColor,
+                containerColor = CC.tertiary(),
+                contentColor = CC.primary(),
                 content = {
                     Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                 }
@@ -145,7 +145,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
     ) {
         Column(
             modifier = Modifier
-                .background(GlobalColors.primaryColor)
+                .background(CC.primary())
                 .fillMaxSize()
                 .padding(it)
         ) {
@@ -183,7 +183,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                                 MyDatabase.generateAnnouncementID { announcementID ->
                                     val newAnnouncement = Announcement(
                                         id = announcementID,
-                                        author = Details.name.value,
+                                        author = Details.firstName.value+ " "+ Details.lastName.value,
                                         date = date,
                                         title = title,
                                         description = description,
@@ -204,7 +204,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                                 }
                                 Toast.makeText(context, "Announcement added", Toast.LENGTH_SHORT).show()
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor)
+                            colors = ButtonDefaults.buttonColors(containerColor = CC.primary())
                         ) {
                             Text("Add", style = CC.descriptionTextStyle(context))
                         }
@@ -212,13 +212,13 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                     dismissButton = {
                         Button(
                             onClick = { addAnnouncementDialog = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.tertiaryColor)
+                            colors = ButtonDefaults.buttonColors(containerColor = CC.tertiary())
                         ) {
-                            Text("Cancel", style = CC.descriptionTextStyle(context), color = GlobalColors.primaryColor)
+                            Text("Cancel", style = CC.descriptionTextStyle(context), color = CC.primary())
                         }
                     },
                     modifier = Modifier.height(350.dp),
-                    containerColor = GlobalColors.secondaryColor
+                    containerColor = CC.secondary()
                 )
             }
 
@@ -264,7 +264,7 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                                     Toast.makeText(context, "Announcement edited", Toast.LENGTH_SHORT).show()
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor)
+                            colors = ButtonDefaults.buttonColors(containerColor = CC.primary())
                         ) {
                             Text("Save", style = CC.descriptionTextStyle(context))
                         }
@@ -272,20 +272,20 @@ fun AnnouncementsScreen(navController: NavController, context: Context) {
                     dismissButton = {
                         Button(
                             onClick = { editAnnouncementDialog = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.tertiaryColor)
+                            colors = ButtonDefaults.buttonColors(containerColor = CC.tertiary())
                         ) {
-                            Text("Cancel", style = CC.descriptionTextStyle(context), color = GlobalColors.primaryColor)
+                            Text("Cancel", style = CC.descriptionTextStyle(context), color = CC.primary())
                         }
                     },
                     modifier = Modifier.height(350.dp),
-                    containerColor = GlobalColors.secondaryColor
+                    containerColor = CC.secondary()
                 )
             }
 
             if (isLoading) {
                 Column(
                     modifier = Modifier
-                        .background(GlobalColors.primaryColor)
+                        .background(CC.primary())
                         .fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -356,7 +356,7 @@ fun AnnouncementCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(GlobalColors.secondaryColor, shape = RoundedCornerShape(8.dp))
+            .background(CC.secondary(), shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
     ) {
         Row(
@@ -375,14 +375,14 @@ fun AnnouncementCard(
                 text = announcement.title,
                 style = CC.descriptionTextStyle(context),
                 fontWeight = FontWeight.Bold,
-                color = GlobalColors.textColor,
+                color = CC.textColor(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
             Button(
                 onClick = { expanded = !expanded },
-                colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor)
+                colors = ButtonDefaults.buttonColors(containerColor = CC.primary())
             ) {
                 Text(text, style = CC.descriptionTextStyle(context))
             }
@@ -393,7 +393,7 @@ fun AnnouncementCard(
             Text(
                 text = announcement.description,
                 style = CC.descriptionTextStyle(context).copy(fontSize = 14.sp),
-                color = GlobalColors.textColor.copy(alpha = 0.8f),
+                color = CC.textColor().copy(alpha = 0.8f),
                 maxLines = if (expanded) Int.MAX_VALUE else 3,
                 overflow = TextOverflow.Ellipsis
             )
@@ -406,12 +406,12 @@ fun AnnouncementCard(
                 Text(
                     text = announcement.author,
                     style = CC.descriptionTextStyle(context).copy(fontSize = 12.sp),
-                    color = GlobalColors.textColor.copy(alpha = 0.6f),
+                    color = CC.textColor().copy(alpha = 0.6f),
                 )
                 Text(
                     text = announcement.date,
                     style = CC.descriptionTextStyle(context).copy(fontSize = 12.sp),
-                    color = GlobalColors.textColor.copy(alpha = 0.6f),
+                    color = CC.textColor().copy(alpha = 0.6f),
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -421,14 +421,14 @@ fun AnnouncementCard(
             ) {
                 Button(
                     onClick = { onEdit(announcement) },
-                    colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor)
+                    colors = ButtonDefaults.buttonColors(containerColor = CC.primary())
                 ) {
                     Text("Edit", style = CC.descriptionTextStyle(context))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = { onDelete(announcement.id) },
-                    colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.tertiaryColor)
+                    colors = ButtonDefaults.buttonColors(containerColor = CC.tertiary())
                 ) {
                     Text("Delete", style = CC.descriptionTextStyle(context))
                 }
@@ -441,8 +441,8 @@ fun AnnouncementCard(
 fun MyProgress(){
     Column(modifier = Modifier.height(70.dp)) {  }
     CircularProgressIndicator(
-        color = GlobalColors.secondaryColor,
-        trackColor = GlobalColors.textColor
+        color = CC.secondary(),
+        trackColor = CC.textColor()
     )
     Spacer(modifier = Modifier.height(10.dp))
     Text("👁️👄👁️", fontSize = 40.sp)
