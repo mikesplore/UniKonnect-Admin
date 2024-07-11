@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,6 +46,12 @@ fun MoreDetails(context: Context, navController: NavController) {
     var emailFound by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
     var addloading by remember { mutableStateOf(false) }
+    var brush  = Brush.verticalGradient(
+        colors = listOf(
+            CC.primary(),
+            CC.secondary()
+        )
+    )
 
     LaunchedEffect(Unit) {
         MyDatabase.getUsers { fetchedUsers ->
@@ -92,111 +99,107 @@ fun MoreDetails(context: Context, navController: NavController) {
                     Icon(
                         imageVector = Icons.Default.ArrowBackIosNew,
                         contentDescription = "Back",
-                        tint = GlobalColors.textColor,
+                        tint = CC.textColor(),
                     )
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = CC.primary())
         )
-    }) { innerPadding ->
+    }, containerColor = CC.primary()) {
+        // main content
         Column(
             modifier = Modifier
-                .background(GlobalColors.primaryColor)
                 .fillMaxSize()
-                .padding(innerPadding)
+                .background(brush)
+                .padding(it),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // main content
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(GlobalColors.primaryColor)
+                    .fillMaxWidth()
+                    .height(400.dp)
                     .padding(16.dp),
-                verticalArrangement = Arrangement.SpaceEvenly,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(400.dp)
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    CC.SingleLinedTextField(
-                        value = Details.firstName.value,
-                        onValueChange = {
-                            if (!emailFound) { // Only update if email is not found
-                                Details.firstName.value = it
-                            }
-                        },
-                        label = "First name",
-                        context = context,
-                        singleLine = true,
-                        enabled = !emailFound // Disable the field if email is found
-                    )
+                CC.SingleLinedTextField(
+                    value = Details.firstName.value,
+                    onValueChange = {
+                        if (!emailFound) { // Only update if email is not found
+                            Details.firstName.value = it
+                        }
+                    },
+                    label = "First name",
+                    context = context,
+                    singleLine = true,
+                    enabled = !emailFound // Disable the field if email is found
+                )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    CC.SingleLinedTextField(
-                        value = Details.lastName.value,
-                        onValueChange = {
-                            if (!emailFound) { // Only update if email is not found
-                                Details.lastName.value = it
-                            }
-                        },
-                        label = "Last name",
-                        context = context,
-                        singleLine = true,
-                        enabled = !emailFound // Disable the field if email is found
-                    )
+                Spacer(modifier = Modifier.height(16.dp))
+                CC.SingleLinedTextField(
+                    value = Details.lastName.value,
+                    onValueChange = {
+                        if (!emailFound) { // Only update if email is not found
+                            Details.lastName.value = it
+                        }
+                    },
+                    label = "Last name",
+                    context = context,
+                    singleLine = true,
+                    enabled = !emailFound // Disable the field if email is found
+                )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            addloading = true
-                            MyDatabase.generateIndexNumber { indexNumber ->
-                                val user = User(id = indexNumber, firstName = Details.firstName.value, lastName = Details.lastName.value, phoneNumber = "", email = Details.email.value)
-                                MyDatabase.writeUsers(user) { success ->
-                                    if (success) {
-                                        Toast.makeText(context, "Added successfully", Toast.LENGTH_SHORT).show()
-                                        navController.navigate("dashboard")
-                                    } else {
-                                        Toast.makeText(context,"Failed to write user to database",Toast.LENGTH_SHORT).show()
-                                    }
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        addloading = true
+                        MyDatabase.generateIndexNumber { indexNumber ->
+                            val user = User(id = indexNumber, firstName = Details.firstName.value, lastName = Details.lastName.value, phoneNumber = "", email = Details.email.value)
+                            MyDatabase.writeUsers(user) { success ->
+                                if (success) {
+                                    Toast.makeText(context, "Added successfully", Toast.LENGTH_SHORT).show()
+                                    addloading = false
+                                    Details.firstName.value = ""
+                                    Details.lastName.value = ""
+                                    navController.navigate("dashboard")
+                                } else {
+                                    Toast.makeText(context,"Failed to write user to database",Toast.LENGTH_SHORT).show()
                                 }
                             }
+                        }
 
 
-                        }, modifier = Modifier
-                            .width(275.dp)
-                            .background(
-                                GlobalColors.primaryColor, RoundedCornerShape(10.dp)
-                            ), // Background moved to outer Modifier
-                        colors = ButtonDefaults.buttonColors(Color.Transparent)
+                    }, modifier = Modifier
+                        .width(275.dp),
+                    colors = ButtonDefaults.buttonColors(CC.secondary()),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            modifier = Modifier, verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            if (loading || addloading) {
-                                CircularProgressIndicator(
-                                    color = GlobalColors.primaryColor,
-                                    trackColor = GlobalColors.textColor,
-                                    modifier = Modifier.size(30.dp)
-                                )
-                                Spacer(modifier = Modifier.width(20.dp))
-                            }
-                            if (loading) {
-                                Text("Checking Database", style = CC.descriptionTextStyle(context))
-                            } else {
-                                Text(
-                                    if (addloading) "Adding" else "Add",
-                                    style = CC.descriptionTextStyle(context)
-                                )
-                            }
+                        if (loading || addloading) {
+                            CircularProgressIndicator(
+                                color = CC.primary(),
+                                trackColor = CC.textColor(),
+                                modifier = Modifier.size(30.dp)
+                            )
+                            Spacer(modifier = Modifier.width(20.dp))
+                        }
+                        if (loading) {
+                            Text("Checking Database", style = CC.descriptionTextStyle(context))
+                        } else {
+                            Text(
+                                if (addloading) "Adding" else "Add",
+                                style = CC.descriptionTextStyle(context)
+                            )
                         }
                     }
                 }
             }
         }
+
     }
 }
 
