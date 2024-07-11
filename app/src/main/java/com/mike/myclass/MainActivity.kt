@@ -11,6 +11,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -65,7 +66,10 @@ object Global {
 }
 
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
+    val promptManager by lazy {
+        BiometricPromptManager(this)
+    }
 
     private lateinit var sharedPreferences: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,20 +83,24 @@ class MainActivity : ComponentActivity() {
             }
             // retrieve device token and send to database.
             val token = task.result
-            MyDatabase.writeFcmToken(token = Fcm(token = token))
+            MyDatabase.generateFCMID { fcm ->
+                val mytoken = Fcm(id = fcm, token = token)
+                MyDatabase.writeFcmToken(mytoken)
+
+            }
         })
         enableEdgeToEdge()
         sharedPreferences = getSharedPreferences("NotificationPrefs", Context.MODE_PRIVATE)
         setContent {
 
-           NavigationMap()
+           NavigationMap(this)
 
         }
         createNotificationChannel(this)
     }
 
 
-    private fun requestNotificationPermission() {
+    fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this, Manifest.permission.POST_NOTIFICATIONS
@@ -118,7 +126,7 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun NavigationMap() {
+    fun NavigationMap(mainActivity: MainActivity) {
         val context = LocalContext.current
 
         if (Details.showdialog.value) {
@@ -132,7 +140,7 @@ class MainActivity : ComponentActivity() {
                 Column(
                     modifier = Modifier
                         .background(
-                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                            CC.secondary(), RoundedCornerShape(10.dp)
                         )
                         .padding(24.dp), // Add padding for better visual spacing
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -158,7 +166,7 @@ class MainActivity : ComponentActivity() {
                                 (context as MainActivity).requestNotificationPermission()
                                 Details.showdialog.value = false
                             }, modifier = Modifier.weight(1f), // Make buttons take equal width
-                            colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.primaryColor) // Customize button colors
+                            colors = ButtonDefaults.buttonColors(containerColor = CC.primary()) // Customize button colors
                         ) {
                             Text("Enable", color = Color.White) // Set text color for contrast
                         }
@@ -193,7 +201,9 @@ class MainActivity : ComponentActivity() {
             ) {
                 LoginScreen(navController, context)
             }
-
+            composable("profile"){
+                ProfileScreen(navController, context)
+            }
             composable("splashscreen"){
                 SplashScreen(navController, context)
             }
@@ -244,6 +254,9 @@ class MainActivity : ComponentActivity() {
             composable("appearance"){
                 Appearance(navController, context)
             }
+            composable("users"){
+                ParticipantsScreen(navController, context)
+            }
 
             composable(
                 "chat/{userId}",
@@ -253,7 +266,7 @@ class MainActivity : ComponentActivity() {
             }
 
             composable("settings"){
-                SettingsScreen(navController, context)
+                Settings(navController, context, mainActivity)
             }
             composable("moredetails",  enterTransition = {
                 slideIntoContainer(
@@ -262,19 +275,6 @@ class MainActivity : ComponentActivity() {
                 )
             }) {
                 MoreDetails(context, navController)
-            }
-            composable("profile", exitTransition = {
-                slideOutOfContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(1000)
-                )
-            }, enterTransition = {
-                slideIntoContainer(
-                    AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(1000)
-                )
-            }) {
-                ProfileScreen(navController, context)
             }
             composable("manageusers", exitTransition = {
                 slideOutOfContainer(
