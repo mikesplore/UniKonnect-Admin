@@ -1,10 +1,12 @@
 package com.mike.myclass
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,11 +21,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,6 +49,12 @@ fun PasswordReset(navController: NavController,context: Context) {
     val auth: FirebaseAuth = Firebase.auth
     var loading by remember { mutableStateOf(false) }
     var visible by remember { mutableStateOf(true) }
+    val brush = Brush.verticalGradient(
+        colors = listOf(
+            CC.primary(),
+            CC.secondary()
+        )
+    )
 
     LaunchedEffect(Unit) {
         visible = true
@@ -57,19 +67,19 @@ fun PasswordReset(navController: NavController,context: Context) {
 
         Scaffold(
             topBar = {
-
                 TopAppBar(
                     title = { Text("Password Reset", style = CC.titleTextStyle(context), fontSize = 20.sp) },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = GlobalColors.primaryColor,
-                        titleContentColor = GlobalColors.textColor,
+                        containerColor = CC.primary(),
+                        titleContentColor = CC.textColor(),
                     )
                 )
             },
-            containerColor = GlobalColors.primaryColor
+            containerColor = CC.primary()
         ) {
             Column(
                 modifier = Modifier
+                    .background(brush)
                     .padding(it)
                     .fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -100,6 +110,7 @@ fun PasswordReset(navController: NavController,context: Context) {
                                             "Password reset email sent to $email",
                                             Toast.LENGTH_SHORT
                                         ).show()
+                                        email = ""
                                         navController.navigate("login")
                                     } else {
                                         Toast.makeText(
@@ -113,8 +124,8 @@ fun PasswordReset(navController: NavController,context: Context) {
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = GlobalColors.secondaryColor,
-                        contentColor = GlobalColors.tertiaryColor
+                        containerColor = CC.secondary(),
+                        contentColor = CC.tertiary()
                     ),
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.width(200.dp)
@@ -124,8 +135,8 @@ fun PasswordReset(navController: NavController,context: Context) {
                 Spacer(modifier = Modifier.height(16.dp))
                 if (loading) {
                     CircularProgressIndicator(
-                        color = GlobalColors.secondaryColor,
-                        trackColor = GlobalColors.textColor
+                        color = CC.secondary(),
+                        trackColor = CC.textColor()
                     )
                 }
                 Text(message)
