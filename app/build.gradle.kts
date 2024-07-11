@@ -59,6 +59,8 @@ android {
 }
 
 dependencies {
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation(libs.androidx.biometric)
     implementation(libs.androidx.foundation)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.coil.kt.coil.compose)
