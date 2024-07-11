@@ -3,21 +3,16 @@ package com.mike.myclass
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,7 +52,6 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
     var currentAdmissionNumber by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
-    val fileName = "user_chat_${targetUserId}.json"
 
 
     // Search functionality
@@ -88,10 +81,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
         }
     }
 
-    // Load old messages from file
-    LaunchedEffect(Unit) {
-        messages = loadMessagesFromFile(context, fileName)
-    }
+
 
     // Generate a unique conversation ID for the current user and the target user
     val conversationId =
@@ -101,8 +91,6 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
         try {
             fetchUserToUserMessages(conversationId) { fetchedMessages ->
                 messages = fetchedMessages
-                // Save the new messages to file
-                saveMessagesToFile(context, fetchedMessages, fileName)
             }
         } catch (e: Exception) {
             errorMessage = e.message
@@ -148,7 +136,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                     senderName = user.firstName,
                     senderID = currentAdmissionNumber,
                     recipientID = targetUserId,
-                    time = SimpleDateFormat("hh:mm A", Locale.getDefault()).format(Date()),
+                    time = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date()),
                     date = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
                 )
                 sendUserToUserMessage(newMessage, conversationId) { success ->
@@ -191,7 +179,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                         Icon(
                             imageVector = Icons.Default.ArrowBackIosNew,
                             contentDescription = "Back",
-                            tint = GlobalColors.textColor,
+                            tint = CC.textColor(),
                             modifier = Modifier.size(24.dp) // Adjust size as needed
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -203,7 +191,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                     }
                 }
             },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = GlobalColors.primaryColor)
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = CC.primary())
         )
     }, content = { paddingValues ->
         Box(
@@ -223,14 +211,14 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                             .fillMaxWidth()
                             .padding(8.dp),
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GlobalColors.primaryColor,
-                            unfocusedIndicatorColor = GlobalColors.textColor,
-                            focusedIndicatorColor = GlobalColors.secondaryColor,
-                            unfocusedContainerColor = GlobalColors.primaryColor,
-                            focusedTextColor = GlobalColors.textColor,
-                            unfocusedTextColor = GlobalColors.textColor,
-                            focusedLabelColor = GlobalColors.secondaryColor,
-                            unfocusedLabelColor = GlobalColors.textColor
+                            focusedContainerColor = CC.primary(),
+                            unfocusedIndicatorColor = CC.textColor(),
+                            focusedIndicatorColor = CC.secondary(),
+                            unfocusedContainerColor = CC.primary(),
+                            focusedTextColor = CC.textColor(),
+                            unfocusedTextColor = CC.textColor(),
+                            focusedLabelColor = CC.secondary(),
+                            unfocusedLabelColor = CC.textColor()
                         ),
                         shape = RoundedCornerShape(10.dp)
                     )
@@ -251,7 +239,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                                 Box(
                                     modifier = Modifier
                                         .background(
-                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                                            CC.secondary(), RoundedCornerShape(10.dp)
                                         )
                                         .clip(RoundedCornerShape(10.dp)),
                                     contentAlignment = Alignment.Center
@@ -274,7 +262,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                                 Box(
                                     modifier = Modifier
                                         .background(
-                                            GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
+                                            CC.secondary(), RoundedCornerShape(10.dp)
                                         )
                                         .clip(RoundedCornerShape(10.dp)),
                                     contentAlignment = Alignment.Center
@@ -284,7 +272,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                                         modifier = Modifier.padding(5.dp),
                                         style = CC.descriptionTextStyle(context),
                                         textAlign = TextAlign.Center,
-                                        color = GlobalColors.textColor
+                                        color = CC.textColor()
                                     )
                                 }
                             }
@@ -315,15 +303,15 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                         label = { Text("Message", style = CC.descriptionTextStyle(context)) },
                         modifier = Modifier.weight(1f),
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = GlobalColors.primaryColor,
-                            unfocusedContainerColor = GlobalColors.primaryColor,
-                            cursorColor = GlobalColors.textColor,
-                            focusedTextColor = GlobalColors.textColor,
-                            unfocusedTextColor = GlobalColors.textColor,
-                            focusedLabelColor = GlobalColors.textColor,
-                            unfocusedLabelColor = GlobalColors.textColor,
-                            focusedIndicatorColor = GlobalColors.secondaryColor,
-                            unfocusedIndicatorColor = GlobalColors.secondaryColor
+                            focusedContainerColor = CC.primary(),
+                            unfocusedContainerColor = CC.primary(),
+                            cursorColor = CC.textColor(),
+                            focusedTextColor = CC.textColor(),
+                            unfocusedTextColor = CC.textColor(),
+                            focusedLabelColor = CC.textColor(),
+                            unfocusedLabelColor = CC.textColor(),
+                            focusedIndicatorColor = CC.secondary(),
+                            unfocusedIndicatorColor = CC.secondary()
                         ),
                         shape = RoundedCornerShape(10.dp)
                     )
@@ -335,7 +323,7 @@ fun UserChatScreen(navController: NavController, context: Context, targetUserId:
                                 message = ""
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = GlobalColors.extraColor2),
+                        colors = ButtonDefaults.buttonColors(containerColor = CC.extraColor2()),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Icon(Icons.AutoMirrored.Filled.Send,"Send")
@@ -365,7 +353,7 @@ fun MessageBubble(
     context: Context,
 ) {
     val alignment = if (isUser) Alignment.TopEnd else Alignment.TopStart
-    val backgroundColor = if (isUser) GlobalColors.extraColor1 else GlobalColors.extraColor2
+    val backgroundColor = if (isUser) CC.extraColor1() else CC.extraColor2()
     val bubbleShape = RoundedCornerShape(
         bottomStart = 16.dp,
         bottomEnd = 16.dp,
