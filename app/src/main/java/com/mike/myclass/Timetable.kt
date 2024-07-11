@@ -104,7 +104,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
             TopAppBar(title = { Text("Timetable", style = CC.titleTextStyle(context)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate("dashboard") }) {
-                        Icon(Icons.Default.ArrowBackIosNew, "Back", tint = GlobalColors.textColor)
+                        Icon(Icons.Default.ArrowBackIosNew, "Back", tint = CC.textColor())
                     }
                 },
                 actions = {
@@ -116,10 +116,10 @@ fun TimetableScreen(navController: NavController, context: Context) {
                             loading = false
                         }
                     }) {
-                        Icon(Icons.Default.Refresh, "Refresh", tint = GlobalColors.textColor)
+                        Icon(Icons.Default.Refresh, "Refresh", tint = CC.textColor())
                     }
                     IconButton(onClick = { expanded = !expanded }) {
-                        Icon(Icons.Default.MoreVert, "Add", tint = GlobalColors.textColor)
+                        Icon(Icons.Default.MoreVert, "Add", tint = CC.textColor())
                     }
                     DropdownMenu(
                         onDismissRequest = { expanded = false },
@@ -127,10 +127,10 @@ fun TimetableScreen(navController: NavController, context: Context) {
                         modifier = Modifier
                             .border(
                                 width = 1.dp,
-                                color = GlobalColors.textColor,
+                                color = CC.textColor(),
                                 shape = RoundedCornerShape(8.dp)
                             )
-                            .background(GlobalColors.primaryColor)
+                            .background(CC.primary())
                     ) {
                         DropdownMenuItem(text = {
                             Row(
@@ -142,7 +142,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                                 Icon(
                                     Icons.Default.AddCircleOutline,
                                     "Add Day",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
                                 Text("Add day", style = CC.descriptionTextStyle(context))
@@ -157,7 +157,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                                 Icon(
                                     Icons.Default.AddCircleOutline,
                                     "Add timetable",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
                                 Text("Add Timetable", style = CC.descriptionTextStyle(context))
@@ -170,14 +170,14 @@ fun TimetableScreen(navController: NavController, context: Context) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor,
-                    titleContentColor = GlobalColors.textColor,
+                    containerColor = CC.primary(),
+                    titleContentColor = CC.textColor(),
                 )
 
             )
 
         },
-        containerColor = GlobalColors.primaryColor,
+        containerColor = CC.primary(),
 
         ) {
         Column(
@@ -201,7 +201,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                         .tabIndicatorOffset(tabPositions[selectedTabIndex])
                         .height(4.dp)
                         .width(screenWidth / (days.size.coerceAtLeast(1))) // Avoid division by zero
-                        .background(GlobalColors.secondaryColor, CircleShape)
+                        .background(CC.secondary(), CircleShape)
                 )
             }
 
@@ -214,7 +214,7 @@ fun TimetableScreen(navController: NavController, context: Context) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CircularProgressIndicator(
-                        color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
+                        color = CC.secondary(), trackColor = CC.textColor()
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text("Loading Days...Please wait", style = CC.descriptionTextStyle(context))
@@ -232,11 +232,11 @@ fun TimetableScreen(navController: NavController, context: Context) {
             } else {
                 ScrollableTabRow(
                     selectedTabIndex = selectedTabIndex,
-                    modifier = Modifier.background(GlobalColors.primaryColor),
+                    modifier = Modifier.background(CC.primary()),
                     contentColor = Color.Black,
                     indicator = indicator,
                     edgePadding = 0.dp,
-                    containerColor = GlobalColors.primaryColor
+                    containerColor = CC.primary()
                 ) {
                     days.forEachIndexed { index, day ->
 
@@ -250,17 +250,17 @@ fun TimetableScreen(navController: NavController, context: Context) {
                             Box(
                                 modifier = Modifier
                                     .background(
-                                        if (selectedTabIndex == index) GlobalColors.secondaryColor else GlobalColors.primaryColor,
+                                        if (selectedTabIndex == index) CC.secondary() else CC.primary(),
                                         RoundedCornerShape(8.dp)
                                     )
                                     .padding(8.dp), contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = day.name,
-                                    color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
+                                    color = if (selectedTabIndex == index) CC.textColor() else CC.tertiary(),
                                 )
                             }
-                        }, modifier = Modifier.background(GlobalColors.primaryColor)
+                        }, modifier = Modifier.background(CC.primary())
                         )
                     }
                 }
@@ -278,14 +278,14 @@ fun TimetableScreen(navController: NavController, context: Context) {
                         modifier = Modifier
                             .width(250.dp)
                             .background(
-                                color = GlobalColors.primaryColor, shape = RoundedCornerShape(16.dp)
+                                color = CC.primary(), shape = RoundedCornerShape(16.dp)
                             )
                             .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = "Add Day",
                             style = CC.titleTextStyle(context),
-                            color = GlobalColors.textColor
+                            color = CC.textColor()
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         CustomOutlinedTextField(value = day, onValueChange = { day = it })
@@ -298,15 +298,15 @@ fun TimetableScreen(navController: NavController, context: Context) {
                                 onClick = { showaddDay = false },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.secondaryColor,
-                                    contentColor = GlobalColors.primaryColor
+                                    containerColor = CC.secondary(),
+                                    contentColor = CC.primary()
                                 ),
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             ) {
                                 Text(
                                     "Cancel",
                                     style = CC.descriptionTextStyle(context),
-                                    color = GlobalColors.primaryColor
+                                    color = CC.primary()
                                 )
                             }
                             Button(
@@ -325,15 +325,15 @@ fun TimetableScreen(navController: NavController, context: Context) {
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.secondaryColor,
-                                    contentColor = GlobalColors.primaryColor
+                                    containerColor = CC.secondary(),
+                                    contentColor = CC.primary()
                                 ),
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             ) {
                                 Text(
                                     "Add",
                                     style = CC.descriptionTextStyle(context),
-                                    color = GlobalColors.primaryColor
+                                    color = CC.primary()
                                 )
                             }
                         }
@@ -349,14 +349,14 @@ fun TimetableScreen(navController: NavController, context: Context) {
                         modifier = Modifier
                             .width(250.dp)
                             .background(
-                                color = GlobalColors.primaryColor, shape = RoundedCornerShape(16.dp)
+                                color = CC.primary(), shape = RoundedCornerShape(16.dp)
                             )
                             .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = "Add Timetable",
                             style = CC.titleTextStyle(context),
-                            color = GlobalColors.textColor
+                            color = CC.textColor()
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         CustomOutlinedTextField(
@@ -397,15 +397,15 @@ fun TimetableScreen(navController: NavController, context: Context) {
                                 onClick = { timetableDialog = false },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.secondaryColor,
-                                    contentColor = GlobalColors.primaryColor
+                                    containerColor = CC.secondary(),
+                                    contentColor = CC.primary()
                                 ),
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             ) {
                                 Text(
                                     "Cancel",
                                     style = CC.descriptionTextStyle(context),
-                                    color = GlobalColors.primaryColor
+                                    color = CC.primary()
                                 )
                             }
                             Button(
@@ -435,15 +435,15 @@ fun TimetableScreen(navController: NavController, context: Context) {
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.secondaryColor,
-                                    contentColor = GlobalColors.primaryColor
+                                    containerColor = CC.secondary(),
+                                    contentColor = CC.primary()
                                 ),
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             ) {
                                 Text(
                                     "Add",
                                     style = CC.descriptionTextStyle(context),
-                                    color = GlobalColors.primaryColor
+                                    color = CC.primary()
                                 )
                             }
                         }
@@ -471,7 +471,7 @@ fun DayList(dayid: String, context: Context) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             CircularProgressIndicator(
-                color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
+                color = CC.secondary(), trackColor = CC.textColor()
             )
             Text("Loading Events...Please wait", style = CC.descriptionTextStyle(context))
             Text(
@@ -554,13 +554,13 @@ fun TimetableCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp), colors = CardDefaults.cardColors(
-            containerColor = GlobalColors.secondaryColor, contentColor = GlobalColors.textColor
+            containerColor = CC.secondary(), contentColor = CC.textColor()
         ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(8.dp)
     ) {
         Column(
             modifier = Modifier
                 .border(
-                    width = 1.dp, color = GlobalColors.textColor, shape = RoundedCornerShape(8.dp)
+                    width = 1.dp, color = CC.textColor(), shape = RoundedCornerShape(8.dp)
                 )
                 .padding(16.dp)
         ) {
@@ -579,7 +579,7 @@ fun TimetableCard(
                     Text(
                         text = timetable.unitName,
                         style = CC.titleTextStyle(context).copy(fontSize = 18.sp),
-                        color = GlobalColors.textColor
+                        color = CC.textColor()
                     )
                 }
                 Row {
@@ -611,7 +611,7 @@ fun TimetableCard(
                         Icon(
                             imageVector = if (isEditing) Icons.Default.Check else Icons.Default.Edit,
                             contentDescription = if (isEditing) "Save Event" else "Edit Event",
-                            tint = GlobalColors.textColor
+                            tint = CC.textColor()
                         )
                     }
                     if (isEditing) {
@@ -630,7 +630,7 @@ fun TimetableCard(
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Cancel Edit",
-                                tint = GlobalColors.primaryColor
+                                tint = CC.primary()
                             )
                         }
                     } else {
@@ -640,7 +640,7 @@ fun TimetableCard(
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete Event",
-                                tint = GlobalColors.textColor
+                                tint = CC.textColor()
                             )
                         }
                     }
@@ -657,7 +657,7 @@ fun TimetableCard(
                         Icon(
                             Icons.Default.LocationOn,
                             contentDescription = "Venue",
-                            tint = GlobalColors.textColor
+                            tint = CC.textColor()
                         )
                     })
                 Spacer(modifier = Modifier.height(8.dp))
@@ -668,7 +668,7 @@ fun TimetableCard(
                         Icon(
                             Icons.Default.Person,
                             contentDescription = "Lecturer",
-                            tint = GlobalColors.textColor
+                            tint = CC.textColor()
                         )
                     })
                 Spacer(modifier = Modifier.height(8.dp))
@@ -679,7 +679,7 @@ fun TimetableCard(
                         Icon(
                             Icons.Default.Schedule,
                             contentDescription = "Start Time",
-                            tint = GlobalColors.textColor
+                            tint = CC.textColor()
                         )
                     })
                 Spacer(modifier = Modifier.height(8.dp))
@@ -690,7 +690,7 @@ fun TimetableCard(
                         Icon(
                             Icons.Default.Schedule,
                             contentDescription = "End Time",
-                            tint = GlobalColors.textColor
+                            tint = CC.textColor()
                         )
                     })
             } else {
@@ -699,13 +699,13 @@ fun TimetableCard(
                         Icon(
                             Icons.Default.LocationOn,
                             contentDescription = "Venue",
-                            tint = GlobalColors.textColor
+                            tint = CC.textColor()
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = timetable.venue,
                             style = CC.descriptionTextStyle(context),
-                            color = GlobalColors.textColor
+                            color = CC.textColor()
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -713,13 +713,13 @@ fun TimetableCard(
                         Icon(
                             Icons.Default.Person,
                             contentDescription = "Lecturer",
-                            tint = GlobalColors.textColor
+                            tint = CC.textColor()
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = timetable.lecturer,
                             style = CC.descriptionTextStyle(context),
-                            color = GlobalColors.textColor
+                            color = CC.textColor()
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -727,13 +727,13 @@ fun TimetableCard(
                         Icon(
                             Icons.Default.Schedule,
                             contentDescription = "Time",
-                            tint = GlobalColors.textColor
+                            tint = CC.textColor()
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "${timetable.startTime} - ${timetable.endTime}",
                             style = CC.descriptionTextStyle(context),
-                            color = GlobalColors.textColor
+                            color = CC.textColor()
                         )
                     }
                 }
@@ -741,7 +741,7 @@ fun TimetableCard(
 
             if (isSaving) {
                 CircularProgressIndicator(
-                    color = GlobalColors.textColor,
+                    color = CC.textColor(),
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
             }
@@ -773,14 +773,14 @@ fun CustomOutlinedTextField(
         label = { Text(label) },
         leadingIcon = leadingIcon,
         colors = TextFieldDefaults.colors(
-            focusedIndicatorColor = GlobalColors.textColor,
-            unfocusedIndicatorColor = GlobalColors.tertiaryColor,
-            focusedTextColor = GlobalColors.textColor,
-            unfocusedTextColor = GlobalColors.textColor,
-            focusedContainerColor = GlobalColors.primaryColor,
-            unfocusedContainerColor = GlobalColors.primaryColor,
-            focusedLabelColor = GlobalColors.textColor,
-            unfocusedLabelColor = GlobalColors.textColor
+            focusedIndicatorColor = CC.textColor(),
+            unfocusedIndicatorColor = CC.tertiary(),
+            focusedTextColor = CC.textColor(),
+            unfocusedTextColor = CC.textColor(),
+            focusedContainerColor = CC.primary(),
+            unfocusedContainerColor = CC.primary(),
+            focusedLabelColor = CC.textColor(),
+            unfocusedLabelColor = CC.textColor()
         ),
         modifier = modifier
     )
