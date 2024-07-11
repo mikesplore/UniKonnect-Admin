@@ -30,6 +30,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -40,6 +43,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Announcement
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.outlined.Assignment
 import androidx.compose.material.icons.filled.AssignmentInd
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Chat
@@ -49,6 +53,11 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PendingActions
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.BorderColor
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.School
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -88,6 +97,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -100,6 +110,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.mike.myclass.MyDatabase.fetchUserDataByEmail
 import com.mike.myclass.MyDatabase.getAnnouncements
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -110,6 +121,10 @@ import com.mike.myclass.CommonComponents as CC
 @Composable
 fun Dashboard(navController: NavController, context: Context) {
     var visible by remember { mutableStateOf(true) }
+    var user by remember { mutableStateOf(User())}
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+    var currentName by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         visible = true
@@ -167,12 +182,26 @@ fun Dashboard(navController: NavController, context: Context) {
                 horizontalScrollState.scrollTo(0)
             }
         }
+        LaunchedEffect(key1 = Unit) { // Use a stable key
+            while (true) {
+                delay(1000L) // Delay for 10 seconds
+                auth.currentUser?.email?.let { email ->
+                    fetchUserDataByEmail(email) { fetchedUser ->
+                        fetchedUser?.let {
+                            user = it
+                            currentName = it.firstName
+                            // You might want to add a mechanism to notify the UI about the updated data
+                        }
+                    }
+                }
+            }
+        }
 
         Scaffold(
             topBar = {
                 TopAppBar(title = {
                     Text(
-                        "${getGreetingMessage()}, ${Details.name.value}",
+                        "${getGreetingMessage()}, $currentName",
                         style = CC.descriptionTextStyle(context),
                         fontSize = 20.sp
                     )
@@ -181,20 +210,20 @@ fun Dashboard(navController: NavController, context: Context) {
                         Icon(
                             imageVector = Icons.Filled.Menu,
                             contentDescription = "Menu",
-                            tint = GlobalColors.textColor
+                            tint = CC.textColor()
                         )
                     }
                     DropdownMenu(
                         expanded,
                         onDismissRequest = { expanded = false },
-                        modifier = Modifier.background(GlobalColors.primaryColor)
+                        modifier = Modifier.background(CC.primary())
                     ) {
                         DropdownMenuItem(text = {
                             Row {
                                 Icon(
                                     Icons.Default.ManageAccounts,
                                     contentDescription = "",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Text(" Users", style = CC.descriptionTextStyle(context))
                             }
@@ -207,7 +236,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                 Icon(
                                     Icons.Default.AssignmentInd,
                                     contentDescription = "",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Text(
                                     " Assignments", style = CC.descriptionTextStyle(context)
@@ -223,7 +252,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                 Icon(
                                     Icons.Default.PendingActions,
                                     contentDescription = "",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Text(
                                     " Attendance", style = CC.descriptionTextStyle(context)
@@ -239,7 +268,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.Announcement,
                                     contentDescription = "",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Text(
                                     " Announcements",
@@ -255,7 +284,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                 Icon(
                                     Icons.Filled.Book,
                                     contentDescription = "",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Text(
                                     " Courses",
@@ -271,7 +300,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                 Icon(
                                     Icons.Default.Schedule,
                                     contentDescription = "",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Text(" Timetable", style = CC.descriptionTextStyle(context))
                             }
@@ -284,7 +313,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.Chat,
                                     contentDescription = "",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Text(" Discussion", style = CC.descriptionTextStyle(context))
                             }
@@ -298,7 +327,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                 Icon(
                                     Icons.Default.Settings,
                                     contentDescription = "",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Text(
                                     " Settings", style = CC.descriptionTextStyle(context)
@@ -313,29 +342,29 @@ fun Dashboard(navController: NavController, context: Context) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ExitToApp,
                                     contentDescription = "",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Text(" Logout", style = CC.descriptionTextStyle(context))
                             }
                         }, onClick = {
-                            FirebaseAuth.getInstance().signOut()
+                            auth.signOut()
                             navController.navigate("login")
                             expanded = false
                         })
                     }
                 }, colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor,
-                    titleContentColor = GlobalColors.textColor
+                    containerColor = CC.primary(),
+                    titleContentColor = CC.textColor()
                 )
                 )
             },
-            containerColor = GlobalColors.primaryColor,
+            containerColor = CC.primary(),
         ) {
             Column(
                 modifier = Modifier
                     .padding(it)
                     .fillMaxSize()
-                    .background(GlobalColors.primaryColor)
+                    .background(CC.primary())
             ) {
                 Row(
                     modifier = Modifier
@@ -378,15 +407,15 @@ fun Dashboard(navController: NavController, context: Context) {
                                 .tabIndicatorOffset(tabPositions[selectedTabIndex])
                                 .height(4.dp)
                                 .width(screenWidth / tabTitles.size) // Divide by the number of tabs
-                                .background(GlobalColors.textColor, CircleShape)
+                                .background(CC.textColor(), CircleShape)
                         )
                     }
                     val coroutineScope = rememberCoroutineScope()
 
                     ScrollableTabRow(
                         selectedTabIndex = selectedTabIndex,
-                        modifier = Modifier.background(GlobalColors.secondaryColor),
-                        contentColor = GlobalColors.primaryColor,
+                        modifier = Modifier.background(CC.secondary()),
+                        contentColor = CC.primary(),
                         indicator = indicator,
                         edgePadding = 0.dp,
 
@@ -403,7 +432,7 @@ fun Dashboard(navController: NavController, context: Context) {
                                 Box(
                                     modifier = Modifier
                                         .background(
-                                            if (selectedTabIndex == index) GlobalColors.primaryColor else GlobalColors.secondaryColor,
+                                            if (selectedTabIndex == index) CC.primary() else CC.secondary(),
                                             RoundedCornerShape(8.dp)
                                         )
                                         .padding(8.dp), contentAlignment = Alignment.Center
@@ -411,16 +440,16 @@ fun Dashboard(navController: NavController, context: Context) {
                                     Text(
                                         text = title,
                                         style = CC.descriptionTextStyle(context),
-                                        color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
+                                        color = if (selectedTabIndex == index) CC.textColor() else CC.tertiary(),
                                     )
                                 }
-                            }, modifier = Modifier.background(GlobalColors.primaryColor)
+                            }, modifier = Modifier.background(CC.primary())
                             )
                         }
                     }
 
                     when (selectedTabIndex) {
-                        0 -> AnnouncementItem(context)
+                        0 -> AnnouncementItem(currentName, context)
                         1 -> ManageAttendanceScreen(navController, context)
                         2 -> TimetableItem(context)
                         3 -> AssignmentsItem(context)
@@ -437,12 +466,13 @@ fun Dashboard(navController: NavController, context: Context) {
 
 
 @Composable
-fun AnnouncementItem(context: Context) {
+fun AnnouncementItem(sender: String, context: Context) {
     var title by remember { mutableStateOf("") }
-    val date = CC.lastDate
+    val date = "Today"
     var description by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(true) }
     val announcements = remember { mutableStateListOf<Announcement>() }
+
     LaunchedEffect(Unit) {
         getAnnouncements { fetchedAnnouncements ->
             announcements.addAll(fetchedAnnouncements ?: emptyList())
@@ -468,7 +498,7 @@ fun AnnouncementItem(context: Context) {
                 .fillMaxWidth(0.9f)
                 .height(200.dp)
                 .border(
-                    width = 1.dp, color = GlobalColors.textColor, shape = RoundedCornerShape(10.dp)
+                    width = 1.dp, color = CC.textColor(), shape = RoundedCornerShape(10.dp)
                 ),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -481,7 +511,7 @@ fun AnnouncementItem(context: Context) {
                     verticalArrangement = Arrangement.Center
                 ) {
                     CircularProgressIndicator(
-                        color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
+                        color = CC.secondary(), trackColor = CC.textColor()
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Fetching data...", style = CC.descriptionTextStyle(context))
@@ -524,7 +554,7 @@ fun AnnouncementItem(context: Context) {
                                 .fillMaxWidth()
                                 .fillMaxHeight(1f)
                                 .background(
-                                    GlobalColors.primaryColor.copy(alpha = 0.5f),
+                                    CC.primary().copy(alpha = 0.5f),
                                     RoundedCornerShape(10.dp)
                                 )  // Adding a background color for better contrast
                         ) {
@@ -596,7 +626,7 @@ fun AnnouncementItem(context: Context) {
                     .padding(10.dp)
                     .border(
                         width = 1.dp,
-                        color = GlobalColors.textColor,
+                        color = CC.textColor(),
                         shape = RoundedCornerShape(10.dp)
                     ), horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -629,19 +659,17 @@ fun AnnouncementItem(context: Context) {
                                 ).show()
                                 loading = false
                             } else {
-
-
-
                                 MyDatabase.generateAnnouncementID { announcementID ->
                                     val newAnnouncement = Announcement(
                                         id = announcementID,
-                                        author = Details.name.value,
+                                        author = sender,
                                         date = date,
                                         title = title,
                                         description = description,
 
                                         )
-                                MyDatabase.writeAnnouncement(newAnnouncement)}
+                                    Log.d("Announcement:", "announcemt details: $newAnnouncement")
+                                MyDatabase.writeAnnouncement(newAnnouncement)
                                 showNotification(
                                     context, title = title, message = description
                                 )
@@ -653,12 +681,12 @@ fun AnnouncementItem(context: Context) {
                                 getAnnouncements { fetchedAnnouncements ->
                                     announcements.clear()
                                     announcements.addAll(fetchedAnnouncements ?: emptyList())
-                                }
+                                }}
                                 loading = false
                             }
                         }, shape = RoundedCornerShape(10.dp), colors = ButtonDefaults.buttonColors(
-                            containerColor = GlobalColors.primaryColor,
-                            contentColor = GlobalColors.textColor
+                            containerColor = CC.primary(),
+                            contentColor = CC.textColor()
                         )
                     ) {
                         Text("Post", style = CC.descriptionTextStyle(context))
@@ -684,14 +712,14 @@ fun QuickInput(
             .padding(10.dp)
             .width(250.dp),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = GlobalColors.primaryColor,
-            unfocusedLabelColor = GlobalColors.tertiaryColor,
-            focusedIndicatorColor = GlobalColors.textColor,
+            focusedContainerColor = CC.primary(),
+            unfocusedLabelColor = CC.tertiary(),
+            focusedIndicatorColor = CC.textColor(),
             unfocusedContainerColor = Color.Transparent,
-            unfocusedTextColor = GlobalColors.textColor,
-            focusedTextColor = GlobalColors.textColor,
-            focusedLabelColor = GlobalColors.primaryColor,
-            unfocusedIndicatorColor = GlobalColors.textColor
+            unfocusedTextColor = CC.textColor(),
+            focusedTextColor = CC.textColor(),
+            focusedLabelColor = CC.primary(),
+            unfocusedIndicatorColor = CC.textColor()
         ),
         singleLine = singleLine
     )
@@ -744,8 +772,8 @@ fun TimetableItem(context: Context) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 CircularProgressIndicator(
-                    color = GlobalColors.textColor,
-                    trackColor = GlobalColors.primaryColor,
+                    color = CC.textColor(),
+                    trackColor = CC.primary(),
                     modifier = Modifier
                         .padding(16.dp)
                 )
@@ -772,7 +800,7 @@ fun TimetableItem(context: Context) {
                         // Display each timetable item here
                         Card(
                             colors = CardDefaults.cardColors(
-                                GlobalColors.secondaryColor
+                                CC.secondary()
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -849,14 +877,14 @@ fun TimetableItem(context: Context) {
                                 showNotification(
                                     context,
                                     title = "New Timetable Item",
-                                    message = "${Details.name.value} added an Event."
+                                    message = "${Details.firstName.value} added an Event."
                                 )
                             })}
                         }
                     },
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = GlobalColors.secondaryColor
+                        containerColor = CC.secondary()
                     )
                 ) {
                     Text("Post", style = CC.descriptionTextStyle(context))
@@ -867,7 +895,7 @@ fun TimetableItem(context: Context) {
                 modifier = Modifier
                     .border(
                         width = 1.dp,
-                        color = GlobalColors.textColor,
+                        color = CC.textColor(),
                         shape = RoundedCornerShape(10.dp)
                     )
                     .padding(16.dp)
@@ -939,7 +967,7 @@ fun AssignmentsItem(context: Context) {
                     .tabIndicatorOffset(tabPositions[selectedTabIndex])
                     .height(4.dp)
                     .width(screenWidth / (courses.size.coerceAtLeast(1))) // Avoid division by zero
-                    .background(GlobalColors.secondaryColor, CircleShape)
+                    .background(CC.secondary(), CircleShape)
             )
         }
         val coroutineScope = rememberCoroutineScope()
@@ -951,8 +979,8 @@ fun AssignmentsItem(context: Context) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CircularProgressIndicator(
-                    color = GlobalColors.secondaryColor,
-                    trackColor = GlobalColors.textColor
+                    color = CC.secondary(),
+                    trackColor = CC.textColor()
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text("Loading Units", style = CC.descriptionTextStyle(context))
@@ -960,6 +988,11 @@ fun AssignmentsItem(context: Context) {
             }
 
         } else {
+            if(courses.isEmpty()){
+                Row (modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically){
+                Text("No courses available", style = CC.descriptionTextStyle(context))}
+            } else{
 
             ScrollableTabRow(
                 selectedTabIndex = selectedTabIndex,
@@ -967,7 +1000,7 @@ fun AssignmentsItem(context: Context) {
                 contentColor = Color.Black,
                 indicator = indicator,
                 edgePadding = 0.dp,
-                containerColor = GlobalColors.primaryColor
+                containerColor = CC.primary()
             ) {
                 courses.forEachIndexed { index, subject ->
 
@@ -981,20 +1014,20 @@ fun AssignmentsItem(context: Context) {
                         Box(
                             modifier = Modifier
                                 .background(
-                                    if (selectedTabIndex == index) GlobalColors.secondaryColor else GlobalColors.primaryColor,
+                                    if (selectedTabIndex == index) CC.secondary() else CC.primary(),
                                     RoundedCornerShape(8.dp)
                                 )
                                 .padding(8.dp), contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = subject.courseName,
-                                color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
+                                color = if (selectedTabIndex == index) CC.textColor() else CC.tertiary(),
                             )
                         }
-                    }, modifier = Modifier.background(GlobalColors.primaryColor)
+                    }, modifier = Modifier.background(CC.primary())
                     )
                 }
-            }
+            }}
 
             when (selectedTabIndex) {
                 in courses.indices -> {
@@ -1009,7 +1042,7 @@ fun AssignmentsItem(context: Context) {
 @Composable
 fun DocumentationItem() {
     Column(modifier = Modifier
-        .background(GlobalColors.primaryColor)
+        .background(CC.primary())
         .fillMaxSize()) {
         WebViewScreen("https://github.com/mikesplore/My-Class")
     }
@@ -1036,8 +1069,8 @@ fun ManageUsersItem(context: Context) {
             verticalArrangement = Arrangement.Center
         ) {
             CircularProgressIndicator(
-                color = GlobalColors.textColor,
-                trackColor = GlobalColors.primaryColor,
+                color = CC.textColor(),
+                trackColor = CC.primary(),
                 modifier = Modifier.size(48.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -1055,7 +1088,7 @@ fun ManageUsersItem(context: Context) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp),
-                        colors = CardDefaults.cardColors(GlobalColors.secondaryColor),
+                        colors = CardDefaults.cardColors(CC.secondary()),
                         elevation = CardDefaults.elevatedCardElevation(4.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
@@ -1078,30 +1111,7 @@ fun ManageUsersItem(context: Context) {
     }
 }
 
-@Composable
-fun AttendanceProgressIndicator(progress: Float, context: Context) {
-    val color = when {
-        progress < 30 -> Color.Red
-        progress < 70 -> Color.Yellow
-        else -> Color.Green
-    }
 
-    Box(contentAlignment = Alignment.Center) {
-        CircularProgressIndicator(
-            progress = {
-                progress / 100f // Directly use progress as a float (0-1)
-            },
-            modifier = Modifier.size(130.dp),
-            color = color,
-            strokeWidth = 10.dp,
-            trackColor = GlobalColors.tertiaryColor,
-            strokeCap = StrokeCap.Round
-        )
-        Text(
-            text = "${progress.toInt()}%", style = CC.titleTextStyle(context)
-        )
-    }
-}
 
 @Composable
 fun MyOutlinedTextField(
@@ -1123,13 +1133,53 @@ fun MyOutlinedTextField(
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.Transparent,
             unfocusedContainerColor = Color.Transparent,
-            focusedIndicatorColor = GlobalColors.textColor,
-            unfocusedLabelColor = GlobalColors.secondaryColor,
-            focusedLabelColor = GlobalColors.textColor,
-            unfocusedTextColor = GlobalColors.secondaryColor,
-            unfocusedIndicatorColor = GlobalColors.secondaryColor
+            focusedIndicatorColor = CC.textColor(),
+            unfocusedLabelColor = CC.secondary(),
+            focusedLabelColor = CC.textColor(),
+            unfocusedTextColor = CC.secondary(),
+            unfocusedIndicatorColor = CC.secondary()
         )
     )
+}
+
+@Composable
+fun Background(context: Context) {
+    val icons = listOf(
+        Icons.Outlined.Home,
+        Icons.AutoMirrored.Outlined.Assignment,
+        Icons.Outlined.School,
+        Icons.Outlined.AccountCircle,
+        Icons.Outlined.BorderColor,
+        Icons.Outlined.Book,
+    )
+    LaunchedEffect(Unit) {
+        GlobalColors.loadColorScheme(context)
+
+    }
+    // Calculate the number of repetitions needed to fill the screen
+    val repetitions = 1000 // Adjust this value as needed
+    val repeatedIcons = mutableListOf<ImageVector>()
+    repeat(repetitions) {
+        repeatedIcons.addAll(icons.shuffled())
+    }
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(10),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(CC.primary())
+            .padding(10.dp),
+        contentPadding = PaddingValues(8.dp)
+    ) {
+        items(repeatedIcons) { icon ->
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = CC.secondary().copy(0.5f),
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+    }
 }
 
 
