@@ -5,6 +5,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -99,32 +100,39 @@ fun ManageAttendanceScreen(navController: NavController, context: Context) {
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor
+                    containerColor = CC.primary()
                 ),
             )
 
-        }, containerColor = GlobalColors.primaryColor
+        }, containerColor = CC.primary()
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .fillMaxSize()
-                .background(GlobalColors.primaryColor)
+                .background(CC.primary())
                 .padding(innerPadding)
         ) {
             if (loading) {
                 Box(modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center){
                 CircularProgressIndicator(
-                    color = GlobalColors.primaryColor,
-                    trackColor = GlobalColors.textColor
+                    color = CC.primary(),
+                    trackColor = CC.textColor()
                 )
                 }
-            }
+            }else
+                if(courses.isEmpty()){
+                    Row(modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center) {
+                        Text("No courses found", style = CC.descriptionTextStyle(context))
+                    }
+
+                }else{
             courses.forEach { course ->
                 val isChecked = attendanceStates[course.courseCode] ?: false
                 val backgroundColor by animateColorAsState(
-                    targetValue = if (isChecked) GlobalColors.extraColor2 else GlobalColors.primaryColor,
+                    targetValue = if (isChecked) CC.extraColor2() else CC.primary(),
                     animationSpec = tween(durationMillis = 300),
                     label = ""
                 )
@@ -155,14 +163,15 @@ fun ManageAttendanceScreen(navController: NavController, context: Context) {
                                 )
                             )
                         }, colors = SwitchDefaults.colors(
-                            checkedThumbColor = GlobalColors.primaryColor,
-                            checkedTrackColor = GlobalColors.secondaryColor,
-                            uncheckedThumbColor = GlobalColors.secondaryColor,
-                            uncheckedTrackColor = GlobalColors.primaryColor
+                            checkedThumbColor = CC.primary(),
+                            checkedTrackColor = CC.secondary(),
+                            uncheckedThumbColor = CC.secondary(),
+                            uncheckedTrackColor = CC.primary()
                         )
                     )
                 }
             }
+                }
         }
     }
 }
