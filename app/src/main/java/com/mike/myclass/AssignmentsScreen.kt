@@ -99,7 +99,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
             TopAppBar(title = { Text("Assignments", style = CC.titleTextStyle(context)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate("dashboard") }) {
-                        Icon(Icons.Default.ArrowBackIosNew, "Back", tint = GlobalColors.textColor)
+                        Icon(Icons.Default.ArrowBackIosNew, "Back", tint = CC.textColor())
                     }
                 },
                 actions = {
@@ -111,10 +111,10 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             loading = false
                         }
                     }) {
-                        Icon(Icons.Default.Refresh, "Refresh", tint = GlobalColors.textColor)
+                        Icon(Icons.Default.Refresh, "Refresh", tint = CC.textColor())
                     }
                     IconButton(onClick = { expanded = !expanded }) {
-                        Icon(Icons.Default.MoreVert, "Add", tint = GlobalColors.textColor)
+                        Icon(Icons.Default.MoreVert, "Add", tint = CC.textColor())
                     }
                     DropdownMenu(
                         onDismissRequest = { expanded = false },
@@ -122,17 +122,17 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                         modifier = Modifier
                             .border(
                                 width = 1.dp,
-                                color = GlobalColors.textColor,
+                                color = CC.textColor(),
                                 shape = RoundedCornerShape(8.dp)
                             )
-                            .background(GlobalColors.primaryColor)
+                            .background(CC.primary())
                     ) {
                         DropdownMenuItem(text = {
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 Icon(
                                     Icons.Default.AddCircleOutline,
                                     "Add Assignment",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
                                 Text("Add Assignment", style = CC.descriptionTextStyle(context))
@@ -145,14 +145,14 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor,
-                    titleContentColor = GlobalColors.textColor,
+                    containerColor = CC.primary(),
+                    titleContentColor = CC.textColor(),
                 )
 
             )
 
         },
-        containerColor = GlobalColors.primaryColor,
+        containerColor = CC.primary(),
 
         ) {
         Column(
@@ -176,7 +176,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                         .tabIndicatorOffset(tabPositions[selectedTabIndex])
                         .height(4.dp)
                         .width(screenWidth / (courses.size.coerceAtLeast(1))) // Avoid division by zero
-                        .background(GlobalColors.secondaryColor, CircleShape)
+                        .background(CC.secondary(), CircleShape)
                 )
             }
 
@@ -189,7 +189,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CircularProgressIndicator(
-                        color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
+                        color = CC.secondary(), trackColor = CC.textColor()
                     )
                     Spacer(modifier = Modifier.width(10.dp))
                     Text("Loading Units", style = CC.descriptionTextStyle(context))
@@ -210,7 +210,7 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                     contentColor = Color.Black,
                     indicator = indicator,
                     edgePadding = 0.dp,
-                    containerColor = GlobalColors.primaryColor
+                    containerColor = CC.primary()
                 ) {
                     courses.forEachIndexed { index, course ->
 
@@ -224,17 +224,17 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                             Box(
                                 modifier = Modifier
                                     .background(
-                                        if (selectedTabIndex == index) GlobalColors.secondaryColor else GlobalColors.primaryColor,
+                                        if (selectedTabIndex == index) CC.secondary() else CC.primary(),
                                         RoundedCornerShape(8.dp)
                                     )
                                     .padding(8.dp), contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = course.courseName,
-                                    color = if (selectedTabIndex == index) GlobalColors.textColor else GlobalColors.tertiaryColor,
+                                    color = if (selectedTabIndex == index) CC.textColor() else CC.tertiary(),
                                 )
                             }
-                        }, modifier = Modifier.background(GlobalColors.primaryColor)
+                        }, modifier = Modifier.background(CC.primary())
                         )
                     }
                 }
@@ -251,37 +251,37 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                         modifier = Modifier
                             .width(250.dp)
                             .background(
-                                color = GlobalColors.primaryColor, shape = RoundedCornerShape(16.dp)
+                                color = CC.primary(), shape = RoundedCornerShape(16.dp)
                             )
                             .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = "Add Assignment",
                             style = CC.titleTextStyle(context),
-                            color = GlobalColors.textColor
+                            color = CC.textColor()
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         OutlinedTextField(value = title,
                             onValueChange = { title = it },
-                            label = { Text("Assignment Name", color = GlobalColors.tertiaryColor) },
+                            label = { Text("Assignment Name", color = CC.tertiary()) },
                             colors = TextFieldDefaults.colors(
-                                unfocusedIndicatorColor = GlobalColors.tertiaryColor,
-                                focusedTextColor = GlobalColors.textColor,
-                                unfocusedTextColor = GlobalColors.textColor,
-                                focusedContainerColor = GlobalColors.primaryColor,
-                                unfocusedContainerColor = GlobalColors.primaryColor
+                                unfocusedIndicatorColor = CC.tertiary(),
+                                focusedTextColor = CC.textColor(),
+                                unfocusedTextColor = CC.textColor(),
+                                focusedContainerColor = CC.primary(),
+                                unfocusedContainerColor = CC.primary()
                             )
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         OutlinedTextField(value = description,
                             onValueChange = { description = it },
-                            label = { Text("Description", color = GlobalColors.tertiaryColor) },
+                            label = { Text("Description", color = CC.tertiary()) },
                             colors = TextFieldDefaults.colors(
-                                unfocusedIndicatorColor = GlobalColors.tertiaryColor,
-                                focusedTextColor = GlobalColors.textColor,
-                                unfocusedTextColor = GlobalColors.textColor,
-                                focusedContainerColor = GlobalColors.primaryColor,
-                                unfocusedContainerColor = GlobalColors.primaryColor
+                                unfocusedIndicatorColor = CC.tertiary(),
+                                focusedTextColor = CC.textColor(),
+                                unfocusedTextColor = CC.textColor(),
+                                focusedContainerColor = CC.primary(),
+                                unfocusedContainerColor = CC.primary()
                             )
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -293,15 +293,15 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                                 onClick = { assignmentDialog = false },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.secondaryColor,
-                                    contentColor = GlobalColors.primaryColor
+                                    containerColor = CC.secondary(),
+                                    contentColor = CC.primary()
                                 ),
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             ) {
                                 Text(
                                     "Cancel",
                                     style = CC.descriptionTextStyle(context),
-                                    color = GlobalColors.primaryColor
+                                    color = CC.primary()
                                 )
                             }
                             Button(
@@ -323,21 +323,21 @@ fun AssignmentScreen(navController: NavController, context: Context) {
                                         showNotification(
                                             context,
                                             title = "New Assignment",
-                                            message = "${Details.name.value} added an assignment.  "
+                                            message = "${Details.firstName.value} added an assignment.  "
                                         )
                                     })}
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = GlobalColors.secondaryColor,
-                                    contentColor = GlobalColors.primaryColor
+                                    containerColor = CC.secondary(),
+                                    contentColor = CC.primary()
                                 ),
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             ) {
                                 Text(
                                     "Add",
                                     style = CC.descriptionTextStyle(context),
-                                    color = GlobalColors.primaryColor
+                                    color = CC.primary()
                                 )
                             }
                         }
@@ -365,7 +365,7 @@ fun AssignmentsList(subjectId: String, context: Context) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             CircularProgressIndicator(
-                color = GlobalColors.secondaryColor, trackColor = GlobalColors.textColor
+                color = CC.secondary(), trackColor = CC.textColor()
             )
             Text("Loading Assignments...Please wait", style = CC.descriptionTextStyle(context))
         }
@@ -442,14 +442,14 @@ fun AssignmentCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp), colors = CardDefaults.cardColors(
-                containerColor = GlobalColors.secondaryColor, contentColor = GlobalColors.textColor
+                containerColor = CC.secondary(), contentColor = CC.textColor()
             ), elevation = CardDefaults.elevatedCardElevation(), shape = RoundedCornerShape(8.dp)
         ) {
             Column(
                 modifier = Modifier
                     .border(
                         width = 1.dp,
-                        color = GlobalColors.textColor,
+                        color = CC.textColor(),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .padding(16.dp)
@@ -462,21 +462,21 @@ fun AssignmentCard(
                     if (isEditing) {
                         OutlinedTextField(value = editedName,
                             onValueChange = { editedName = it },
-                            label = { Text("Assignment Name", color = GlobalColors.tertiaryColor) },
+                            label = { Text("Assignment Name", color = CC.tertiary()) },
                             colors = TextFieldDefaults.colors(
-                                focusedIndicatorColor = GlobalColors.primaryColor,
-                                unfocusedIndicatorColor = GlobalColors.tertiaryColor,
-                                focusedTextColor = GlobalColors.textColor,
-                                unfocusedTextColor = GlobalColors.textColor,
-                                focusedContainerColor = GlobalColors.primaryColor,
-                                unfocusedContainerColor = GlobalColors.primaryColor
+                                focusedIndicatorColor = CC.primary(),
+                                unfocusedIndicatorColor = CC.tertiary(),
+                                focusedTextColor = CC.textColor(),
+                                unfocusedTextColor = CC.textColor(),
+                                focusedContainerColor = CC.primary(),
+                                unfocusedContainerColor = CC.primary()
                             )
                         )
                     } else {
                         Text(
                             text = assignment.name,
                             style = CC.titleTextStyle(context).copy(fontSize = 18.sp),
-                            color = GlobalColors.textColor
+                            color = CC.textColor()
                         )
                     }
                     Row {
@@ -506,7 +506,7 @@ fun AssignmentCard(
                             Icon(
                                 if (isEditing) Icons.Default.Check else Icons.Default.Edit,
                                 contentDescription = if (isEditing) "Save Assignment" else "Edit Assignment",
-                                tint = GlobalColors.textColor
+                                tint = CC.textColor()
                             )
                         }
                         if (isEditing) {
@@ -522,7 +522,7 @@ fun AssignmentCard(
                                 Icon(
                                     Icons.Default.Close,
                                     contentDescription = "Cancel Edit",
-                                    tint = GlobalColors.primaryColor
+                                    tint = CC.primary()
                                 )
                             }
                         } else {
@@ -533,7 +533,7 @@ fun AssignmentCard(
                                 Icon(
                                     Icons.Default.Delete,
                                     contentDescription = "Delete Assignment",
-                                    tint = GlobalColors.textColor
+                                    tint = CC.textColor()
                                 )
                             }
                         }
@@ -541,22 +541,22 @@ fun AssignmentCard(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Author: ${Details.name.value}",
+                    text = "Author: ${Details.firstName.value} ${Details.lastName.value}",
                     style = CC.descriptionTextStyle(context),
-                    color = GlobalColors.tertiaryColor
+                    color = CC.tertiary()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 if (isEditing) {
                     OutlinedTextField(value = editedDescription,
                         onValueChange = { editedDescription = it },
-                        label = { Text("Description", color = GlobalColors.tertiaryColor) },
+                        label = { Text("Description", color = CC.tertiary()) },
                         colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = GlobalColors.primaryColor,
-                            unfocusedIndicatorColor = GlobalColors.tertiaryColor,
-                            focusedTextColor = GlobalColors.textColor,
-                            unfocusedTextColor = GlobalColors.textColor,
-                            focusedContainerColor = GlobalColors.primaryColor,
-                            unfocusedContainerColor = GlobalColors.primaryColor
+                            focusedIndicatorColor = CC.primary(),
+                            unfocusedIndicatorColor = CC.tertiary(),
+                            focusedTextColor = CC.textColor(),
+                            unfocusedTextColor = CC.textColor(),
+                            focusedContainerColor = CC.primary(),
+                            unfocusedContainerColor = CC.primary()
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -564,12 +564,12 @@ fun AssignmentCard(
                     Text(
                         text = assignment.description,
                         style = CC.descriptionTextStyle(context),
-                        color = GlobalColors.textColor
+                        color = CC.textColor()
                     )
                 }
                 if (isSaving) {
                     CircularProgressIndicator(
-                        color = GlobalColors.textColor,
+                        color = CC.textColor(),
                         modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                 }
