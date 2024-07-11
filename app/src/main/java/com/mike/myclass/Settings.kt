@@ -1,21 +1,24 @@
 package com.mike.myclass
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,28 +26,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Feedback
-import androidx.compose.material.icons.filled.SafetyCheck
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.ModeNight
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -57,241 +57,394 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.google.firebase.auth.EmailAuthProvider
-import com.google.firebase.auth.FirebaseAuth
-import com.mike.myclass.MyDatabase.fetchUserDataByEmail
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
-import androidx.compose.material.icons.automirrored.outlined.Assignment
-import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Book
-import androidx.compose.material.icons.outlined.BorderColor
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.School
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.mike.myclass.MyDatabase.fetchUserDataByEmail
 import com.mike.myclass.MyDatabase.updatePassword
 import com.mike.myclass.CommonComponents as CC
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController: NavController, context: Context) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Settings", style = CC.titleTextStyle(context)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor,
-                    titleContentColor = GlobalColors.textColor
-                ),
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBackIos,
-                            contentDescription = "Back",
-                            tint = GlobalColors.textColor
-                        )
+fun Settings(navController: NavController, context: Context, mainActivity: MainActivity) {
+    val auth = FirebaseAuth.getInstance()
+    val user = auth.currentUser
+    var currentUser by remember { mutableStateOf(User()) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var signInMethod by remember { mutableStateOf("") }
+    val fontPrefs = remember { FontPreferences(context) }
+    var savedFont by remember { mutableStateOf("system") }
+    LaunchedEffect(Unit) {
+        savedFont = fontPrefs.getSelectedFont().toString()
+    }
+
+    // Fetch user data when the composable is launched
+    LaunchedEffect(auth.currentUser?.email) {
+        auth.currentUser?.email?.let {
+            fetchUserDataByEmail(it) { fetchedUser ->
+                fetchedUser?.let {
+                    currentUser = fetchedUser
+                    MyDatabase.fetchPreferences(currentUser.id) { preferences ->
+                        // Log.d("Shared Preferences", "Retrieved preferences for student ID: ${currentUser.id}: $preferences")
+                        preferences?.let {
+                            selectedImageUri = Uri.parse(preferences.profileImageLink)
+                        }
                     }
                 }
+                Log.e("ProfileCard", "Fetched user: $user")
+            }
+        }
+    }
+    LaunchedEffect(key1 = Unit) {
+        if (user != null) {
+            for (userInfo in user.providerData) {
+                when (userInfo.providerId) {
+                    "password" -> {
+                        // User signed in with email and password
+                        signInMethod = "password"
+                        Log.d("Auth", "User signed in with email/password")
+                    }
+
+                    "google.com" -> {
+                        // User signed in with Google
+                        signInMethod = "google.com"
+                        Log.d("Auth", "User signed in with Google")
+                    }
+
+                    "github.com" -> {
+                        // User signed in with GitHub
+                        signInMethod = "github.com"
+                        Log.d("Auth", "User signed in with GitHub")
+                    }
+                }
+            }
+        }
+    }
+    Log.d("Authenticated User", "The user is: $user")
+    Scaffold(
+        topBar = {
+            TopAppBar(title = {}, navigationIcon = {
+                IconButton(onClick = { navController.navigate("dashboard") }) {
+                    Icon(
+                        Icons.Default.ArrowBackIosNew, "Back", tint = CC.textColor()
+                    )
+                }
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = CC.primary()
             )
-        }, containerColor = GlobalColors.primaryColor
+            )
+        }, containerColor = CC.primary()
     ) {
-        Box(modifier = Modifier.fillMaxSize()){
-            Background(context)
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(it)
-                .fillMaxSize()
-                .background(GlobalColors.primaryColor)
-                .padding(16.dp), // Added padding to the column
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SectionTitle(context, Icons.Default.AccountCircle, "Profile")
-            Spacer(modifier = Modifier.height(8.dp))
-            ProfileCard(context = context)
-            Spacer(modifier = Modifier.height(8.dp)) // Increased spacing
+            Row(
+                modifier = Modifier
+                    .height(100.dp)
+                    .fillMaxWidth(0.9f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Settings",
+                    style = CC.titleTextStyle(context),
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(0.9f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Text("Account", style = CC.titleTextStyle(context))
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            //Profile Section
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .height(80.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
 
-            SectionWithRow(
-                title = "Appearance",
-                description = "Change the appearance of the app",
-                navController = navController,
-                route = "appearance",
-                context = context
-            )
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before system settings section
-            SectionTitle(context, Icons.Default.SafetyCheck, "System")
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before system settings section
-            SystemSettings(context)
-            Spacer(modifier = Modifier.height(8.dp)) // Increased spacing
-            SectionTitle(context, Icons.Default.Security, "Security")
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before password section
-            Text("Change Password", style = CC.descriptionTextStyle(context))
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before password section
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+                    if (user?.photoUrl != null && user.photoUrl.toString().isNotEmpty()) {
+                        AsyncImage(
+                            model = user.photoUrl,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (selectedImageUri != null && signInMethod == "password") {
+                        AsyncImage(
+                            model = selectedImageUri,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Profile Picture",
+                            tint = Color.Gray, // Or your preferred color
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(CircleShape)
+                        )
+                    }
+                    Column(
+                        modifier = Modifier.fillMaxHeight(0.9f),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            currentUser.firstName + " " + currentUser.lastName,
+                            style = CC.descriptionTextStyle(context),
+                            fontSize = 20.sp
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Text(
+                            "Personal Info",
+                            style = CC.descriptionTextStyle(context),
+                            color = CC.textColor().copy(0.8f)
+                        )
+                    }
+                }
+                MyIconButton(
+                    icon = Icons.AutoMirrored.Filled.ArrowForwardIos, navController, "profile"
+                )
+
+            }
+            Spacer(modifier = Modifier.height(40.dp))
+            Row(modifier = Modifier.fillMaxWidth(0.9f)) {
+                Text("System", style = CC.titleTextStyle(context))
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            DarkMode(context)
+            Spacer(modifier = Modifier.height(20.dp))
+            Notifications(context)
+            Spacer(modifier = Modifier.height(40.dp))
+            Row(modifier = Modifier.fillMaxWidth(0.9f)) {
+                Text("Security", style = CC.titleTextStyle(context))
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Biometrics(context, mainActivity)
+            Spacer(modifier = Modifier.height(20.dp))
             PasswordUpdateSection(context)
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
-            SectionTitle(context, Icons.AutoMirrored.Filled.Message, "We value your Feedback")
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(0.9f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Font Style", style = CC.titleTextStyle(context))
+
+                Text(
+                    savedFont,
+                    style = CC.descriptionTextStyle(context)
+                        .copy(fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
+                )
+                IconButton(
+                    onClick = { navController.navigate("appearance") },
+                    modifier = Modifier.background(
+                        CC.secondary(),
+                        RoundedCornerShape(10.dp)
+                    )
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowForwardIos,
+                        contentDescription = "Font Style",
+                        tint = CC.textColor()
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Row {
+                Text("We care about your feedback", style = CC.titleTextStyle(context))
+            }
             RatingAndFeedbackScreen(context)
-            Spacer(modifier = Modifier.height(8.dp)) // Small spacing before feedback section
-            BottomEnd(context)
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(modifier = Modifier.fillMaxWidth(0.9f)) {
+                Text("About", style = CC.titleTextStyle(context))
+            }
+            MyAbout(context)
+
 
         }
-        }
     }
-}
-@Composable
-fun BottomEnd(context: Context) {
-    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-    val versionName = packageInfo.versionName
 
-    Column(
-        modifier = Modifier
-            .height(150.dp) // Increased height for more content
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        HorizontalDivider(thickness = 1.dp, color = GlobalColors.tertiaryColor)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("All rights reserved © 2024", style = CC.descriptionTextStyle(context))
-        Text("Version $versionName", style = CC.descriptionTextStyle(context))
-        Text("Student Portal", style = CC.descriptionTextStyle(context).copy(fontWeight = FontWeight.Bold))
-        Text("Developed by Mike", style = CC.descriptionTextStyle(context))
-        Spacer(modifier = Modifier.height(8.dp))
-        Row {
-            // Add social media icons here
-        }
-    }
 }
+
+@Preview
 @Composable
-fun SectionTitle(context: Context, icon: ImageVector, title: String) {
-    LaunchedEffect(Unit) {
-        GlobalColors.loadColorScheme(context)
+fun NewSettingsPreview() {
+    // NewSettings(rememberNavController(), LocalContext.current)
+    Notifications(LocalContext.current)
+}
+
+@Composable
+fun MyIconButton(icon: ImageVector, navController: NavController, route: String) {
+    Box(modifier = Modifier
+        .background(CC.secondary(), RoundedCornerShape(10.dp))
+        .clickable { navController.navigate(route) }
+        .size(50.dp)
+        .clip(RoundedCornerShape(10.dp)),
+        contentAlignment = Alignment.Center) {
+        Icon(icon, contentDescription = null, tint = CC.textColor())
     }
+
+}
+
+@Composable
+fun DarkMode(context: Context) {
+    var isDarkMode by remember { mutableStateOf(true) }
+    val icon = if (isDarkMode) Icons.Filled.ModeNight else Icons.Filled.WbSunny
+    val iconDescription = if (isDarkMode) "Switch to Dark Mode" else "Switch to Light Mode"
+
     Row(
         modifier = Modifier
-            .height(40.dp)
-            .border(
-                1.dp, GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
-            )
-            .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
-            .fillMaxWidth()
-            .padding(start = 20.dp, end = 20.dp), verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, contentDescription = "Icon", tint = GlobalColors.textColor)
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(title, style = CC.titleTextStyle(context), fontSize = 20.sp)
-    }
-}
-
-@Composable
-fun SectionWithRow(
-    title: String,
-    description: String,
-    navController: NavController,
-    route: String,
-    context: Context
-) {
-    Row(
-        modifier = Modifier
-            .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
-            .border(
-                1.dp, GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
-
-            )
-            .fillMaxWidth()
-            .padding(6.dp)
-            .padding(start = 20.dp, end = 20.dp), // Added vertical padding
+            .fillMaxWidth(0.9f)
+            .height(50.dp),
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column {
-            Text(title, style = CC.titleTextStyle(context), fontSize = 20.sp)
-            Text(description, style = CC.descriptionTextStyle(context))
-        }
-
-        IconButton(onClick = {
-            navController.navigate(route)
-        }) {
+        Box(
+            modifier = Modifier
+                .background(CC.secondary(), CircleShape)
+                .size(50.dp),
+            contentAlignment = Alignment.Center
+        ) {
             Icon(
-                Icons.AutoMirrored.Filled.ArrowForwardIos,
-                contentDescription = "Arrow",
-                tint = GlobalColors.textColor
+                imageVector = icon,
+                contentDescription = iconDescription,
+                tint = CC.extraColor2()
             )
         }
+        Text("Dark Mode", style = CC.descriptionTextStyle(context), fontSize = 20.sp)
+        Switch(
+            onCheckedChange = {
+                isDarkMode = it
+                GlobalColors.saveColorScheme(context, it)
+            }, checked = isDarkMode, colors = SwitchDefaults.colors(
+                checkedThumbColor = CC.extraColor1(),
+                uncheckedThumbColor = CC.extraColor2(),
+                checkedTrackColor = CC.extraColor2(),
+                uncheckedTrackColor = CC.extraColor1(),
+                checkedIconColor = CC.textColor(),
+                uncheckedIconColor = CC.textColor()
+            )
+        )
     }
 }
 
 @Composable
-fun SystemSettings(context: Context) {
-    var checked by remember { mutableStateOf(false) }
-    var edge by remember { mutableStateOf(false) }
-    Column(
-        modifier = Modifier
-            .border(
-                1.dp, GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
-            )
-            .fillMaxWidth()
-            .padding(10.dp)
-    ) {
-        SettingSwitch(context, "Disable EdgeToEdge", edge) {
-            Global.edgeToEdge.value = !Global.edgeToEdge.value
-            edge = !edge
-        }
-        SettingSwitch(context, "Enable System Notifications", checked) {
-            Global.showAlert.value = !Global.showAlert.value
-            checked = !checked
+fun Notifications(context: Context) {
+    var isNotificationEnabled by remember { mutableStateOf(false) }
+    val icon =
+        if (isNotificationEnabled) Icons.Filled.Notifications else Icons.Filled.NotificationsOff
+    val iconDescription =
+        if (isNotificationEnabled) "Enable Notifications" else "Disable Notifications"
+    val auth = FirebaseAuth.getInstance()
+    var currentUser by remember { mutableStateOf(User()) }
+
+    LaunchedEffect(auth.currentUser?.email) {
+        auth.currentUser?.email?.let { email ->
+            fetchUserDataByEmail(email) { fetchedUser ->
+                fetchedUser?.let {
+                    currentUser = it
+                    Log.d("Current User", "Fetched user name: ${currentUser.firstName}")
+                    MyDatabase.fetchPreferences(currentUser.id) { preferences ->
+                        preferences?.let {
+                            isNotificationEnabled = preferences.notifications == "enabled"
+                        }
+                    }
+                }
+            }
         }
     }
-}
 
-@Composable
-fun SettingSwitch(
-    context: Context,
-    text: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit // Callback for checked state changes
-) {
+    fun updatePreferences(isEnabled: Boolean) {
+        MyDatabase.generateSharedPreferencesID { id ->
+            val myPreferences = UserPreferences(
+                studentID = currentUser.id,
+                id = id,
+                notifications = if (isEnabled) "enabled" else "disabled"
+            )
+            MyDatabase.writePreferences(myPreferences) {
+                Log.d("Preferences", "Preferences successfully updated: $myPreferences")
+            }
+        }
+    }
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .fillMaxWidth(0.9f)
+            .height(50.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text, style = CC.descriptionTextStyle(context))
+        Box(
+            modifier = Modifier
+                .background(CC.secondary(), CircleShape)
+                .size(50.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = iconDescription,
+                tint = CC.extraColor2()
+            )
+        }
+        Text("Notifications", style = CC.descriptionTextStyle(context), fontSize = 20.sp)
         Switch(
-            checked = checked, onCheckedChange = { isChecked ->
-                onCheckedChange(isChecked) // Invoke the callback with the new state
-            }, colors = SwitchDefaults.colors(
-                checkedThumbColor = GlobalColors.primaryColor,
-                checkedTrackColor = GlobalColors.secondaryColor,
-                uncheckedThumbColor = GlobalColors.primaryColor,
-                uncheckedTrackColor = GlobalColors.secondaryColor
+            onCheckedChange = { notifications ->
+                if (!notifications) {
+                    (context as MainActivity).requestNotificationPermission()
+
+                }
+                isNotificationEnabled = notifications
+                updatePreferences(notifications)
+            }, checked = isNotificationEnabled, colors = SwitchDefaults.colors(
+                checkedThumbColor = CC.extraColor1(),
+                uncheckedThumbColor = CC.extraColor2(),
+                checkedTrackColor = CC.extraColor2(),
+                uncheckedTrackColor = CC.extraColor1(),
+                checkedIconColor = CC.textColor(),
+                uncheckedIconColor = CC.textColor()
             )
         )
     }
@@ -299,133 +452,254 @@ fun SettingSwitch(
 
 
 @Composable
-fun ProfileCard(
-    context: Context
-) {
-    var user by remember { mutableStateOf(User()) }
-    var isExpanded by remember { mutableStateOf(false) }
-    var currentName by remember { mutableStateOf("") }
-    var currentEmail by remember { mutableStateOf("") }
-    var currentAdmissionNumber by remember { mutableStateOf("") }
+fun Biometrics(context: Context, mainActivity: MainActivity) {
+    var isBiometricsEnabled by remember { mutableStateOf(false) }
+    val icon = if (isBiometricsEnabled) Icons.Filled.Security else Icons.Filled.Security
+    val iconDescription = if (isBiometricsEnabled) "Biometrics enabled" else "Biometrics disabled"
+    val promptManager = mainActivity.promptManager
+    val auth = FirebaseAuth.getInstance()
+    var currentUser by remember { mutableStateOf(User()) }
 
-    // Fetch user data when the composable is launched
-    LaunchedEffect(CC.getCurrentUser()) {
-        fetchUserDataByEmail(CC.getCurrentUser()) { fetchedUser ->
-            fetchedUser?.let {
-                user = it
-                currentName = it.firstName + " "+ it.lastName
-                currentEmail = it.email
-                currentAdmissionNumber = it.id
-            }
-        }
-    }
-
-    Card(
-        modifier = Modifier
-            .border(
-                    1.dp,GlobalColors.secondaryColor,RoundedCornerShape(10.dp)
-            )
-            .fillMaxWidth()
-            .padding(16.dp)
-            .clickable { isExpanded = !isExpanded },
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = GlobalColors.primaryColor
-        ),
-        elevation = CardDefaults.elevatedCardElevation(8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .background(GlobalColors.primaryColor)
-                .padding(16.dp)
-        ) {
-            // Only show the name field initially
-            Row(modifier = Modifier
-                .padding(vertical = 8.dp)
-                .border(
-                    1.dp,
-                    GlobalColors.secondaryColor,
-                    RoundedCornerShape(10.dp)
-                )
-                .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start) {
-                Text(
-                    text = currentName,
-                    style = CC.descriptionTextStyle(context).copy(
-                        fontSize = 14.sp,
-                        color = Color.White
-                    ),
-                    modifier = Modifier
-                        .padding(vertical = 4.dp)
-                        .fillMaxWidth()
-                        .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
-                        .padding(8.dp)
-                )
-            }
-            // Animated visibility for other fields
-            AnimatedVisibility(
-                visible = isExpanded,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                Column {
-                    Row(modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .border(
-                            1.dp,
-                            GlobalColors.secondaryColor,
-                            RoundedCornerShape(10.dp)
+    LaunchedEffect(auth.currentUser?.email) {
+        auth.currentUser?.email?.let { email ->
+            fetchUserDataByEmail(email) { fetchedUser ->
+                fetchedUser?.let {
+                    currentUser = it
+                    Log.d("Current User", "Fetched user name: ${currentUser.firstName}")
+                    MyDatabase.fetchPreferences(currentUser.id) { preferences ->
+                        preferences?.let {
+                            isBiometricsEnabled = preferences.biometrics == "enabled"
+                            Log.d(
+                                "Shared Preferences",
+                                "Retrieved preferences for student ID: ${currentUser.id}: $preferences"
+                            )
+                        } ?: Log.e(
+                            "Shared Preferences",
+                            "Preferences not found for student ID: ${currentUser.id}"
                         )
-                        .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start) {
-                        Text(
-                            text = "Email: $currentEmail",
-                            style = CC.descriptionTextStyle(context).copy(
-                                fontSize = 14.sp,
-                                color = Color.White
-                            ),
-                            modifier = Modifier
-                                .padding(vertical = 4.dp)
-                                .fillMaxWidth()
-                                .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
-                                .padding(8.dp)
-                        )
-                    }
-                    Row(modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .border(
-                            1.dp,
-                            GlobalColors.secondaryColor,
-                            RoundedCornerShape(10.dp)
-                        )
-                        .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start) {
-                    Text(
-                        text = "Admission Number: $currentAdmissionNumber",
-                        style = CC.descriptionTextStyle(context).copy(
-                            fontSize = 14.sp,
-                            color = Color.White
-                        ),
-                        modifier = Modifier
-                            .padding(vertical = 4.dp)
-                            .fillMaxWidth()
-                            .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
-                            .padding(8.dp)
-                    )
                     }
                 }
             }
         }
     }
+
+    fun updatePreferences(isEnabled: Boolean) {
+        MyDatabase.generateSharedPreferencesID { id ->
+            val myPreferences = UserPreferences(
+                studentID = currentUser.id,
+                id = id,
+                biometrics = if (isEnabled) "enabled" else "disabled"
+            )
+            MyDatabase.writePreferences(myPreferences) {
+                Log.d("Preferences", "Preferences successfully updated: $myPreferences")
+            }
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(0.9f)
+            .height(50.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Box(
+            modifier = Modifier
+                .background(CC.secondary(), CircleShape)
+                .size(50.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = iconDescription,
+                tint = CC.extraColor2(),
+            )
+        }
+        Text(
+            "Biometrics (${if (isBiometricsEnabled) "Enabled" else "Disabled"})",
+            style = CC.descriptionTextStyle(context),
+            fontSize = 20.sp
+        )
+        Switch(
+            onCheckedChange = { isChecked ->
+                if (isChecked) {
+                    promptManager.showBiometricPrompt(
+                        title = "Authenticate", description = "Please authenticate to continue"
+                    ) { success ->
+                        if (success) {
+                            isBiometricsEnabled = true
+                            updatePreferences(true)
+                        }
+                    }
+                } else {
+                    isBiometricsEnabled = false
+                    updatePreferences(false)
+                }
+            }, checked = isBiometricsEnabled, colors = SwitchDefaults.colors(
+                checkedThumbColor = CC.extraColor1(),
+                uncheckedThumbColor = CC.extraColor2(),
+                checkedTrackColor = CC.extraColor2(),
+                uncheckedTrackColor = CC.extraColor1(),
+                checkedIconColor = CC.textColor(),
+                uncheckedIconColor = CC.textColor()
+            )
+        )
+    }
 }
 
 
+@Composable
+fun PasswordUpdateSection(context: Context) {
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    val auth = FirebaseAuth.getInstance()
+    val currentUser = auth.currentUser
+    var loading by remember { mutableStateOf(false) }
+    var signInMethod by remember { mutableStateOf("") }
 
+    Row(modifier = Modifier.fillMaxWidth(0.8f)) {
+        Text("Change your Password", style = CC.titleTextStyle(context), fontSize = 18.sp)
+    }
+    Spacer(modifier = Modifier.height(10.dp))
+    LaunchedEffect(key1 = Unit) {
+        if (currentUser != null) {
+            for (userInfo in currentUser.providerData) {
+                when (userInfo.providerId) {
+                    "password" -> {
+                        // User signed in with email and password
+                        signInMethod = "password"
+                        Log.d("Auth", "User signed in with email/password")
+                    }
 
+                    "google.com" -> {
+                        // User signed in with Google
+                        signInMethod = "google.com"
+                        Log.d("Auth", "User signed in with Google")
+                    }
 
+                    "github.com" -> {
+                        // User signed in with GitHub
+                        signInMethod = "github.com"
+                        Log.d("Auth", "User signed in with GitHub")
+                    }
+                }
+            }
+        }
+    }
+    if (signInMethod != "password") {
+        Row(
+            modifier = Modifier
+                .height(50.dp)
+                .fillMaxWidth(0.9f)
+        ) {
+            Text(
+                "This section only applies to users who signed in using Email and Password",
+                style = CC.descriptionTextStyle(context),
+                color = CC.tertiary(),
+                textAlign = TextAlign.Center
+            )
+
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .border(
+                    1.dp, CC.secondary(), RoundedCornerShape(10.dp)
+                )
+                .fillMaxWidth(0.8f)
+                .padding(16.dp)
+        ) {
+            PasswordTextField(
+                label = "Current Password",
+                value = currentPassword,
+                isEditing = true,
+                onValueChange = { currentPassword = it },
+                context = context
+            )
+            PasswordTextField(
+                label = "New Password",
+                value = newPassword,
+                isEditing = true,
+                onValueChange = { newPassword = it },
+                context = context
+            )
+            PasswordTextField(
+                label = "Confirm Password",
+                value = confirmPassword,
+                isEditing = true,
+                onValueChange = { confirmPassword = it },
+                context = context
+            )
+
+            Button(
+                onClick = {
+                    loading = true
+                    if (newPassword == confirmPassword && newPassword.isNotEmpty() && currentPassword.isNotEmpty()) {
+                        currentUser?.let { user ->
+                            val credential =
+                                EmailAuthProvider.getCredential(user.email!!, currentPassword)
+                            user.reauthenticate(credential).addOnCompleteListener { reauthTask ->
+                                if (reauthTask.isSuccessful) {
+                                    updatePassword(newPassword, onSuccess = {
+                                        // Handle success (e.g., show a success message)
+                                        loading = false
+                                        Toast.makeText(
+                                            context,
+                                            "Password updated successfully",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        currentPassword = ""
+                                        newPassword = ""
+                                        confirmPassword = ""
+                                    }, onFailure = { exception ->
+                                        // Handle failure (e.g., show an error message)
+                                        loading = false
+                                        Toast.makeText(
+                                            context,
+                                            "Failed to Change password: ${exception.message}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+
+                                    })
+                                } else {
+                                    // Handle reauthentication failure
+                                    loading = false
+                                    Toast.makeText(
+                                        context,
+                                        "Authentication failed: ${reauthTask.exception?.message}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        }
+                    } else {
+                        // Handle password mismatch
+                        loading = false
+                        Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                    }
+                }, modifier = Modifier.padding(top = 16.dp), colors = ButtonDefaults.buttonColors(
+                    containerColor = CC.tertiary(), contentColor = Color.White
+                ), shape = RoundedCornerShape(10.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
+                ) {
+                    if (loading) {
+                        CircularProgressIndicator(
+                            color = CC.primary(),
+                            trackColor = CC.tertiary(),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        Text("Change Password", style = CC.descriptionTextStyle(context))
+                    }
+                }
+
+            }
+        }
+    }
+}
 
 @Composable
 fun PasswordTextField(
@@ -442,12 +716,12 @@ fun PasswordTextField(
         enabled = isEditing,
         textStyle = CC.descriptionTextStyle(context),
         colors = TextFieldDefaults.colors(
-            focusedTextColor = GlobalColors.textColor,
-            disabledContainerColor = GlobalColors.secondaryColor,
-            focusedContainerColor = GlobalColors.primaryColor,
-            unfocusedContainerColor = GlobalColors.primaryColor,
-            disabledTextColor = LocalContentColor.current.copy(LocalContentAlpha.current),
-            disabledLabelColor = LocalContentColor.current.copy(ContentAlpha.medium)
+            focusedTextColor = CC.textColor(),
+            disabledContainerColor = CC.secondary(),
+            focusedContainerColor = CC.primary(),
+            unfocusedContainerColor = CC.primary(),
+            focusedIndicatorColor = CC.secondary(),
+            unfocusedIndicatorColor = CC.tertiary(),
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -457,112 +731,58 @@ fun PasswordTextField(
 }
 
 @Composable
-fun PasswordUpdateSection(context: Context) {
-    var currentPassword by remember { mutableStateOf("") }
-    var newPassword by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    val auth = FirebaseAuth.getInstance()
-    val currentUser = auth.currentUser
-    var loading by remember { mutableStateOf(false) }
+fun MyAbout(context: Context) {
+    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+    val versionName = packageInfo.versionName
+    val uriHandler = LocalUriHandler.current
 
     Column(
         modifier = Modifier
-            .border(
-                1.dp, GlobalColors.secondaryColor, RoundedCornerShape(10.dp)
-            )
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        PasswordTextField(
-            label = "Current Password",
-            value = currentPassword,
-            isEditing = true,
-            onValueChange = { currentPassword = it },
-            context = context
+        Text(
+            "Uni Konnect", style = CC.descriptionTextStyle(context).copy(
+                fontWeight = FontWeight.Bold, fontSize = 20.sp
+            )
         )
-        PasswordTextField(
-            label = "New Password",
-            value = newPassword,
-            isEditing = true,
-            onValueChange = { newPassword = it },
-            context = context
-        )
-        PasswordTextField(
-            label = "Confirm Password",
-            value = confirmPassword,
-            isEditing = true,
-            onValueChange = { confirmPassword = it },
-            context = context
-        )
-
-        Button(
-            onClick = {
-                loading = true
-                if (newPassword == confirmPassword && newPassword.isNotEmpty() && currentPassword.isNotEmpty()) {
-                    currentUser?.let { user ->
-                        val credential =
-                            EmailAuthProvider.getCredential(user.email!!, currentPassword)
-                        user.reauthenticate(credential).addOnCompleteListener { reauthTask ->
-                            if (reauthTask.isSuccessful) {
-                                updatePassword(newPassword, onSuccess = {
-                                    // Handle success (e.g., show a success message)
-                                    loading = false
-                                    Toast.makeText(
-                                        context, "Password updated successfully", Toast.LENGTH_SHORT
-                                    ).show()
-                                    currentPassword = ""
-                                    newPassword = ""
-                                    confirmPassword = ""
-                                }, onFailure = { exception ->
-                                    // Handle failure (e.g., show an error message)
-                                    loading = false
-                                    Toast.makeText(
-                                        context,
-                                        "Failed to Change password: ${exception.message}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-
-                                })
-                            } else {
-                                // Handle reauthentication failure
-                                loading = false
-                                Toast.makeText(
-                                    context,
-                                    "Authentication failed: ${reauthTask.exception?.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    }
-                } else {
-                    // Handle password mismatch
-                    loading = false
-                    Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
-                }
-            }, modifier = Modifier.padding(top = 16.dp), colors = ButtonDefaults.buttonColors(
-                containerColor = GlobalColors.tertiaryColor, contentColor = Color.White
-            ), shape = RoundedCornerShape(10.dp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Version $versionName", style = CC.descriptionTextStyle(context))
+        Text("Developed by Mike", style = CC.descriptionTextStyle(context))
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center
-            ) {
-                if (loading) {
-                    CircularProgressIndicator(
-                        color = GlobalColors.primaryColor,
-                        trackColor = GlobalColors.tertiaryColor,
-                        modifier = Modifier.size(20.dp)
-                    )
-                } else {
-                    Text("Change Password", style = CC.descriptionTextStyle(context))
-                }
+            // Google Icon with Link
+            IconButton(onClick = {
+                val intent = Intent(
+                    Intent.ACTION_DIAL, Uri.parse("tel:+254799013845")
+                )
+                context.startActivity(intent)
+            }, modifier = Modifier
+                .background(CC.extraColor1(), CircleShape)
+                .size(35.dp)) {
+                Icon(Icons.Default.Call, "Call", tint = CC.textColor())
             }
-
+            Spacer(modifier = Modifier.width(16.dp))
+            // GitHub Icon with Link
+            IconButton(
+                onClick = { uriHandler.openUri("https://github.com/mikesplore") },
+                modifier = Modifier
+                    .background(CC.extraColor1(), CircleShape)
+                    .size(35.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.github), // Replace with your actual drawable
+                    contentDescription = "GitHub Profile", modifier = Modifier.size(30.dp)
+                )
+            }
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("All rights reserved © 2024", style = CC.descriptionTextStyle(context))
     }
 }
-
-
-@OptIn(ExperimentalMaterial3Api::class)
 
 @Composable
 fun StarRating(
@@ -580,11 +800,11 @@ fun StarRating(
             val color = when {
                 i <= currentRating -> when (i) {
                     in 1..2 -> Color.Red
-                    3 -> GlobalColors.extraColor2
+                    3 -> CC.extraColor2()
                     else -> Color.Green
                 }
 
-                else -> GlobalColors.secondaryColor
+                else -> CC.secondary()
             }
             val animatedScale by animateFloatAsState(
                 targetValue = if (i <= currentRating) 1.2f else 1.0f,
@@ -627,9 +847,7 @@ fun Star(
             path = path,
             color = if (filled) color else Color.Gray,
             style = if (filled) Stroke(width = 8f) else Stroke(
-                width = 8f,
-                cap = StrokeCap.Round,
-                join = StrokeJoin.Round
+                width = 8f, cap = StrokeCap.Round, join = StrokeJoin.Round
             )
         )
     }
@@ -683,7 +901,8 @@ fun RatingAndFeedbackScreen(context: Context) {
                     onValueChange = { feedbackText = it },
                     label = {
                         Text(
-                            "Enter your feedback (optional)", style = CC.descriptionTextStyle(context)
+                            "Enter your feedback (optional)",
+                            style = CC.descriptionTextStyle(context)
                         )
                     },
                     modifier = Modifier
@@ -698,40 +917,40 @@ fun RatingAndFeedbackScreen(context: Context) {
                 Button(
                     onClick = {
                         loading = true
-                        MyDatabase.generateFeedbackID {  feedbackID ->
+                        MyDatabase.generateFeedbackID { feedbackId ->
                             val feedback = Feedback(
-                                id = feedbackID,
+                                id = feedbackId,
                                 rating = currentRating,
-                                sender = user.firstName + user.lastName,
+                                sender = user.firstName + " " + user.lastName,
                                 message = feedbackText,
                                 admissionNumber = user.id
                             )
-                        MyDatabase.writeFeedback(feedback, onSuccess = {
-                            loading = false
-                            Toast.makeText(
-                                context, "Thanks for your feedback", Toast.LENGTH_SHORT
-                            ).show()
-                            feedbackText = ""
-                            MyDatabase.fetchAverageRating { averageRating ->
-                                averageRatings = averageRating
-                            }
-                            showFeedbackForm = false
-                        }, onFailure = {
-                            loading = false
-                            Toast.makeText(
-                                context,
-                                "Failed to send feedback: ${it?.message}",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            MyDatabase.writeFeedback(feedback, onSuccess = {
+                                loading = false
+                                Toast.makeText(
+                                    context, "Thanks for your feedback", Toast.LENGTH_SHORT
+                                ).show()
+                                feedbackText = ""
+                                MyDatabase.fetchAverageRating { averageRating ->
+                                    averageRatings = averageRating
+                                }
+                                showFeedbackForm = false
+                            }, onFailure = {
+                                loading = false
+                                Toast.makeText(
+                                    context,
+                                    "Failed to send feedback: ${it?.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            })
                         }
-                        )}
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = GlobalColors.extraColor1,
-                        contentColor = GlobalColors.secondaryColor
+                        containerColor = CC.extraColor1(),
+                        contentColor = CC.secondary()
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -742,8 +961,8 @@ fun RatingAndFeedbackScreen(context: Context) {
                     ) {
                         if (loading) {
                             CircularProgressIndicator(
-                                color = GlobalColors.primaryColor,
-                                trackColor = GlobalColors.tertiaryColor,
+                                color = CC.primary(),
+                                trackColor = CC.tertiary(),
                                 modifier = Modifier.size(20.dp)
                             )
                         } else {
@@ -756,50 +975,6 @@ fun RatingAndFeedbackScreen(context: Context) {
     }
 }
 
-@Composable
-fun Background(context: Context) {
-    val icons = listOf(
-        Icons.Outlined.Home,
-        Icons.AutoMirrored.Outlined.Assignment,
-        Icons.Outlined.School,
-        Icons.Outlined.AccountCircle,
-        Icons.Outlined.BorderColor,
-        Icons.Outlined.Book,
-    )
-    LaunchedEffect (Unit){
-        GlobalColors.loadColorScheme(context)
-
-    }
-    // Calculate the number of repetitions needed to fill the screen
-    val repetitions = 1000 // Adjust this value as needed
-    val repeatedIcons = mutableListOf<ImageVector>()
-    repeat(repetitions) {
-        repeatedIcons.addAll(icons.shuffled())
-    }
-
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(10),
-        modifier = Modifier
-            .fillMaxSize()
-            .background(GlobalColors.primaryColor)
-            .padding(10.dp),
-        contentPadding = PaddingValues(8.dp)
-    ) {
-        items(repeatedIcons) { icon ->
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = GlobalColors.secondaryColor.copy(0.5f),
-                modifier = Modifier.padding(8.dp)
-            )
-        }
-    }
-}
 
 
-@Preview
-@Composable
-fun PreviewSettingsScreen() {
-    SettingsScreen(rememberNavController(), LocalContext.current)
-}
 
