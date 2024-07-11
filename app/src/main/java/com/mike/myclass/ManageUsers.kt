@@ -86,28 +86,28 @@ fun ManageUsers(navController: NavController) {
                 TopAppBar(
                     actions = {
                         IconButton(onClick = {loading = true}) { 
-                            Icon(Icons.Default.Refresh,"refresh", tint = GlobalColors.textColor)
+                            Icon(Icons.Default.Refresh,"refresh", tint = CC.textColor())
                         }
                     },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
-                                Icons.Default.ArrowBackIosNew, "back", tint = GlobalColors.textColor
+                                Icons.Default.ArrowBackIosNew, "back", tint = CC.textColor()
                             )
                         }
                     },
                     title = { Text("Manage Users", style = CC.titleTextStyle(context)) },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = GlobalColors.primaryColor,
-                        titleContentColor = GlobalColors.textColor
+                        containerColor = CC.primary(),
+                        titleContentColor = CC.textColor()
                     )
                 )
             },
-            containerColor = GlobalColors.primaryColor
+            containerColor = CC.primary()
         ) { paddingValues ->
             Column(
                 modifier = Modifier
-                    .background(GlobalColors.primaryColor)
+                    .background(CC.primary())
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
@@ -118,8 +118,8 @@ fun ManageUsers(navController: NavController) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         CircularProgressIndicator(
-                            color = GlobalColors.secondaryColor,
-                            trackColor = GlobalColors.textColor
+                            color = CC.secondary(),
+                            trackColor = CC.textColor()
                         )
                         Text("Users Loading...", style = CC.descriptionTextStyle(context))
                     }
@@ -137,7 +137,7 @@ fun ManageUsers(navController: NavController) {
                             Text("Name", style = CC.descriptionTextStyle(context), fontWeight = FontWeight.Bold)
                             Text("Email", style = CC.descriptionTextStyle(context), fontWeight = FontWeight.Bold)
                         }
-                        HorizontalDivider(color = GlobalColors.textColor)
+                        HorizontalDivider(color = CC.textColor())
                         users?.forEach { user ->
                             UserCard(
                                 user = user,
@@ -164,13 +164,16 @@ fun UserCard(user: User, context: Context) {
     var expanded by remember { mutableStateOf(false) }
     var firstName by remember { mutableStateOf(user.firstName) }
     var lastName by remember { mutableStateOf(user.lastName) }
+    var email = user.email
+    var phoneNumber = user.phoneNumber
+    var id = user.id
     var isediting by remember { mutableStateOf(false) }
     if(isediting){
         BasicAlertDialog(onDismissRequest = {isediting  = false}) {
             Column(modifier = Modifier
-                .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
+                .background(CC.primary(), RoundedCornerShape(10.dp))
                 .width(300.dp)
-                .height(200.dp),
+                .height(300.dp),
                 verticalArrangement = Arrangement.SpaceEvenly,
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(modifier = Modifier
@@ -189,14 +192,14 @@ fun UserCard(user: User, context: Context) {
                         .padding(10.dp)
                         .fillMaxWidth(0.9f),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = GlobalColors.primaryColor,
-                        unfocusedLabelColor = GlobalColors.tertiaryColor,
-                        focusedIndicatorColor = GlobalColors.textColor,
+                        focusedContainerColor = CC.primary(),
+                        unfocusedLabelColor = CC.tertiary(),
+                        focusedIndicatorColor = CC.textColor(),
                         unfocusedContainerColor = Color.Transparent,
-                        unfocusedTextColor = GlobalColors.textColor,
-                        focusedTextColor = GlobalColors.textColor,
-                        focusedLabelColor = GlobalColors.primaryColor,
-                        unfocusedIndicatorColor = GlobalColors.textColor
+                        unfocusedTextColor = CC.textColor(),
+                        focusedTextColor = CC.textColor(),
+                        focusedLabelColor = CC.primary(),
+                        unfocusedIndicatorColor = CC.textColor()
                     ),
                     singleLine = true
                 )
@@ -210,14 +213,14 @@ fun UserCard(user: User, context: Context) {
                         .padding(10.dp)
                         .fillMaxWidth(0.9f),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = GlobalColors.primaryColor,
-                        unfocusedLabelColor = GlobalColors.tertiaryColor,
-                        focusedIndicatorColor = GlobalColors.textColor,
+                        focusedContainerColor = CC.primary(),
+                        unfocusedLabelColor = CC.tertiary(),
+                        focusedIndicatorColor = CC.textColor(),
                         unfocusedContainerColor = Color.Transparent,
-                        unfocusedTextColor = GlobalColors.textColor,
-                        focusedTextColor = GlobalColors.textColor,
-                        focusedLabelColor = GlobalColors.primaryColor,
-                        unfocusedIndicatorColor = GlobalColors.textColor
+                        unfocusedTextColor = CC.textColor(),
+                        focusedTextColor = CC.textColor(),
+                        focusedLabelColor = CC.primary(),
+                        unfocusedIndicatorColor = CC.textColor()
                     ),
                     singleLine = true
                 )
@@ -225,23 +228,26 @@ fun UserCard(user: User, context: Context) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround) {
                     Button(onClick = {
+                    var editeduser = User(
+                        id = user.id,
+                        email = user.email,
+                        firstName = firstName,
+                        lastName = lastName,
+                        phoneNumber = user.phoneNumber,
+                    )
+                        MyDatabase.writeUsers(editeduser,
+                            onComplete = {
+                                // Show success message or perform other actions
+                                Toast.makeText(context, "User updated successfully!", Toast.LENGTH_SHORT).show()
+                                isediting = false
+                            })
 
-                       MyDatabase.updateUser(user.id, firstName, lastName
-                           , onSuccess = {
-                               isediting = false
-                               Toast.makeText(context, "User updated successfully!", Toast.LENGTH_SHORT).show()
-                           },
-                           onFailure = {
-                               isediting= false
-                               Toast.makeText(context, "Error updating user: ${it?.message}", Toast.LENGTH_SHORT).show()
-                           }
-                       )
 
                     },
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = GlobalColors.primaryColor,
-                            contentColor = GlobalColors.textColor
+                            containerColor = CC.primary(),
+                            contentColor = CC.textColor()
                         )
                     ) {
                         Text("Save", style = CC.descriptionTextStyle(context))
@@ -249,8 +255,8 @@ fun UserCard(user: User, context: Context) {
                     Button(onClick = { isediting = false},
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = GlobalColors.primaryColor,
-                            contentColor = GlobalColors.textColor
+                            containerColor = CC.primary(),
+                            contentColor = CC.textColor()
                         )
                     ) {
                         Text("Cancel", style = CC.descriptionTextStyle(context))
@@ -265,7 +271,7 @@ fun UserCard(user: User, context: Context) {
             .padding(vertical = 8.dp)
             .clickable { expanded = !expanded },
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(GlobalColors.primaryColor)
+        colors = CardDefaults.cardColors(CC.primary())
     ) {
         Column(
             modifier = Modifier
@@ -277,11 +283,11 @@ fun UserCard(user: User, context: Context) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(user.firstName + ""+ user.lastName, style = CC.descriptionTextStyle(context))
+                Text(user.firstName + " "+ user.lastName, style = CC.descriptionTextStyle(context))
                 Text(user.email, style = CC.descriptionTextStyle(context))
                 Row {
                     IconButton(onClick = {isediting= true}) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = GlobalColors.textColor)
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", tint = CC.textColor())
                     }
                     IconButton(onClick = {
                         MyDatabase.deleteUser(user.id,
@@ -297,7 +303,7 @@ fun UserCard(user: User, context: Context) {
                             }
                         )
                     }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = GlobalColors.textColor)
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = CC.textColor())
                     }
                 }
             }
