@@ -34,7 +34,9 @@ import com.mike.myclass.MyDatabase.writeItem
 import java.util.Locale
 import com.mike.myclass.CommonComponents as CC
 
-
+object CourseName {
+    var name: MutableState<String> = mutableStateOf("")
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,27 +68,27 @@ fun CourseScreen(courseCode: String, context: Context) {
         topBar = {
             TopAppBar(title = { Text(CourseName.name.value, style = CC.titleTextStyle(context), fontSize = 20.sp) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = GlobalColors.primaryColor,
-                    titleContentColor = GlobalColors.textColor)
+                    containerColor = CC.primary(),
+                    titleContentColor = CC.textColor())
             )
         },
-        containerColor = GlobalColors.primaryColor
+        containerColor = CC.primary()
     ) {
         if (isLoading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(GlobalColors.primaryColor),
+                    .background(CC.primary()),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = GlobalColors.textColor)
+                CircularProgressIndicator(color = CC.textColor())
             }
         } else {
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
                     .fillMaxSize()
-                    .background(GlobalColors.primaryColor)
+                    .background(CC.primary())
                     .padding(it)
             ) {
                 Section(
@@ -202,7 +204,7 @@ fun GridItemCard(item: GridItem, onDelete: (GridItem) -> Unit, context: Context)
             .width(200.dp)
             .padding(start = 15.dp),
         shape = RoundedCornerShape(8.dp),
-        color = GlobalColors.secondaryColor,
+        color = CC.secondary(),
         shadowElevation = 4.dp
     ) {
         Column(
@@ -269,7 +271,7 @@ fun AddItemDialog(onDismiss: () -> Unit, onAddItem: (String, String, String, Str
                     color = Color.Gray,
                     shape = RoundedCornerShape(10.dp)
                 )
-                .background(GlobalColors.primaryColor, RoundedCornerShape(10.dp))
+                .background(CC.primary(), RoundedCornerShape(10.dp))
                 .width(270.dp)
         ) {
             Row(modifier = Modifier
@@ -311,7 +313,7 @@ fun AddItemDialog(onDismiss: () -> Unit, onAddItem: (String, String, String, Str
                             )
                             .size(50.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .background(if (fileType == type) GlobalColors.secondaryColor else GlobalColors.primaryColor)
+                            .background(if (fileType == type) CC.secondary() else CC.primary())
                             .clickable { fileType = type },
                         contentAlignment = Alignment.Center
                     ) {
@@ -327,7 +329,7 @@ fun AddItemDialog(onDismiss: () -> Unit, onAddItem: (String, String, String, Str
                 Button(onClick = onDismiss,
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = GlobalColors.primaryColor
+                            containerColor = CC.primary()
                         )
                     ) {
                     Text("Cancel", style = CC.descriptionTextStyle(context))
@@ -341,7 +343,7 @@ fun AddItemDialog(onDismiss: () -> Unit, onAddItem: (String, String, String, Str
                 },
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = GlobalColors.primaryColor
+                        containerColor = CC.primary()
                     )) {
                     Text("Add", style = CC.descriptionTextStyle(context))
                 }
@@ -372,12 +374,12 @@ fun InputDialogTextField(
         onValueChange =  onValueChange,
         label = { Text(label, style = CC.descriptionTextStyle(context)) },
         colors = TextFieldDefaults.colors(
-            focusedIndicatorColor = GlobalColors.tertiaryColor,
-            unfocusedIndicatorColor = GlobalColors.secondaryColor,
-            focusedTextColor = GlobalColors.textColor,
-            unfocusedTextColor = GlobalColors.textColor,
-            focusedContainerColor = GlobalColors.secondaryColor,
-            unfocusedContainerColor = GlobalColors.secondaryColor
+            focusedIndicatorColor = CC.tertiary(),
+            unfocusedIndicatorColor = CC.secondary(),
+            focusedTextColor = CC.textColor(),
+            unfocusedTextColor = CC.textColor(),
+            focusedContainerColor = CC.secondary(),
+            unfocusedContainerColor = CC.secondary()
         )
     )
 }
